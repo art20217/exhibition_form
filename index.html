@@ -198,14 +198,21 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     d.appendChild(document.createElement('br'));
     var allSel=document.querySelectorAll('select:not(#diag-s1):not(#diag-s2)');
-    var p=document.createElement('div');
-    p.style.cssText='margin-top:6px;font-size:11px;word-break:break-all';
-    var txt='React selects: '+allSel.length;
-    for(var i=0;i<Math.min(allSel.length,3);i++){
+    var p=document.createElement('pre');
+    p.style.cssText='margin-top:6px;font-size:10px;word-break:break-all;white-space:pre-wrap;background:#fff;padding:6px;border:1px solid #999;max-height:30vh;overflow:auto';
+    var lines=['React selects: '+allSel.length];
+    for(var i=0;i<Math.min(allSel.length,5);i++){
       var s=allSel[i];
-      txt+='\n['+i+'] opts='+s.options.length+' html='+s.innerHTML.substring(0,200);
+      s.style.outline='3px solid red';
+      lines.push('['+i+'] opts='+s.options.length);
+      lines.push('  parent='+s.parentElement.tagName+'.'+s.parentElement.className);
+      lines.push('  html='+s.outerHTML.substring(0,500));
+      for(var j=0;j<Math.min(s.options.length,5);j++){
+        var opt=s.options[j];
+        lines.push('  opt['+j+'] val="'+opt.value+'" text="'+opt.text+'" inner="'+opt.innerHTML+'"');
+      }
     }
-    p.textContent=txt;
+    p.textContent=lines.join('\n');
     d.appendChild(p);
     document.body.appendChild(d);
     }catch(e){
