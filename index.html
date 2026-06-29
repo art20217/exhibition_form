@@ -205,10 +205,15 @@ document.addEventListener('DOMContentLoaded', async function() {
           txt+='dc-root tags: '+sorted.slice(0,20).map(function(t){return t+'='+tags[t]}).join(', ')+'\n';
           var dcSel=dcRoot.querySelectorAll('select');
           txt+='dc-root <select>: '+dcSel.length+'\n';
-          var dcRaw=dcRoot.querySelectorAll('sc-raw-select');
-          txt+='dc-root <sc-raw-select>: '+dcRaw.length+'\n';
-          for(var i=0;i<dcRaw.length&&i<3;i++){
-            txt+='raw['+i+'] inner='+dcRaw[i].innerHTML.substring(0,200)+'\n';
+          for(var i=0;i<dcSel.length;i++){
+            var s=dcSel[i];
+            txt+='sel['+i+'] opts='+s.options.length+' outerHTML='+s.outerHTML.substring(0,500)+'\n';
+            txt+='sel['+i+'] parent='+s.parentElement.outerHTML.substring(0,300)+'\n';
+          }
+          var dcOpts=dcRoot.querySelectorAll('option');
+          txt+='dc-root <option>: '+dcOpts.length+'\n';
+          for(var i=0;i<dcOpts.length&&i<5;i++){
+            txt+='opt['+i+'] val="'+dcOpts[i].value+'" text="'+dcOpts[i].text+'" html='+dcOpts[i].innerHTML+'\n';
           }
         }
         out.innerText=txt;
