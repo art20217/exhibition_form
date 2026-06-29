@@ -191,13 +191,25 @@ document.addEventListener('DOMContentLoaded', async function() {
       try{
         var out=document.getElementById('diag-out');
         if(!out){out=document.createElement('div');out.id='diag-out';out.style.cssText='background:#fff;padding:10px;margin-top:8px;font-size:14px;border:2px solid #000;word-break:break-all';d.appendChild(out)}
-        var allSel=document.querySelectorAll('select');
-        var txt='ALL selects on page: '+allSel.length+'\n\n';
-        for(var i=0;i<allSel.length;i++){
-          try{
-            var s=allSel[i];
-            txt+='['+i+'] id='+s.id+' opts='+s.options.length+' inner='+s.innerHTML.substring(0,200)+'\n\n';
-          }catch(e){txt+='['+i+'] ERR:'+e.message+'\n';}
+        var txt='';
+        var selects=document.querySelectorAll('select');
+        txt+='<select>: '+selects.length+'\n';
+        var raw=document.querySelectorAll('sc-raw-select');
+        txt+='<sc-raw-select>: '+raw.length+'\n';
+        var dcRoot=document.getElementById('dc-root');
+        txt+='dc-root: '+(dcRoot?'EXISTS':'NOT FOUND')+'\n';
+        if(dcRoot){
+          var tags={};
+          dcRoot.querySelectorAll('*').forEach(function(el){tags[el.tagName]=(tags[el.tagName]||0)+1});
+          var sorted=Object.keys(tags).sort(function(a,b){return tags[b]-tags[a]});
+          txt+='dc-root tags: '+sorted.slice(0,20).map(function(t){return t+'='+tags[t]}).join(', ')+'\n';
+          var dcSel=dcRoot.querySelectorAll('select');
+          txt+='dc-root <select>: '+dcSel.length+'\n';
+          var dcRaw=dcRoot.querySelectorAll('sc-raw-select');
+          txt+='dc-root <sc-raw-select>: '+dcRaw.length+'\n';
+          for(var i=0;i<dcRaw.length&&i<3;i++){
+            txt+='raw['+i+'] inner='+dcRaw[i].innerHTML.substring(0,200)+'\n';
+          }
         }
         out.innerText=txt;
       }catch(e){btn.textContent='ERR:'+e.message}
