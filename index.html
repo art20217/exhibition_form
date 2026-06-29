@@ -180,46 +180,37 @@ document.addEventListener('DOMContentLoaded', async function() {
   </script>
   <script>
   setTimeout(function(){
-    try{
     var d=document.createElement('div');
     d.id='diag-box';
     d.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#FFE000;padding:10px;font-size:13px;max-height:50vh;overflow:auto';
-
     d.innerHTML='<b>A) Static:</b> ';
     var s1=document.createElement('select');s1.id='diag-s1';
     ['Apple','Banana','Cherry'].forEach(function(t){var o=document.createElement('option');o.textContent=t;s1.appendChild(o)});
     d.appendChild(s1);
-
     d.appendChild(document.createElement('br'));
-    var lb=document.createElement('b');lb.textContent='B) Span-in-option: ';d.appendChild(lb);
+    d.appendChild(Object.assign(document.createElement('b'),{textContent:'B) Span-in-opt: '}));
     var s2=document.createElement('select');s2.id='diag-s2';
     ['Dog','Cat','Bird'].forEach(function(t){var o=document.createElement('option');var sp=document.createElement('span');sp.textContent=t;o.appendChild(sp);s2.appendChild(o)});
     d.appendChild(s2);
-
-    d.appendChild(document.createElement('br'));
-    var allSel=document.querySelectorAll('select:not(#diag-s1):not(#diag-s2)');
-    var p=document.createElement('pre');
-    p.style.cssText='margin-top:6px;font-size:10px;word-break:break-all;white-space:pre-wrap;background:#fff;padding:6px;border:1px solid #999;max-height:30vh;overflow:auto';
-    var lines=['React selects: '+allSel.length];
-    for(var i=0;i<Math.min(allSel.length,5);i++){
-      var s=allSel[i];
-      s.style.outline='3px solid red';
-      lines.push('['+i+'] opts='+s.options.length);
-      lines.push('  parent='+s.parentElement.tagName+'.'+s.parentElement.className);
-      lines.push('  html='+s.outerHTML.substring(0,500));
-      for(var j=0;j<Math.min(s.options.length,5);j++){
-        var opt=s.options[j];
-        lines.push('  opt['+j+'] val="'+opt.value+'" text="'+opt.text+'" inner="'+opt.innerHTML+'"');
-      }
-    }
-    p.textContent=lines.join('\n');
-    d.appendChild(p);
     document.body.appendChild(d);
+    try{
+      var info=document.createElement('div');
+      info.style.cssText='margin-top:8px;font-size:11px;word-break:break-all;background:#fff;padding:6px';
+      var allSel=document.querySelectorAll('select:not(#diag-s1):not(#diag-s2)');
+      var t='selects='+allSel.length;
+      for(var i=0;i<allSel.length&&i<3;i++){
+        try{
+          var s=allSel[i];
+          t+=' | ['+i+']opts='+s.options.length+',html='+s.innerHTML.substring(0,300);
+        }catch(e2){t+=' | ['+i+']ERR:'+e2.message;}
+      }
+      info.textContent=t;
+      d.appendChild(info);
     }catch(e){
       var err=document.createElement('div');
-      err.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:red;color:white;padding:10px';
-      err.textContent='DIAG ERROR: '+e.message;
-      document.body.appendChild(err);
+      err.style.cssText='background:red;color:#fff;padding:4px;margin-top:4px';
+      err.textContent='ERR:'+e.message;
+      d.appendChild(err);
     }
   },5000);
   </script>
