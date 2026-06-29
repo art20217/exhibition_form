@@ -191,29 +191,24 @@ document.addEventListener('DOMContentLoaded', async function() {
       try{
         var out=document.getElementById('diag-out');
         if(!out){out=document.createElement('div');out.id='diag-out';out.style.cssText='background:#fff;padding:10px;margin-top:8px;font-size:14px;border:2px solid #000;word-break:break-all';d.appendChild(out)}
-        var txt='';
-        var selects=document.querySelectorAll('select');
-        txt+='<select>: '+selects.length+'\n';
-        var raw=document.querySelectorAll('sc-raw-select');
-        txt+='<sc-raw-select>: '+raw.length+'\n';
+        var txt='=== PARSER TEST ===\n';
+        var tpl=document.createElement('template');
+        tpl.innerHTML='<sc-raw-select><sc-for><option>A</option><option>B</option></sc-for></sc-raw-select>';
+        txt+='test1 parsed: '+tpl.innerHTML+'\n\n';
+        var tpl2=document.createElement('template');
+        tpl2.innerHTML='<select><sc-for><option>A</option><option>B</option></sc-for></select>';
+        txt+='test2 parsed: '+tpl2.innerHTML+'\n\n';
+        var tpl3=document.createElement('template');
+        tpl3.innerHTML='<div><sc-for><option>A</option><option>B</option></sc-for></div>';
+        txt+='test3 parsed: '+tpl3.innerHTML+'\n\n';
+        txt+='=== DC-ROOT ===\n';
         var dcRoot=document.getElementById('dc-root');
         txt+='dc-root: '+(dcRoot?'EXISTS':'NOT FOUND')+'\n';
         if(dcRoot){
-          var tags={};
-          dcRoot.querySelectorAll('*').forEach(function(el){tags[el.tagName]=(tags[el.tagName]||0)+1});
-          var sorted=Object.keys(tags).sort(function(a,b){return tags[b]-tags[a]});
-          txt+='dc-root tags: '+sorted.slice(0,20).map(function(t){return t+'='+tags[t]}).join(', ')+'\n';
           var dcSel=dcRoot.querySelectorAll('select');
-          txt+='dc-root <select>: '+dcSel.length+'\n';
+          txt+='selects: '+dcSel.length+'\n';
           for(var i=0;i<dcSel.length;i++){
-            var s=dcSel[i];
-            txt+='sel['+i+'] opts='+s.options.length+' outerHTML='+s.outerHTML.substring(0,500)+'\n';
-            txt+='sel['+i+'] parent='+s.parentElement.outerHTML.substring(0,300)+'\n';
-          }
-          var dcOpts=dcRoot.querySelectorAll('option');
-          txt+='dc-root <option>: '+dcOpts.length+'\n';
-          for(var i=0;i<dcOpts.length&&i<5;i++){
-            txt+='opt['+i+'] val="'+dcOpts[i].value+'" text="'+dcOpts[i].text+'" html='+dcOpts[i].innerHTML+'\n';
+            txt+='sel['+i+'] opts='+dcSel[i].options.length+' html='+dcSel[i].innerHTML.substring(0,300)+'\n';
           }
         }
         out.innerText=txt;
