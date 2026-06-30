@@ -6,7 +6,7 @@
 
 ## Demo
 
-GitHub Pages：https://art20217.github.io/exhibition_form/
+GitHub Pages：`https://art20217.github.io/exhibition_form/`
 
 直接在平板或手機瀏覽器開啟即可使用，不需安裝任何應用程式。
 
@@ -44,7 +44,7 @@ GitHub Pages：https://art20217.github.io/exhibition_form/
 
 **Staff Fields** — 管理業務備註區的欄位，同樣支援完整的 CRUD 操作。預設三個欄位（Potential / Product of Interest / Notes）。
 
-**Records** — 檢視所有已蒐集的紀錄，以表格呈現。顯示蒐集統計（筆數、含名片照片筆數）。支援逐筆刪除、檢視名片照片（點擊 📷 圖示放大）。
+**Records** — 檢視所有已蒐集的紀錄。平板以表格呈現，手機自動切換為卡片式排版。顯示蒐集統計（筆數、含名片照片筆數）。支援逐筆編輯（點擊 Edit 進入表單修改後回存）、逐筆刪除、檢視名片照片（點擊 📷 圖示放大）。
 
 **Settings** — 設定裝置名稱（附加在每筆紀錄上，多台平板時用於辨識來源）、修改 Admin PIN、編輯 GDPR 同意聲明中英文。
 
@@ -144,12 +144,26 @@ export_YYYYMMDD_HHMMSS.zip
 - GDPR 同意聲明文字由法務審定。
 - 資料保留期限與自動清除策略。
 
+### 可評估的功能擴展：名片 OCR 辨識
+
+目前名片拍照僅存檔，不做文字辨識。如有需求，可在後端服務建立後加入 OCR 功能（如 Google Cloud Vision API），拍照後自動擷取姓名、公司、Email、電話等欄位並預填至表單，減少手動輸入。此功能依賴雲端 API 呼叫，不適合在純離線架構下實作，建議在 Phase 2 完成後再評估投入產出比。
+
 ### 技術債與改善項目
 
 - 目前 XLSX 與 ZIP 生成邏輯為自行實作（ExportLib），inline 於 HTML 中。正式版不再受單一檔案體積限制，建議改用 SheetJS（xlsx）與 JSZip 等成熟函式庫，可獲得更完整的 Excel 格式支援（欄寬自動適應、凍結窗格、儲存格樣式等）與更可靠的跨瀏覽器相容性。
-- 後台介面未做手機適配（僅表單模式有），如需在手機上管理後台需額外處理。
+- 後台的 Customer Fields、Staff Fields、Settings 頁籤尚未做手機適配（Records 頁籤已有卡片式手機排版），如需在手機上管理後台設定需額外處理。
 - 國碼選單目前為硬編碼列表，正式版可改為完整的國際電話國碼資料庫。
 - 考慮加入裝置層級的安全提醒（iPad 引導式取用模式設定指引）。
+
+---
+
+## 檔案清單
+
+```
+exhibition_form/
+├── index.html    # 完整應用程式（單一自包含檔案，123KB）
+└── README.md     # 本文件
+```
 
 ---
 
