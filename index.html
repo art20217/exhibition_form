@@ -2278,7 +2278,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           <span style="font-size: 0.9375rem; color: #64748B">客戶需求填寫</span>
         </button>
       </div>
-      <div style="position: absolute; bottom: 24px; font-size: 0.8125rem; color: #94A3B8">v3.0 — Offline Exhibition Form</div>
+      <div style="position: absolute; bottom: 24px; font-size: 0.8125rem; color: #94A3B8">v3.1 — Offline Exhibition Form</div>
     </div>
   </sc-if>
 
@@ -2345,12 +2345,34 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                 </sc-raw-select>
               </sc-if>
               <sc-if value="{{ field.isCheckboxGroup }}">
+                <sc-for list="{{ field.checkboxGroups }}" as="grp">
+                  <sc-if value="{{ grp.label }}">
+                    <div style="font-size: 0.8125rem; font-weight: 700; color: #64748B; margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.03em">{{ grp.label }}</div>
+                  </sc-if>
+                  <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
+                    <sc-for list="{{ grp.items }}" as="cb">
+                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}" style-hover="border-color: #93B4E0">
+                        <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #0055B8; flex-shrink: 0">
+                        <span>{{ cb.label }}</span>
+                      </label>
+                      <sc-if value="{{ cb.checked }}">
+                        <sc-if value="{{ cb.isOther }}">
+                          <input type="text" value="{{ cb.otherValue }}" oninput="{{ cb.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; min-width: 180px; flex: 1" style-focus="border-color: #0055B8">
+                        </sc-if>
+                      </sc-if>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </sc-if>
+              <sc-if value="{{ field.isRadioGroup }}">
                 <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
-                  <sc-for list="{{ field.checkboxItems }}" as="cb">
-                    <label style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}" style-hover="border-color: #93B4E0">
-                      <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #0055B8; flex-shrink: 0">
-                      <span>{{ cb.label }}</span>
-                    </label>
+                  <sc-for list="{{ field.radioItems }}" as="rd">
+                    <button onclick="{{ rd.onClick }}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 100px; max-width: 100%; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}" style-hover="border-color: #93B4E0">{{ rd.label }}</button>
+                    <sc-if value="{{ rd.checked }}">
+                      <sc-if value="{{ rd.isOther }}">
+                        <input type="text" value="{{ rd.otherValue }}" oninput="{{ rd.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; min-width: 180px; flex: 1" style-focus="border-color: #0055B8">
+                      </sc-if>
+                    </sc-if>
                   </sc-for>
                 </div>
               </sc-if>
@@ -2432,12 +2454,34 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                 </sc-raw-select>
               </sc-if>
               <sc-if value="{{ field.isCheckboxGroup }}">
+                <sc-for list="{{ field.checkboxGroups }}" as="grp">
+                  <sc-if value="{{ grp.label }}">
+                    <div style="font-size: 0.8125rem; font-weight: 700; color: #64748B; margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.03em">{{ grp.label }}</div>
+                  </sc-if>
+                  <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
+                    <sc-for list="{{ grp.items }}" as="cb">
+                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}" style-hover="border-color: #93B4E0">
+                        <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #0055B8; flex-shrink: 0">
+                        <span>{{ cb.label }}</span>
+                      </label>
+                      <sc-if value="{{ cb.checked }}">
+                        <sc-if value="{{ cb.isOther }}">
+                          <input type="text" value="{{ cb.otherValue }}" oninput="{{ cb.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; min-width: 180px; flex: 1" style-focus="border-color: #0055B8">
+                        </sc-if>
+                      </sc-if>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </sc-if>
+              <sc-if value="{{ field.isRadioGroup }}">
                 <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
-                  <sc-for list="{{ field.checkboxItems }}" as="cb">
-                    <label style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}" style-hover="border-color: #93B4E0">
-                      <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #0055B8; flex-shrink: 0">
-                      <span>{{ cb.label }}</span>
-                    </label>
+                  <sc-for list="{{ field.radioItems }}" as="rd">
+                    <button onclick="{{ rd.onClick }}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 100px; max-width: 100%; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}" style-hover="border-color: #93B4E0">{{ rd.label }}</button>
+                    <sc-if value="{{ rd.checked }}">
+                      <sc-if value="{{ rd.isOther }}">
+                        <input type="text" value="{{ rd.otherValue }}" oninput="{{ rd.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; min-width: 180px; flex: 1" style-focus="border-color: #0055B8">
+                      </sc-if>
+                    </sc-if>
                   </sc-for>
                 </div>
               </sc-if>
@@ -2458,6 +2502,103 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-for>
           <div style="margin-top: 1.75rem; padding-bottom: 2.5rem">
             <button onclick="{{ onNeedsSubmit }}" style="width: 100%; height: 56px; background: #0055B8; color: #FFF; border: none; border-radius: 12px; font-size: 1.125rem; font-weight: 600; cursor: pointer; transition: all 0.15s" style-hover="background: #004494" style-active="transform: scale(0.98)">{{ needsSubmitLabel }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===== COMPANY PROFILE FORM ===== -->
+  <sc-if value="{{ showCompanyForm }}">
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.3s ease">
+      <div style="background: #0055B8; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><path d="M9 9v.01"></path><path d="M9 12v.01"></path><path d="M9 15v.01"></path><path d="M9 18v.01"></path></svg>
+          <span style="color: #FFF; font-size: 1.125rem; font-weight: 600">Company Profile 公司背景資料</span>
+          <span style="color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.15); font-size: 0.8125rem; padding: 3px 10px; border-radius: 999px">{{ companyStepLabel }}</span>
+        </div>
+        <button onclick="{{ onCompanyBack }}" style="color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.15); border: none; padding: 8px 16px; border-radius: 8px; font-size: 0.875rem; cursor: pointer" style-hover="background: rgba(255,255,255,0.25); color: #FFF">← Back 返回</button>
+      </div>
+      <div data-mobile-pad="" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 1.5rem">
+        <div style="max-width: 640px; margin: 0 auto">
+          <sc-for list="{{ companyFormFields }}" as="field">
+            <div style="margin-bottom: 1.25rem">
+              <label style="display: block; font-size: 0.9375rem; font-weight: 600; color: #334155; margin-bottom: 6px">
+                {{ field.label }}
+                <sc-if value="{{ field.labelZh }}"><span style="font-weight: 400; color: #64748B; margin-left: 6px">{{ field.labelZh }}</span></sc-if>
+                <sc-if value="{{ field.required }}"><span style="color: #DC2626; margin-left: 2px">*</span></sc-if>
+              </label>
+              <sc-if value="{{ field.isText }}">
+                <input type="{{ field.inputType }}" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
+              </sc-if>
+              <sc-if value="{{ field.isTel }}">
+                <div data-mobile-stack="" style="display: flex; gap: 8px">
+                  <sc-raw-select value="{{ field.countryCode }}" onchange="{{ field.onCountryCodeChange }}" style="width: 140px; height: 48px; padding: 0 8px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; background: #FFF" style-focus="border-color: #0055B8">
+                    <sc-for list="{{ countryCodes }}" as="cc">
+                      <option value="{{ cc.value }}">{{ cc.label }}</option>
+                    </sc-for>
+                  </sc-raw-select>
+                  <input type="tel" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="flex: 1; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
+                </div>
+              </sc-if>
+              <sc-if value="{{ field.isTextarea }}">
+                <textarea value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" rows="3" style="width: 100%; padding: 12px 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; resize: vertical; transition: border-color 0.15s; line-height: 1.5" style-focus="border-color: #0055B8"></textarea>
+              </sc-if>
+              <sc-if value="{{ field.isSelect }}">
+                <sc-raw-select value="{{ field.value }}" onchange="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; background: #FFF" style-focus="border-color: #0055B8">
+                  <option value="">{{ field.placeholder }}</option>
+                  <sc-for list="{{ field.options }}" as="opt"><option value="{{ opt.value }}">{{ opt.label }}</option></sc-for>
+                </sc-raw-select>
+              </sc-if>
+              <sc-if value="{{ field.isCheckboxGroup }}">
+                <sc-for list="{{ field.checkboxGroups }}" as="grp">
+                  <sc-if value="{{ grp.label }}">
+                    <div style="font-size: 0.8125rem; font-weight: 700; color: #64748B; margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.03em">{{ grp.label }}</div>
+                  </sc-if>
+                  <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
+                    <sc-for list="{{ grp.items }}" as="cb">
+                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}" style-hover="border-color: #93B4E0">
+                        <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #0055B8; flex-shrink: 0">
+                        <span>{{ cb.label }}</span>
+                      </label>
+                      <sc-if value="{{ cb.checked }}">
+                        <sc-if value="{{ cb.isOther }}">
+                          <input type="text" value="{{ cb.otherValue }}" oninput="{{ cb.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; min-width: 180px; flex: 1" style-focus="border-color: #0055B8">
+                        </sc-if>
+                      </sc-if>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </sc-if>
+              <sc-if value="{{ field.isRadioGroup }}">
+                <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
+                  <sc-for list="{{ field.radioItems }}" as="rd">
+                    <button onclick="{{ rd.onClick }}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 100px; max-width: 100%; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}" style-hover="border-color: #93B4E0">{{ rd.label }}</button>
+                    <sc-if value="{{ rd.checked }}">
+                      <sc-if value="{{ rd.isOther }}">
+                        <input type="text" value="{{ rd.otherValue }}" oninput="{{ rd.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; min-width: 180px; flex: 1" style-focus="border-color: #0055B8">
+                      </sc-if>
+                    </sc-if>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ field.isRating }}">
+                <div style="display: flex; gap: 4px; margin-top: 2px">
+                  <sc-for list="{{ field.starItems }}" as="st">
+                    <button onclick="{{ st.onClick }}" style="width: 48px; height: 48px; border: none; background: transparent; cursor: pointer; font-size: 2rem; line-height: 1; padding: 0; color: {{ st.color }}" style-active="transform: scale(0.9)">{{ st.char }}</button>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ field.error }}">
+                <div style="color: #DC2626; font-size: 0.8125rem; margin-top: 4px; display: flex; align-items: center; gap: 4px">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  {{ field.errorMsg }}
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+          <div style="margin-top: 1.75rem; padding-bottom: 2.5rem">
+            <button onclick="{{ onCompanySubmit }}" style="width: 100%; height: 56px; background: #0055B8; color: #FFF; border: none; border-radius: 12px; font-size: 1.125rem; font-weight: 600; cursor: pointer; transition: all 0.15s" style-hover="background: #004494" style-active="transform: scale(0.98)">Finish 完成</button>
           </div>
         </div>
       </div>
@@ -2515,12 +2656,34 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                 </sc-raw-select>
               </sc-if>
               <sc-if value="{{ field.isCheckboxGroup }}">
+                <sc-for list="{{ field.checkboxGroups }}" as="grp">
+                  <sc-if value="{{ grp.label }}">
+                    <div style="font-size: 0.8125rem; font-weight: 700; color: #64748B; margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.03em">{{ grp.label }}</div>
+                  </sc-if>
+                  <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
+                    <sc-for list="{{ grp.items }}" as="cb">
+                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}" style-hover="border-color: #64748B">
+                        <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #334155; flex-shrink: 0">
+                        <span>{{ cb.label }}</span>
+                      </label>
+                      <sc-if value="{{ cb.checked }}">
+                        <sc-if value="{{ cb.isOther }}">
+                          <input type="text" value="{{ cb.otherValue }}" oninput="{{ cb.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; min-width: 180px; flex: 1" style-focus="border-color: #334155">
+                        </sc-if>
+                      </sc-if>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </sc-if>
+              <sc-if value="{{ field.isRadioGroup }}">
                 <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
-                  <sc-for list="{{ field.checkboxItems }}" as="cb">
-                    <label style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}" style-hover="border-color: #64748B">
-                      <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #334155; flex-shrink: 0">
-                      <span>{{ cb.label }}</span>
-                    </label>
+                  <sc-for list="{{ field.radioItems }}" as="rd">
+                    <button onclick="{{ rd.onClick }}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 100px; max-width: 100%; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}" style-hover="border-color: #64748B">{{ rd.label }}</button>
+                    <sc-if value="{{ rd.checked }}">
+                      <sc-if value="{{ rd.isOther }}">
+                        <input type="text" value="{{ rd.otherValue }}" oninput="{{ rd.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; min-width: 180px; flex: 1" style-focus="border-color: #334155">
+                      </sc-if>
+                    </sc-if>
                   </sc-for>
                 </div>
               </sc-if>
@@ -2608,6 +2771,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                     <span style="font-size: 0.75rem; padding: 2px 8px; background: #F1F5F9; border-radius: 4px; color: #64748B">{{ af.type }}</span>
                     <sc-if value="{{ af.required }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #FEF2F2; border-radius: 4px; color: #DC2626">required</span></sc-if>
                     <sc-if value="{{ af.isCore }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #ECFDF5; border-radius: 4px; color: #059669">core</span></sc-if>
+                    <sc-if value="{{ af.allowOther }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #FFF7ED; border-radius: 4px; color: #C2410C">+Other</span></sc-if>
                   </div>
                   <sc-if value="{{ af.hasOptions }}"><div style="font-size: 0.8125rem; color: #94A3B8; margin-top: 4px">Options: {{ af.optionsSummary }}</div></sc-if>
                 </div>
@@ -2739,7 +2903,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           <div style="margin-bottom: 14px">
             <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">Type</label>
             <sc-raw-select value="{{ feType }}" onchange="{{ onFeTypeChange }}" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none; background: #FFF" style-focus="border-color: #0055B8">
-              <option value="text">Text</option><option value="email">Email</option><option value="tel">Phone (with country code)</option><option value="select">Select (dropdown)</option><option value="checkbox-group">Checkbox Group (multi-select)</option><option value="textarea">Textarea</option><option value="rating">Star Rating (1–5)</option>
+              <option value="text">Text</option><option value="email">Email</option><option value="tel">Phone (with country code)</option><option value="select">Select (dropdown)</option><option value="radio-group">Single Choice (Radio Buttons) 單選按鈕組</option><option value="checkbox-group">Checkbox Group (multi-select)</option><option value="textarea">Textarea</option><option value="rating">Star Rating (1–5)</option>
             </sc-raw-select>
           </div>
           <div style="margin-bottom: 14px">
@@ -2748,11 +2912,26 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               <span style="font-size: 0.875rem; color: #334155">Required field</span>
             </label>
           </div>
+          <sc-if value="{{ feShowAllowOther }}">
+            <div style="margin-bottom: 14px">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none">
+                <input type="checkbox" checked="{{ feAllowOther }}" onchange="{{ onFeAllowOtherChange }}" style="width: 18px; height: 18px; accent-color: #0055B8">
+                <span style="font-size: 0.875rem; color: #334155">Allow "Other" with free text 允許「其他」並可填寫</span>
+              </label>
+            </div>
+          </sc-if>
           <sc-if value="{{ feShowOptions }}">
             <div style="margin-bottom: 14px">
               <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 8px">Options</label>
+              <div style="display: flex; gap: 8px; margin-bottom: 4px; padding: 0 2px">
+                <span style="width: 90px; font-size: 0.6875rem; font-weight: 600; color: #94A3B8; text-transform: uppercase; flex-shrink: 0">Group</span>
+                <span style="flex: 1; font-size: 0.6875rem; font-weight: 600; color: #94A3B8; text-transform: uppercase">English</span>
+                <span style="flex: 1; font-size: 0.6875rem; font-weight: 600; color: #94A3B8; text-transform: uppercase">中文</span>
+                <span style="width: 28px; flex-shrink: 0"></span>
+              </div>
               <sc-for list="{{ feOptions }}" as="opt">
                 <div style="display: flex; gap: 8px; margin-bottom: 6px; align-items: center">
+                  <input type="text" value="{{ opt.group }}" oninput="{{ opt.onGroupChange }}" placeholder="e.g. Europe" style="width: 90px; flex-shrink: 0; height: 36px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.8125rem; outline: none" style-focus="border-color: #0055B8">
                   <input type="text" value="{{ opt.en }}" oninput="{{ opt.onEnChange }}" placeholder="English" style="flex: 1; height: 36px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.8125rem; outline: none" style-focus="border-color: #0055B8">
                   <input type="text" value="{{ opt.zh }}" oninput="{{ opt.onZhChange }}" placeholder="中文" style="flex: 1; height: 36px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.8125rem; outline: none" style-focus="border-color: #0055B8">
                   <button onclick="{{ opt.onRemove }}" style="width: 28px; height: 28px; border: none; background: #FEF2F2; color: #DC2626; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0" style-hover="background: #FEE2E2">×</button>
@@ -2809,6 +2988,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 class Component extends DCLogic {
   DB_NAME = 'ExhibitionFormDB';
   DB_VERSION = 1;
+  OTHER_VALUE = '__other__';
 
   state = {
     screen: 'home',
@@ -2817,18 +2997,18 @@ class Component extends DCLogic {
     pin: '0000', deviceName: '',
     gdprEn: 'I consent to the organizer collecting and storing my contact information for the purpose of business follow-up. My data will not be shared with third parties.',
     gdprZh: '本人同意主辦單位蒐集並儲存本人之聯絡資訊，用於後續商業聯繫。本人資料不會提供予第三方。',
-    customerFields: [], needsFields: [], staffFields: [],
-    // Two-form flow
+    customerFields: [], needsFields: [], companyFields: [], staffFields: [],
+    // Three-form flow: firstChoice picks the order of customer/needs; Company Profile always comes third.
     firstChoice: null,           // 'data' | 'needs'
-    doneCustomer: false, doneNeeds: false,
     formValues: {}, formErrors: {},      // customer info form
     needsValues: {}, needsErrors: {},    // customer needs form
+    companyValues: {}, companyErrors: {},// company profile form
     staffValues: {},
     gdprChecked: false, gdprError: false, selectedCountryCode: '+886',
     currentRecordId: null, editingRecordId: null,
     records: [],
     showFieldEditor: false, fieldEditorMode: 'add', fieldEditorTarget: 'customer', editingFieldId: null,
-    feNameEn: '', feNameZh: '', feType: 'text', feRequired: false, feOptions: [],
+    feNameEn: '', feNameZh: '', feType: 'text', feRequired: false, feAllowOther: false, feOptions: [],
     showClearConfirm: false, clearConfirmValue: '',
     showToast: false, toastMessage: '',
     // Card photo (staff page)
@@ -2845,25 +3025,112 @@ class Component extends DCLogic {
 
   getDefaultCustomerFields() {
     return [
-      { id: 'name', nameEn: 'Name', nameZh: '姓名', type: 'text', required: true, isCore: true, order: 0, options: [] },
-      { id: 'company', nameEn: 'Company', nameZh: '公司', type: 'text', required: true, isCore: true, order: 1, options: [] },
-      { id: 'email', nameEn: 'Email', nameZh: '電子信箱', type: 'email', required: true, isCore: true, order: 2, options: [] },
-      { id: 'phone', nameEn: 'Phone', nameZh: '電話（含國碼）', type: 'tel', required: false, isCore: true, order: 3, options: [] },
+      { id: 'name', nameEn: 'Name', nameZh: '姓名', type: 'text', required: true, isCore: true, order: 0, allowOther: false, options: [] },
+      { id: 'company', nameEn: 'Company', nameZh: '公司', type: 'text', required: true, isCore: true, order: 1, allowOther: false, options: [] },
+      { id: 'email', nameEn: 'Email', nameZh: '電子信箱', type: 'email', required: true, isCore: true, order: 2, allowOther: false, options: [] },
+      { id: 'phone', nameEn: 'Phone', nameZh: '電話（含國碼）', type: 'tel', required: false, isCore: true, order: 3, allowOther: false, options: [] },
     ];
   }
   getDefaultNeedsFields() {
     return [
-      { id: 'inquiry_type', nameEn: 'Inquiry Type', nameZh: '洽談事由', type: 'checkbox-group', required: false, isCore: true, order: 0, options: [
+      { id: 'inquiry_type', nameEn: 'Inquiry Type', nameZh: '洽談事由', type: 'checkbox-group', required: false, isCore: true, order: 0, allowOther: false, options: [
         { en: 'Request Quote', zh: '索取報價' }, { en: 'Sample Required', zh: '樣品需求' },
         { en: 'Customization / OEM', zh: '客製化需求' }, { en: 'Become a Distributor', zh: '尋求代理' },
       ]},
     ];
   }
+  getDefaultCompanyFields() {
+    return [
+      { id: 'industry', nameEn: 'Industry', nameZh: '行業別', type: 'radio-group', required: false, isCore: false, order: 0, allowOther: true, options: [
+        { en: 'Footwear', zh: '鞋類' }, { en: 'Mold', zh: '模具類' }, { en: 'Sporting Goods', zh: '運動器材類' },
+        { en: 'Chemical Raw Materials', zh: '化工原料類' }, { en: 'Auto/Motorcycle Parts', zh: '汽機車配件類' },
+        { en: 'Industrial Parts', zh: '工業用配件類' }, { en: 'Oil Seals', zh: '油封類' }, { en: 'Machinery Equipment', zh: '機械設備類' },
+        { en: 'Insulation Materials', zh: '隔熱材類' }, { en: 'Furniture', zh: '家具業類' }, { en: 'Medical Supplies', zh: '醫療用品類' },
+        { en: 'Electronics', zh: '電子產品類' }, { en: 'Home Appliances', zh: '家電用品類' }, { en: 'Food & Agriculture', zh: '食品農牧類' },
+      ]},
+      { id: 'customer_type', nameEn: 'Customer Type', nameZh: '客戶類型', type: 'radio-group', required: false, isCore: false, order: 1, allowOther: false, options: [
+        { en: 'Existing Customer', zh: '已成交' }, { en: 'Prospective Customer', zh: '未成交' },
+      ]},
+      { id: 'company_type', nameEn: 'Company Type', nameZh: '公司型態', type: 'radio-group', required: false, isCore: false, order: 2, allowOther: true, options: [
+        { en: 'Brand', zh: '品牌' }, { en: 'Shoe Factory', zh: '鞋廠' }, { en: 'Sole Factory', zh: '鞋底廠' }, { en: 'Mold Factory', zh: '模具廠' },
+        { en: 'Material Supplier', zh: '鞋材商' }, { en: 'Trading Company', zh: '貿易商' }, { en: 'Wholesaler', zh: '批發商' },
+      ]},
+      { id: 'product_type', nameEn: 'Product Type', nameZh: '公司產品(鞋型)', type: 'checkbox-group', required: false, isCore: false, order: 3, allowOther: true, options: [
+        { en: 'Athletic Shoes (Injection)', zh: '運動鞋(射出)' }, { en: 'Athletic Shoes (Cementing)', zh: '運動鞋(貼底)' },
+        { en: 'Soles', zh: '鞋底' }, { en: 'Sandals', zh: '脫涼鞋' }, { en: 'Safety Shoes', zh: '安全鞋' },
+        { en: 'Rain Boots', zh: '雨鞋' }, { en: 'Canvas Shoes', zh: '帆布鞋' },
+      ]},
+      { id: 'material_type', nameEn: 'Material', nameZh: '公司產品(材質)', type: 'checkbox-group', required: false, isCore: false, order: 4, allowOther: true, options: [
+        { en: 'EVA', zh: 'EVA' }, { en: 'Rubber', zh: 'Rubber' }, { en: 'TPU', zh: 'TPU' }, { en: 'PU', zh: 'PU' },
+        { en: 'SEBS', zh: 'SEBS' }, { en: 'TPR', zh: 'TPR' }, { en: 'PVC', zh: 'PVC' },
+      ]},
+      { id: 'machines_used', nameEn: 'Machines Used', nameZh: '使用機器', type: 'checkbox-group', required: false, isCore: false, order: 5, allowOther: true, options: [
+        { en: 'MANIN GROUP', zh: 'MANIN GROUP', group: 'Europe 歐洲' }, { en: 'WINTECH', zh: 'WINTECH', group: 'Europe 歐洲' },
+        { en: 'DESMA', zh: 'DESMA', group: 'Europe 歐洲' }, { en: 'GUSBI', zh: 'GUSBI', group: 'Europe 歐洲' },
+        { en: 'Tiangang', zh: '天崗', group: 'Taiwan 台灣' }, { en: 'Jugang', zh: '鉅鋼', group: 'Taiwan 台灣' },
+        { en: 'Datian', zh: '大田', group: 'Taiwan 台灣' }, { en: 'Panshi', zh: '磐石', group: 'Taiwan 台灣' },
+        { en: 'Zhongtian', zh: '中天', group: 'Taiwan 台灣' }, { en: 'Guoyi', zh: '國益', group: 'Taiwan 台灣' },
+        { en: 'Quanfeng', zh: '全鋒', group: 'Taiwan 台灣' }, { en: 'Hongqi', zh: '鴻綺', group: 'Taiwan 台灣' },
+        { en: 'Jumin', zh: '鉅閩', group: 'China 大陸' }, { en: 'Shichuang', zh: '世創', group: 'China 大陸' },
+        { en: 'Xinkaijia', zh: '新凱嘉', group: 'China 大陸' }, { en: 'Jingong', zh: '今功', group: 'China 大陸' },
+        { en: 'KUDONG', zh: 'KUDONG', group: 'Korea 韓國' },
+      ]},
+      { id: 'ownership_type', nameEn: 'Ownership', nameZh: '股份型態', type: 'radio-group', required: false, isCore: false, order: 6, allowOther: true, options: [
+        { en: 'Public Company', zh: '上市公司' }, { en: 'Private Company', zh: '私人公司' },
+      ]},
+      { id: 'revenue', nameEn: 'Revenue', nameZh: '營業額', type: 'radio-group', required: false, isCore: false, order: 7, allowOther: false, options: [
+        { en: 'Under US$5,000,000', zh: 'US$5,000,000以下' },
+        { en: 'US$5,000,000–10,000,000', zh: 'US$5,000,000-10,000,000' },
+        { en: 'US$100,000,001 and above', zh: 'US$100,000,001以上' },
+      ]},
+      { id: 'employees', nameEn: 'Employees', nameZh: '員工人數', type: 'text', required: false, isCore: false, order: 8, allowOther: false, options: [] },
+      { id: 'capacity', nameEn: 'Capacity (10k pairs/yr)', nameZh: '產能(萬雙/年)', type: 'text', required: false, isCore: false, order: 9, allowOther: false, options: [] },
+      { id: 'scale_type', nameEn: 'Scale', nameZh: '規模型態', type: 'radio-group', required: false, isCore: false, order: 10, allowOther: false, options: [
+        { en: 'A', zh: '國際品牌/國際品牌代工廠(T1,T2)/國際品牌指定配合模具廠/各國家前5大非國際品牌鞋廠/底廠(中國/巴西/印度/孟加拉前15大)' },
+        { en: 'B', zh: '各國家前6~20大非國際品牌鞋廠/底廠(中國/巴西/印度/孟加拉前16~50大)，國際品牌指定配合原料商' },
+        { en: 'C', zh: '各國家前21~50大非國際品牌鞋廠/底廠' },
+        { en: 'D', zh: '各國家51名以後非國際品牌鞋廠/底廠' },
+      ]},
+    ];
+  }
   getDefaultStaffFields() {
     return [
-      { id: 'potential', nameEn: 'Potential', nameZh: '潛力評級', type: 'rating', required: false, order: 0, options: [] },
-      { id: 'product_interest', nameEn: 'Product of Interest', nameZh: '感興趣產品', type: 'checkbox-group', required: false, order: 1, options: [] },
-      { id: 'notes', nameEn: 'Notes', nameZh: '備註', type: 'textarea', required: false, order: 2, options: [] },
+      { id: 'greeter', nameEn: 'Greeter', nameZh: '接待人員', type: 'radio-group', required: false, isCore: true, order: 0, allowOther: false, options: [
+        { en: 'Su Chiu-Chu', zh: '蘇秋菊' }, { en: 'Chang Shih-Ying', zh: '張詩穎' }, { en: 'Chien Yin-Ting', zh: '簡吟庭' },
+      ]},
+      { id: 'visit_date', nameEn: 'Visit Date', nameZh: '訪談日期', type: 'radio-group', required: false, isCore: true, order: 1, allowOther: false, options: [
+        { en: '08/06', zh: '08/06' }, { en: '08/07', zh: '08/07' }, { en: '08/08', zh: '08/08' },
+      ]},
+      { id: 'nationality', nameEn: 'Nationality', nameZh: '訪客國籍', type: 'text', required: true, isCore: true, order: 2, allowOther: false, options: [] },
+      { id: 'language', nameEn: 'Language', nameZh: '語言', type: 'radio-group', required: false, isCore: true, order: 3, allowOther: true, options: [
+        { en: 'Mandarin', zh: '中文' }, { en: 'English', zh: '英語' }, { en: 'Hindi', zh: '印度語' },
+        { en: 'Arabic', zh: '阿拉伯語' }, { en: 'French', zh: '法語' }, { en: 'Spanish', zh: '西班牙語' },
+      ]},
+      { id: 'potential', nameEn: 'Potential', nameZh: '潛力評級', type: 'radio-group', required: false, isCore: false, order: 4, allowOther: false, options: [
+        { en: 'A', zh: '100%' }, { en: 'B', zh: '80%以上' }, { en: 'C', zh: '60%以上' }, { en: 'D', zh: '40%以上' },
+        { en: 'E', zh: '20%以上' }, { en: 'F', zh: '商機' }, { en: 'G', zh: '0%看看而已' },
+      ]},
+      { id: 'product_interest', nameEn: 'Product of Interest', nameZh: '感興趣產品', type: 'checkbox-group', required: false, isCore: false, order: 5, allowOther: true, options: [
+        { en: '1-Gun 12-Station', zh: '1槍12站', group: 'Gentrex Series 系列' },
+        { en: '1-Gun 24-Station', zh: '1槍24站', group: 'Gentrex Series 系列' },
+        { en: '2-Gun 24-Station', zh: '2槍24站', group: 'Gentrex Series 系列' },
+        { en: 'EVA Single Color', zh: 'EVA單色', group: 'EVA Series 系列' },
+        { en: 'EVA Preform + Vacuum Cover', zh: 'EVA子胚+真空罩', group: 'EVA Series 系列' },
+        { en: '278 Rotary Cold/Hot Press', zh: '278圓盤冷熱壓', group: 'EVA Series 系列' },
+        { en: '268 Linear Cold/Hot Press', zh: '268線性冷熱壓', group: 'EVA Series 系列' },
+        { en: '203 Vacuum Press', zh: '203真空壓', group: 'EVA Series 系列' },
+        { en: '361', zh: '361', group: 'Rubber Series 橡膠系列' },
+        { en: '361V', zh: '361V', group: 'Rubber Series 橡膠系列' },
+        { en: '371', zh: '371', group: 'Rubber Series 橡膠系列' },
+        { en: '398(4-Split)', zh: '398(4拆)', group: 'Rubber Series 橡膠系列' },
+        { en: '862', zh: '862', group: 'Rubber Series 橡膠系列' },
+        { en: '330', zh: '330', group: 'Rubber Series 橡膠系列' },
+        { en: 'PU Machine', zh: 'PU機' }, { en: 'Rain Boot Machine', zh: '雨鞋機' },
+        { en: 'TR Series', zh: 'TR系' }, { en: 'TPU Series', zh: 'TPU系' },
+        { en: '3670 Series', zh: '3670系' }, { en: '3670U', zh: '3670U' }, { en: '3680 Series', zh: '3680系' },
+        { en: '839 Single/Dual Color', zh: '839單/雙色' }, { en: '996 Series', zh: '996系' },
+      ]},
+      { id: 'notes', nameEn: 'Notes', nameZh: '備註 / 會談記錄', type: 'textarea', required: false, isCore: false, order: 6, allowOther: false, options: [] },
     ];
   }
 
@@ -2894,11 +3161,11 @@ class Component extends DCLogic {
   dbClear(store) { return new Promise((res, rej) => { const tx = this.db.transaction(store, 'readwrite'); const r = tx.objectStore(store).clear(); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
 
   async loadAllData() {
-    const [pinD, devD, gdprEnD, gdprZhD, custD, needsD, staffD] = await Promise.all([
+    const [pinD, devD, gdprEnD, gdprZhD, custD, needsD, companyD, staffD] = await Promise.all([
       this.dbGet('config','pin'), this.dbGet('config','deviceName'),
       this.dbGet('config','gdprEn'), this.dbGet('config','gdprZh'),
       this.dbGet('fieldDefinitions','customerFields'), this.dbGet('fieldDefinitions','needsFields'),
-      this.dbGet('fieldDefinitions','staffFields'),
+      this.dbGet('fieldDefinitions','companyFields'), this.dbGet('fieldDefinitions','staffFields'),
     ]);
     const records = await this.dbGetAll('records');
     const defaultDev = 'Device-' + Math.random().toString(36).substr(2,6).toUpperCase();
@@ -2921,19 +3188,43 @@ class Component extends DCLogic {
       if (!needsD) await this.saveFieldDefs('needsFields', needsFields);
     }
 
-    // --- v2 → v3 migration: Potential select (A/B/C) becomes a star rating ---
+    // --- v3.1: new Company Profile field group ---
+    const companyFields = companyD?.value ?? this.getDefaultCompanyFields();
+    if (!companyD) await this.saveFieldDefs('companyFields', companyFields);
+
+    // --- v3.1 migration: reception fields move to the top of Staff Fields,
+    //     Potential switches from a 1–5 star rating to the paper form's 7-level
+    //     scale, and Product of Interest gets populated with the machine-series
+    //     catalog — but only if it's still the untouched empty default, so we
+    //     never clobber an admin's own customized options. ---
     let staffFields = staffD?.value ?? this.getDefaultStaffFields();
     let staffChanged = !staffD;
+    if (!staffFields.find(f => f.id === 'greeter')) {
+      const reception = this.getDefaultStaffFields().filter(f =>
+        ['greeter', 'visit_date', 'nationality', 'language'].includes(f.id));
+      staffFields = [...reception, ...staffFields];
+      staffChanged = true;
+    }
     staffFields = staffFields.map(f => {
-      if (f.id === 'potential' && f.type === 'select') { staffChanged = true; return { ...f, type: 'rating' }; }
+      if (f.id === 'potential' && f.type !== 'radio-group') {
+        staffChanged = true;
+        return { ...f, type: 'radio-group', allowOther: false, options: this.getDefaultStaffFields().find(d => d.id === 'potential').options };
+      }
+      if (f.id === 'product_interest' && (!f.options || f.options.length === 0)) {
+        staffChanged = true;
+        return { ...f, allowOther: true, options: this.getDefaultStaffFields().find(d => d.id === 'product_interest').options };
+      }
       return f;
     });
-    if (staffChanged) await this.saveFieldDefs('staffFields', staffFields);
+    if (staffChanged) {
+      staffFields = staffFields.map((f,i) => ({ ...f, order: i }));
+      await this.saveFieldDefs('staffFields', staffFields);
+    }
 
     this.setState({
       pin: pinD?.value ?? '0000', deviceName: devD?.value ?? defaultDev,
       gdprEn: gdprEnD?.value ?? this.state.gdprEn, gdprZh: gdprZhD?.value ?? this.state.gdprZh,
-      customerFields, needsFields, staffFields,
+      customerFields, needsFields, companyFields, staffFields,
       records: records.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)),
     });
     if (!devD) await this.dbPut('config', { key: 'deviceName', value: defaultDev });
@@ -2945,7 +3236,7 @@ class Component extends DCLogic {
   genId() { return 'f_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2,6); }
   genUUID() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random()*16|0; return (c==='x'?r:(r&0x3|0x8)).toString(16); }); }
 
-  storeKeyFor(target) { return { customer: 'customerFields', needs: 'needsFields', staff: 'staffFields' }[target]; }
+  storeKeyFor(target) { return { customer: 'customerFields', needs: 'needsFields', company: 'companyFields', staff: 'staffFields' }[target]; }
 
   getCountryCodes() {
     return [
@@ -2964,11 +3255,14 @@ class Component extends DCLogic {
     ];
   }
 
-  // ===== TWO-FORM FLOW =====
+  // ===== THREE-FORM FLOW =====
+  // firstChoice fully determines the deterministic order: whichever of
+  // customer/needs is picked at Home goes first, the other goes second, and
+  // Company Profile is always third (never selectable at Home).
   flowResetPatch() {
     return {
-      firstChoice: null, doneCustomer: false, doneNeeds: false,
-      formValues: {}, formErrors: {}, needsValues: {}, needsErrors: {},
+      firstChoice: null,
+      formValues: {}, formErrors: {}, needsValues: {}, needsErrors: {}, companyValues: {}, companyErrors: {},
       staffValues: {}, gdprChecked: false, gdprError: false,
       selectedCountryCode: '+886', currentRecordId: null, editingRecordId: null,
       cardPhotoPreviewSrc: null, cardPhotoBase64: null,
@@ -3013,7 +3307,7 @@ class Component extends DCLogic {
     }
     const record = {
       id: this.genUUID(), timestamp: new Date().toISOString(), device: this.state.deviceName,
-      customerFields: {}, needsFields: {}, staffFields: {}, gdprConsent: false, cardPhoto: null,
+      customerFields: {}, needsFields: {}, companyFields: {}, staffFields: {}, gdprConsent: false, cardPhoto: null,
       ...patch,
     };
     await this.dbPut('records', record);
@@ -3022,7 +3316,7 @@ class Component extends DCLogic {
 
   async submitCustomerForm() {
     if (this.state.editingRecordId) { await this.saveEditedRecord(); return; }
-    const { customerFields, formValues, gdprChecked } = this.state;
+    const { customerFields, formValues, gdprChecked, firstChoice } = this.state;
     const errors = this.validateGroup(customerFields, formValues);
     if (!gdprChecked || Object.keys(errors).length > 0) {
       this.setState({ formErrors: errors, gdprError: !gdprChecked });
@@ -3030,29 +3324,38 @@ class Component extends DCLogic {
     }
     const vals = this.withPhoneCC(formValues);
     const patch = await this.upsertFlowRecord({ customerFields: vals, gdprConsent: true });
-    const doneNeeds = this.state.doneNeeds;
-    this.setState({ ...patch, doneCustomer: true, formErrors: {}, screen: doneNeeds ? 'handoff' : 'needsForm' });
+    this.setState({ ...patch, formErrors: {}, screen: firstChoice === 'data' ? 'needsForm' : 'companyForm' });
   }
 
   async submitNeedsForm() {
-    const { needsFields, needsValues } = this.state;
+    const { needsFields, needsValues, firstChoice } = this.state;
     const errors = this.validateGroup(needsFields, needsValues);
     if (Object.keys(errors).length > 0) { this.setState({ needsErrors: errors }); return; }
     const patch = await this.upsertFlowRecord({ needsFields: { ...needsValues } });
-    const doneCustomer = this.state.doneCustomer;
-    this.setState({ ...patch, doneNeeds: true, needsErrors: {}, screen: doneCustomer ? 'handoff' : 'customerForm' });
+    this.setState({ ...patch, needsErrors: {}, screen: firstChoice === 'needs' ? 'customerForm' : 'companyForm' });
+  }
+
+  async submitCompanyForm() {
+    const { companyFields, companyValues } = this.state;
+    const errors = this.validateGroup(companyFields, companyValues);
+    if (Object.keys(errors).length > 0) { this.setState({ companyErrors: errors }); return; }
+    const patch = await this.upsertFlowRecord({ companyFields: { ...companyValues } });
+    this.setState({ ...patch, companyErrors: {}, screen: 'handoff' });
   }
 
   async saveEditedRecord() {
-    const { customerFields, needsFields, formValues, needsValues, editingRecordId, records } = this.state;
+    const { customerFields, needsFields, companyFields, formValues, needsValues, companyValues, editingRecordId, records } = this.state;
     const errors = this.validateGroup(customerFields, formValues);
     const nErrors = this.validateGroup(needsFields, needsValues);
-    if (Object.keys(errors).length > 0 || Object.keys(nErrors).length > 0) {
-      this.setState({ formErrors: errors, needsErrors: nErrors });
+    const cErrors = this.validateGroup(companyFields, companyValues);
+    if (Object.keys(errors).length > 0 || Object.keys(nErrors).length > 0 || Object.keys(cErrors).length > 0) {
+      this.setState({ formErrors: errors, needsErrors: nErrors, companyErrors: cErrors });
       return;
     }
     const vals = this.withPhoneCC(formValues);
-    const updated = records.map(r => r.id === editingRecordId ? { ...r, customerFields: vals, needsFields: { ...needsValues } } : r);
+    const updated = records.map(r => r.id === editingRecordId
+      ? { ...r, customerFields: vals, needsFields: { ...needsValues }, companyFields: { ...companyValues } }
+      : r);
     const rec = updated.find(r => r.id === editingRecordId);
     if (rec) await this.dbPut('records', rec);
     this.setState({ ...this.flowResetPatch(), records: updated, screen: 'admin', adminTab: 'records' });
@@ -3111,6 +3414,7 @@ class Component extends DCLogic {
     return [
       ...this.sortedFields('customerFields').map(f => ({ f, group: 'customer' })),
       ...this.sortedFields('needsFields').map(f => ({ f, group: 'needs' })),
+      ...this.sortedFields('companyFields').map(f => ({ f, group: 'company' })),
       ...this.sortedFields('staffFields').map(f => ({ f, group: 'staff' })),
     ];
   }
@@ -3119,7 +3423,26 @@ class Component extends DCLogic {
     if (group === 'customer') return r.customerFields?.[f.id];
     // Old records stored needs values inside customerFields before the split.
     if (group === 'needs') return r.needsFields?.[f.id] ?? r.customerFields?.[f.id];
+    if (group === 'company') return r.companyFields?.[f.id];
     return r.staffFields?.[f.id];
+  }
+
+  otherTextFor(r, f, group) {
+    const key = f.id + '__otherText';
+    if (group === 'customer') return r.customerFields?.[key];
+    if (group === 'needs') return r.needsFields?.[key] ?? r.customerFields?.[key];
+    if (group === 'company') return r.companyFields?.[key];
+    return r.staffFields?.[key];
+  }
+
+  // Resolves a record's stored value for a field, substituting the "Other"
+  // sentinel with the free text the user actually typed.
+  resolveFieldValue(r, f, group) {
+    const raw = this.recordValue(r, f, group);
+    if (raw == null) return raw;
+    const other = this.otherTextFor(r, f, group);
+    const sub = (v) => v === this.OTHER_VALUE ? ('Other: ' + (other || '')) : v;
+    return Array.isArray(raw) ? raw.map(sub) : sub(raw);
   }
 
   ratingStars(v) {
@@ -3159,7 +3482,7 @@ class Component extends DCLogic {
         rows.push([
           r.id, r.timestamp, r.device || '', r.language || '',
           ...allFields.map(e => {
-            const val = this.recordValue(r, e.f, e.group);
+            const val = this.resolveFieldValue(r, e.f, e.group);
             if (Array.isArray(val)) return val.join('; ');
             return val ?? '';
           }),
@@ -3169,7 +3492,7 @@ class Component extends DCLogic {
       });
 
       const fdHeaders = ['Field ID', 'Name (EN)', 'Name (ZH)', 'Type', 'Required', 'Category', 'Options (EN)', 'Options (ZH)'];
-      const catName = { customer: 'Customer', needs: 'Needs', staff: 'Staff' };
+      const catName = { customer: 'Customer', needs: 'Needs', company: 'Company', staff: 'Staff' };
       const fdRows = allFields.map(e => [
         e.f.id, e.f.nameEn, e.f.nameZh, e.f.type, e.f.required ? 'Yes' : 'No', catName[e.group],
         (e.f.options||[]).map(o=>o.en).join('; '), (e.f.options||[]).map(o=>o.zh).join('; '),
@@ -3208,20 +3531,22 @@ class Component extends DCLogic {
   openFieldEditor(mode, target, field) {
     this.setState({ showFieldEditor: true, fieldEditorMode: mode, fieldEditorTarget: target, editingFieldId: field?.id ?? null,
       feNameEn: field?.nameEn ?? '', feNameZh: field?.nameZh ?? '', feType: field?.type ?? 'text',
-      feRequired: field?.required ?? false, feOptions: field?.options ? field.options.map(o => ({...o})) : [] });
+      feRequired: field?.required ?? false, feAllowOther: field?.allowOther ?? false,
+      feOptions: field?.options ? field.options.map(o => ({ en: o.en, zh: o.zh, group: o.group || '' })) : [] });
   }
 
   async saveField() {
-    const { fieldEditorMode, fieldEditorTarget, editingFieldId, feNameEn, feNameZh, feType, feRequired, feOptions } = this.state;
+    const { fieldEditorMode, fieldEditorTarget, editingFieldId, feNameEn, feNameZh, feType, feRequired, feAllowOther, feOptions } = this.state;
     if (!feNameEn.trim()) { this.showToastMsg('English name is required'); return; }
     const sk = this.storeKeyFor(fieldEditorTarget);
     let fields = [...this.state[sk]];
-    const opts = feOptions.filter(o => o.en.trim() || o.zh.trim()).map(o => ({ en: o.en.trim(), zh: o.zh.trim() || o.en.trim() }));
+    const opts = feOptions.filter(o => o.en.trim() || o.zh.trim())
+      .map(o => ({ en: o.en.trim(), zh: o.zh.trim() || o.en.trim(), group: (o.group || '').trim() }));
     if (fieldEditorMode === 'add') {
       const mx = fields.length > 0 ? Math.max(...fields.map(f => f.order)) : -1;
-      fields.push({ id: this.genId(), nameEn: feNameEn.trim(), nameZh: feNameZh.trim() || feNameEn.trim(), type: feType, required: feRequired, isCore: false, order: mx + 1, options: opts });
+      fields.push({ id: this.genId(), nameEn: feNameEn.trim(), nameZh: feNameZh.trim() || feNameEn.trim(), type: feType, required: feRequired, allowOther: feAllowOther, isCore: false, order: mx + 1, options: opts });
     } else {
-      fields = fields.map(f => f.id === editingFieldId ? { ...f, nameEn: feNameEn.trim(), nameZh: feNameZh.trim() || feNameEn.trim(), type: feType, required: feRequired, options: opts } : f);
+      fields = fields.map(f => f.id === editingFieldId ? { ...f, nameEn: feNameEn.trim(), nameZh: feNameZh.trim() || feNameEn.trim(), type: feType, required: feRequired, allowOther: feAllowOther, options: opts } : f);
     }
     await this.saveFieldDefs(sk, fields);
     this.setState({ [sk]: fields, showFieldEditor: false });
@@ -3302,8 +3627,8 @@ class Component extends DCLogic {
       rows.forEach(r => { r.style.transform = ''; r.style.transition = ''; });
       row.style.zIndex = ''; row.style.position = ''; row.style.boxShadow = '';
       handle.style.cursor = '';
-      const target = this.state.adminTab; // 'customer' | 'needs' | 'staff'
-      if (toIdx !== fromIdx && (target === 'customer' || target === 'needs' || target === 'staff'))
+      const target = this.state.adminTab; // 'customer' | 'needs' | 'company' | 'staff'
+      if (toIdx !== fromIdx && (target === 'customer' || target === 'needs' || target === 'company' || target === 'staff'))
         this.reorderField(target, fromIdx, toIdx);
     };
     document.addEventListener('pointermove', onMove);
@@ -3322,8 +3647,13 @@ class Component extends DCLogic {
     for (const f of this.state.needsFields) {
       const v = this.recordValue(rec, f, 'needs');
       if (v !== undefined) needsVals[f.id] = v;
+      const otherKey = f.id + '__otherText';
+      if (rec.needsFields?.[otherKey] !== undefined || rec.customerFields?.[otherKey] !== undefined)
+        needsVals[otherKey] = rec.needsFields?.[otherKey] ?? rec.customerFields?.[otherKey];
     }
+    const companyVals = { ...rec.companyFields };
     this.setState({ screen: 'customerForm', formValues: vals, formErrors: {}, needsValues: needsVals, needsErrors: {},
+      companyValues: companyVals, companyErrors: {},
       gdprChecked: true, gdprError: false, selectedCountryCode: cc, editingRecordId: id });
   }
 
@@ -3352,6 +3682,10 @@ class Component extends DCLogic {
       if (errStore) patch[errStore] = { ...this.state[errStore], [f.id]: null };
       this.setState(patch);
     };
+    const otherKey = f.id + '__otherText';
+    const otherText = values[otherKey] ?? '';
+    const setOtherText = (text) => this.setState({ [store]: { ...this.state[store], [otherKey]: text } });
+
     const label = f.nameEn;
     const labelZh = (f.nameZh && f.nameZh !== f.nameEn) ? f.nameZh : '';
     const value = values[f.id] ?? '';
@@ -3360,6 +3694,7 @@ class Component extends DCLogic {
     const isTextarea = f.type === 'textarea';
     const isSelect = f.type === 'select';
     const isCheckboxGroup = f.type === 'checkbox-group';
+    const isRadioGroup = f.type === 'radio-group';
     const isRating = f.type === 'rating';
     const inputType = f.type === 'email' ? 'email' : 'text';
     const placeholder = isSelect
@@ -3367,21 +3702,61 @@ class Component extends DCLogic {
       : `Enter ${f.nameEn}` + (labelZh ? ` 請輸入${f.nameZh}` : '');
     const biOptLabel = (o) => o.en + (o.zh && o.zh !== o.en ? ' ' + o.zh : '');
     const options = (f.options||[]).map(o => ({ value: o.en, label: biOptLabel(o) }));
-    const checked = Array.isArray(values[f.id]) ? values[f.id] : [];
-    const checkboxItems = (f.options||[]).map(o => {
-      const c = checked.includes(o.en);
-      return { label: biOptLabel(o), checked: c,
-        bgColor: c ? palette.checkedBg : '#FFFFFF', borderColor: c ? palette.checkedBorder : '#D1D5DB', textColor: c ? palette.checkedText : '#334155',
-        onChange: () => { const cur = Array.isArray(values[f.id]) ? [...values[f.id]] : []; const idx = cur.indexOf(o.en); if (idx >= 0) cur.splice(idx,1); else cur.push(o.en); setValue(cur); }};
+
+    const chipColors = (checked) => ({
+      bgColor: checked ? palette.checkedBg : '#FFFFFF',
+      borderColor: checked ? palette.checkedBorder : '#D1D5DB',
+      textColor: checked ? palette.checkedText : '#334155',
     });
+
+    // ---- checkbox-group: multi-select, optionally grouped into labeled
+    // sections, optionally with a trailing "Other" chip + free-text input ----
+    const checked = Array.isArray(values[f.id]) ? values[f.id] : [];
+    let checkboxGroups = [];
+    if (isCheckboxGroup) {
+      const buckets = [];
+      const byLabel = new Map();
+      (f.options||[]).forEach(o => {
+        const gl = o.group || '';
+        if (!byLabel.has(gl)) { const b = { label: gl, items: [] }; byLabel.set(gl, b); buckets.push(b); }
+        const c = checked.includes(o.en);
+        byLabel.get(gl).items.push({ label: biOptLabel(o), checked: c, isOther: false, otherValue: '', onOtherInput: null, ...chipColors(c),
+          onChange: () => { const cur = Array.isArray(values[f.id]) ? [...values[f.id]] : []; const idx = cur.indexOf(o.en); if (idx >= 0) cur.splice(idx,1); else cur.push(o.en); setValue(cur); } });
+      });
+      if (f.allowOther) {
+        const c = checked.includes(this.OTHER_VALUE);
+        const otherItem = { label: 'Other 其他', checked: c, isOther: true, otherValue: otherText, onOtherInput: (e) => setOtherText(e.target.value), ...chipColors(c),
+          onChange: () => { const cur = Array.isArray(values[f.id]) ? [...values[f.id]] : []; const idx = cur.indexOf(this.OTHER_VALUE); if (idx >= 0) cur.splice(idx,1); else cur.push(this.OTHER_VALUE); setValue(cur); } };
+        if (buckets.length > 0) buckets[buckets.length - 1].items.push(otherItem);
+        else buckets.push({ label: '', items: [otherItem] });
+      }
+      checkboxGroups = buckets;
+    }
+
+    // ---- radio-group: single-select, flat list, optionally with "Other" ----
+    let radioItems = [];
+    if (isRadioGroup) {
+      radioItems = (f.options||[]).map(o => {
+        const c = value === o.en;
+        return { label: biOptLabel(o), checked: c, isOther: false, otherValue: '', onOtherInput: null, ...chipColors(c),
+          onClick: () => setValue(value === o.en ? '' : o.en) };
+      });
+      if (f.allowOther) {
+        const c = value === this.OTHER_VALUE;
+        radioItems.push({ label: 'Other 其他', checked: c, isOther: true, otherValue: otherText, onOtherInput: (e) => setOtherText(e.target.value), ...chipColors(c),
+          onClick: () => setValue(value === this.OTHER_VALUE ? '' : this.OTHER_VALUE) });
+      }
+    }
+
     const ratingValue = Number(values[f.id]) || 0;
     const starItems = isRating ? [1,2,3,4,5].map(n => ({
       char: n <= ratingValue ? '★' : '☆',
       color: n <= ratingValue ? '#F59E0B' : '#CBD5E1',
       onClick: () => setValue(n === ratingValue ? '' : n),
     })) : [];
-    return { label, labelZh, required: f.required, isText, isTel, isTextarea, isSelect, isCheckboxGroup, isRating,
-      inputType, placeholder, value, options, checkboxItems, starItems,
+
+    return { label, labelZh, required: f.required, isText, isTel, isTextarea, isSelect, isCheckboxGroup, isRadioGroup, isRating,
+      inputType, placeholder, value, options, checkboxGroups, radioItems, starItems,
       countryCode: isTel ? this.state.selectedCountryCode : undefined,
       onCountryCodeChange: isTel ? (e) => this.setState({ selectedCountryCode: e.target.value }) : undefined,
       error: !!errors[f.id], errorMsg: errors[f.id] || '',
@@ -3390,16 +3765,17 @@ class Component extends DCLogic {
   }
 
   renderVals() {
-    const { screen, adminTab, records, editingRecordId, firstChoice, doneCustomer, doneNeeds } = this.state;
+    const { screen, adminTab, records, editingRecordId, firstChoice } = this.state;
 
     const showHome = screen === 'home';
     const showCustomerForm = screen === 'customerForm';
     const showNeedsForm = screen === 'needsForm';
+    const showCompanyForm = screen === 'companyForm';
     const showHandoff = screen === 'handoff';
     const showStaffNotes = screen === 'staffNotes';
     const showAdmin = screen === 'admin';
 
-    const showAdminFieldList = showAdmin && (adminTab === 'customer' || adminTab === 'needs' || adminTab === 'staff');
+    const showAdminFieldList = showAdmin && (adminTab === 'customer' || adminTab === 'needs' || adminTab === 'company' || adminTab === 'staff');
     const showAdminRecords = showAdmin && adminTab === 'records';
     const showAdminSettings = showAdmin && adminTab === 'settings';
 
@@ -3409,19 +3785,21 @@ class Component extends DCLogic {
       borderColor: adminTab === id ? '#0055B8' : 'transparent',
     });
     const adminTabs = [
-      mkTab('customer', 'Customer Fields'), mkTab('needs', 'Needs Fields'), mkTab('staff', 'Staff Fields'),
+      mkTab('customer', 'Customer Fields'), mkTab('needs', 'Needs Fields'), mkTab('company', 'Company Profile'), mkTab('staff', 'Staff Fields'),
       mkTab('records', 'Records'), mkTab('settings', 'Settings'),
     ];
 
-    // Form labels
+    // Form labels — customer/needs are always step 1 or 2 (never last, since
+    // Company Profile always follows); Company Profile is always step 3.
     const editing = !!editingRecordId;
     const customerFormTitle = editing ? 'Edit Record 編輯資料' : 'Customer Info 客戶資料';
     const customerBackLabel = editing ? 'Cancel 取消' : '← Back 返回';
-    const customerSubmitLabel = editing ? 'Save 儲存' : (doneNeeds ? 'Finish 完成' : 'Next 下一步 →');
-    const customerStepLabel = firstChoice === 'data' ? '1 / 2' : '2 / 2';
-    const needsSubmitLabel = doneCustomer ? 'Finish 完成' : 'Next 下一步 →';
-    const needsStepLabel = firstChoice === 'needs' ? '1 / 2' : '2 / 2';
+    const customerSubmitLabel = editing ? 'Save 儲存' : 'Next 下一步 →';
+    const customerStepLabel = firstChoice === 'data' ? '1 / 3' : '2 / 3';
+    const needsSubmitLabel = 'Next 下一步 →';
+    const needsStepLabel = firstChoice === 'needs' ? '1 / 3' : '2 / 3';
     const needsBackLabel = '← Back 返回';
+    const companyStepLabel = '3 / 3';
     const showStepChip = !editing;
 
     const bluePalette = { checkedBg: '#F0F6FF', checkedBorder: '#0055B8', checkedText: '#0055B8' };
@@ -3429,12 +3807,18 @@ class Component extends DCLogic {
 
     const custSorted = this.sortedFields('customerFields');
     const needsSorted = this.sortedFields('needsFields');
+    const companySorted = this.sortedFields('companyFields');
     const staffSorted = this.sortedFields('staffFields');
 
     let customerFormFields = custSorted.map(f => this.mapFormField(f, 'formValues', 'formErrors', bluePalette));
-    // Editing from Records shows customer + needs fields as one combined form.
-    if (editing) customerFormFields = customerFormFields.concat(needsSorted.map(f => this.mapFormField(f, 'needsValues', 'needsErrors', bluePalette)));
+    // Editing from Records shows customer + needs + company fields as one combined form.
+    if (editing) {
+      customerFormFields = customerFormFields
+        .concat(needsSorted.map(f => this.mapFormField(f, 'needsValues', 'needsErrors', bluePalette)))
+        .concat(companySorted.map(f => this.mapFormField(f, 'companyValues', 'companyErrors', bluePalette)));
+    }
     const needsFormFields = needsSorted.map(f => this.mapFormField(f, 'needsValues', 'needsErrors', bluePalette));
+    const companyFormFields = companySorted.map(f => this.mapFormField(f, 'companyValues', 'companyErrors', bluePalette));
     const staffFormFields = staffSorted.map(f => this.mapFormField(f, 'staffValues', null, slatePalette));
 
     // Staff page customer summary + card photo
@@ -3447,14 +3831,14 @@ class Component extends DCLogic {
       ? React.createElement('img', { src: this.state.cardPhotoPreviewSrc, style: { width: '100%', maxHeight: '320px', objectFit: 'contain', display: 'block' } })
       : null;
 
-    // Admin field lists (shared block across the three group tabs)
-    const listTitles = { customer: 'Customer Fields', needs: 'Needs Fields', staff: 'Staff Note Fields' };
+    // Admin field lists (shared block across the four group tabs)
+    const listTitles = { customer: 'Customer Fields', needs: 'Needs Fields', company: 'Company Profile 公司背景資料', staff: 'Staff Note Fields' };
     const adminListTitle = listTitles[adminTab] || '';
     const listTarget = showAdminFieldList ? adminTab : 'customer';
     const listFields = showAdminFieldList ? this.sortedFields(this.storeKeyFor(listTarget)) : [];
     const adminFields = listFields.map(f => ({
-      nameEn: f.nameEn, nameZh: f.nameZh, type: f.type, required: f.required, isCore: f.isCore||false, canDelete: !f.isCore,
-      hasOptions: f.type === 'select' || f.type === 'checkbox-group',
+      nameEn: f.nameEn, nameZh: f.nameZh, type: f.type, required: f.required, isCore: f.isCore||false, allowOther: f.allowOther||false, canDelete: !f.isCore,
+      hasOptions: f.type === 'select' || f.type === 'checkbox-group' || f.type === 'radio-group',
       optionsSummary: (f.options||[]).map(o => o.en).join(', ') || '(none)',
       onEdit: () => this.openFieldEditor('edit', listTarget, f),
       onDelete: () => this.deleteField(listTarget, f.id),
@@ -3467,7 +3851,7 @@ class Component extends DCLogic {
     const allFields = this.allFieldGroups();
     const recordHeaders = ['#', 'Time', 'Device', ...allFields.map(e => e.f.nameEn), 'Card'];
     const displayVal = (e, r) => {
-      const v = this.recordValue(r, e.f, e.group);
+      const v = this.resolveFieldValue(r, e.f, e.group);
       if (Array.isArray(v)) return v.join(', ');
       if (e.f.type === 'rating') { const s = this.ratingStars(v); if (s) return s; }
       return v ?? '';
@@ -3491,19 +3875,21 @@ class Component extends DCLogic {
     });
 
     // Field editor
-    const { showFieldEditor, fieldEditorMode, feNameEn, feNameZh, feType, feRequired, feOptions: feOpts } = this.state;
-    const feShowOptions = feType === 'select' || feType === 'checkbox-group';
+    const { showFieldEditor, fieldEditorMode, feNameEn, feNameZh, feType, feRequired, feAllowOther, feOptions: feOpts } = this.state;
+    const feShowOptions = feType === 'select' || feType === 'checkbox-group' || feType === 'radio-group';
+    const feShowAllowOther = feType === 'checkbox-group' || feType === 'radio-group';
     const feOptions = feOpts.map((o,i) => ({
-      en: o.en, zh: o.zh,
+      en: o.en, zh: o.zh, group: o.group || '',
       onEnChange: (e) => { const opts = [...this.state.feOptions]; opts[i] = {...opts[i], en: e.target.value}; this.setState({feOptions: opts}); },
       onZhChange: (e) => { const opts = [...this.state.feOptions]; opts[i] = {...opts[i], zh: e.target.value}; this.setState({feOptions: opts}); },
+      onGroupChange: (e) => { const opts = [...this.state.feOptions]; opts[i] = {...opts[i], group: e.target.value}; this.setState({feOptions: opts}); },
       onRemove: () => { const opts = [...this.state.feOptions]; opts.splice(i,1); this.setState({feOptions: opts}); },
     }));
 
     const { showClearConfirm, clearConfirmValue, showPinDialog, pinValue, pinError } = this.state;
 
     return {
-      showHome, showCustomerForm, showNeedsForm, showHandoff, showStaffNotes, showAdmin,
+      showHome, showCustomerForm, showNeedsForm, showCompanyForm, showHandoff, showStaffNotes, showAdmin,
       showPinDialog, pinValue, pinError,
       onOpenPinDialog: () => this.setState({ showPinDialog: true, pinValue: '', pinError: false }),
       onClosePinDialog: () => this.setState({ showPinDialog: false, pinValue: '', pinError: false }),
@@ -3533,6 +3919,11 @@ class Component extends DCLogic {
         if (firstChoice === 'data') { this.setState({ screen: 'customerForm' }); }
         else { this.goHome(); }
       },
+      // Company Profile form (always the 3rd step; back goes to whichever of
+      // customer/needs was completed second)
+      companyFormFields, companyStepLabel,
+      onCompanySubmit: () => this.submitCompanyForm(),
+      onCompanyBack: () => this.setState({ screen: firstChoice === 'data' ? 'needsForm' : 'customerForm' }),
       // Handoff
       onStaffContinue: () => this.setState({ screen: 'staffNotes', staffValues: {}, cardPhotoPreviewSrc: null, cardPhotoBase64: null }),
       // Staff page
@@ -3564,12 +3955,13 @@ class Component extends DCLogic {
       onSaveSettings: () => this.saveSettings(),
       // Field editor
       showFieldEditor, fieldEditorTitle: fieldEditorMode === 'add' ? 'Add Field' : 'Edit Field',
-      feNameEn, feNameZh, feType, feRequired, feShowOptions, feOptions,
+      feNameEn, feNameZh, feType, feRequired, feAllowOther, feShowOptions, feShowAllowOther, feOptions,
       onFeNameEnChange: (e) => this.setState({ feNameEn: e.target.value }),
       onFeNameZhChange: (e) => this.setState({ feNameZh: e.target.value }),
       onFeTypeChange: (e) => this.setState({ feType: e.target.value }),
       onFeRequiredChange: () => this.setState({ feRequired: !this.state.feRequired }),
-      onFeAddOption: () => this.setState({ feOptions: [...this.state.feOptions, { en: '', zh: '' }] }),
+      onFeAllowOtherChange: () => this.setState({ feAllowOther: !this.state.feAllowOther }),
+      onFeAddOption: () => this.setState({ feOptions: [...this.state.feOptions, { en: '', zh: '', group: '' }] }),
       onCloseFieldEditor: () => this.setState({ showFieldEditor: false }),
       onSaveField: () => this.saveField(),
       // Clear
