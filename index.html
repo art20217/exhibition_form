@@ -2278,7 +2278,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           <span style="font-size: 0.9375rem; color: #64748B">客戶需求填寫</span>
         </button>
       </div>
-      <div style="position: absolute; bottom: 24px; font-size: 0.8125rem; color: #94A3B8">v3.1 — Offline Exhibition Form</div>
+      <div style="position: absolute; bottom: 24px; font-size: 0.8125rem; color: #94A3B8">v3.2 — Offline Exhibition Form</div>
     </div>
   </sc-if>
 
@@ -2344,6 +2344,9 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   <sc-for list="{{ field.options }}" as="opt"><option value="{{ opt.value }}">{{ opt.label }}</option></sc-for>
                 </sc-raw-select>
               </sc-if>
+              <sc-if value="{{ field.isDate }}">
+                <input type="date" value="{{ field.value }}" oninput="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
+              </sc-if>
               <sc-if value="{{ field.isCheckboxGroup }}">
                 <sc-for list="{{ field.checkboxGroups }}" as="grp">
                   <sc-if value="{{ grp.label }}">
@@ -2351,7 +2354,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   </sc-if>
                   <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
                     <sc-for list="{{ grp.items }}" as="cb">
-                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}" style-hover="border-color: #93B4E0">
+                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.widthStyle }}" style-hover="border-color: #93B4E0">
                         <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #0055B8; flex-shrink: 0">
                         <span>{{ cb.label }}</span>
                       </label>
@@ -2367,7 +2370,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               <sc-if value="{{ field.isRadioGroup }}">
                 <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
                   <sc-for list="{{ field.radioItems }}" as="rd">
-                    <button onclick="{{ rd.onClick }}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 100px; max-width: 100%; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}" style-hover="border-color: #93B4E0">{{ rd.label }}</button>
+                    <button onclick="{{ rd.onClick }}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; max-width: 100%; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.widthStyle }}" style-hover="border-color: #93B4E0">{{ rd.label }}</button>
                     <sc-if value="{{ rd.checked }}">
                       <sc-if value="{{ rd.isOther }}">
                         <input type="text" value="{{ rd.otherValue }}" oninput="{{ rd.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; min-width: 180px; flex: 1" style-focus="border-color: #0055B8">
@@ -2453,6 +2456,9 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   <sc-for list="{{ field.options }}" as="opt"><option value="{{ opt.value }}">{{ opt.label }}</option></sc-for>
                 </sc-raw-select>
               </sc-if>
+              <sc-if value="{{ field.isDate }}">
+                <input type="date" value="{{ field.value }}" oninput="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
+              </sc-if>
               <sc-if value="{{ field.isCheckboxGroup }}">
                 <sc-for list="{{ field.checkboxGroups }}" as="grp">
                   <sc-if value="{{ grp.label }}">
@@ -2460,7 +2466,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   </sc-if>
                   <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
                     <sc-for list="{{ grp.items }}" as="cb">
-                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}" style-hover="border-color: #93B4E0">
+                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.widthStyle }}" style-hover="border-color: #93B4E0">
                         <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #0055B8; flex-shrink: 0">
                         <span>{{ cb.label }}</span>
                       </label>
@@ -2476,7 +2482,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               <sc-if value="{{ field.isRadioGroup }}">
                 <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
                   <sc-for list="{{ field.radioItems }}" as="rd">
-                    <button onclick="{{ rd.onClick }}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 100px; max-width: 100%; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}" style-hover="border-color: #93B4E0">{{ rd.label }}</button>
+                    <button onclick="{{ rd.onClick }}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; max-width: 100%; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.widthStyle }}" style-hover="border-color: #93B4E0">{{ rd.label }}</button>
                     <sc-if value="{{ rd.checked }}">
                       <sc-if value="{{ rd.isOther }}">
                         <input type="text" value="{{ rd.otherValue }}" oninput="{{ rd.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; min-width: 180px; flex: 1" style-focus="border-color: #0055B8">
@@ -2550,6 +2556,9 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   <sc-for list="{{ field.options }}" as="opt"><option value="{{ opt.value }}">{{ opt.label }}</option></sc-for>
                 </sc-raw-select>
               </sc-if>
+              <sc-if value="{{ field.isDate }}">
+                <input type="date" value="{{ field.value }}" oninput="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
+              </sc-if>
               <sc-if value="{{ field.isCheckboxGroup }}">
                 <sc-for list="{{ field.checkboxGroups }}" as="grp">
                   <sc-if value="{{ grp.label }}">
@@ -2557,7 +2566,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   </sc-if>
                   <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
                     <sc-for list="{{ grp.items }}" as="cb">
-                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}" style-hover="border-color: #93B4E0">
+                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.widthStyle }}" style-hover="border-color: #93B4E0">
                         <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #0055B8; flex-shrink: 0">
                         <span>{{ cb.label }}</span>
                       </label>
@@ -2573,7 +2582,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               <sc-if value="{{ field.isRadioGroup }}">
                 <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
                   <sc-for list="{{ field.radioItems }}" as="rd">
-                    <button onclick="{{ rd.onClick }}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 100px; max-width: 100%; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}" style-hover="border-color: #93B4E0">{{ rd.label }}</button>
+                    <button onclick="{{ rd.onClick }}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; max-width: 100%; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.widthStyle }}" style-hover="border-color: #93B4E0">{{ rd.label }}</button>
                     <sc-if value="{{ rd.checked }}">
                       <sc-if value="{{ rd.isOther }}">
                         <input type="text" value="{{ rd.otherValue }}" oninput="{{ rd.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; min-width: 180px; flex: 1" style-focus="border-color: #0055B8">
@@ -2598,7 +2607,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             </div>
           </sc-for>
           <div style="margin-top: 1.75rem; padding-bottom: 2.5rem">
-            <button onclick="{{ onCompanySubmit }}" style="width: 100%; height: 56px; background: #0055B8; color: #FFF; border: none; border-radius: 12px; font-size: 1.125rem; font-weight: 600; cursor: pointer; transition: all 0.15s" style-hover="background: #004494" style-active="transform: scale(0.98)">Finish 完成</button>
+            <button onclick="{{ onCompanySubmit }}" style="width: 100%; height: 56px; background: #0055B8; color: #FFF; border: none; border-radius: 12px; font-size: 1.125rem; font-weight: 600; cursor: pointer; transition: all 0.15s" style-hover="background: #004494" style-active="transform: scale(0.98)">{{ companySubmitLabel }}</button>
           </div>
         </div>
       </div>
@@ -2655,6 +2664,9 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   <sc-for list="{{ field.options }}" as="opt"><option value="{{ opt.value }}">{{ opt.label }}</option></sc-for>
                 </sc-raw-select>
               </sc-if>
+              <sc-if value="{{ field.isDate }}">
+                <input type="date" value="{{ field.value }}" oninput="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; transition: border-color 0.15s" style-focus="border-color: #334155">
+              </sc-if>
               <sc-if value="{{ field.isCheckboxGroup }}">
                 <sc-for list="{{ field.checkboxGroups }}" as="grp">
                   <sc-if value="{{ grp.label }}">
@@ -2662,7 +2674,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   </sc-if>
                   <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
                     <sc-for list="{{ grp.items }}" as="cb">
-                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}" style-hover="border-color: #64748B">
+                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.widthStyle }}" style-hover="border-color: #64748B">
                         <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #334155; flex-shrink: 0">
                         <span>{{ cb.label }}</span>
                       </label>
@@ -2678,7 +2690,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               <sc-if value="{{ field.isRadioGroup }}">
                 <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
                   <sc-for list="{{ field.radioItems }}" as="rd">
-                    <button onclick="{{ rd.onClick }}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 100px; max-width: 100%; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}" style-hover="border-color: #64748B">{{ rd.label }}</button>
+                    <button onclick="{{ rd.onClick }}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; max-width: 100%; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.widthStyle }}" style-hover="border-color: #64748B">{{ rd.label }}</button>
                     <sc-if value="{{ rd.checked }}">
                       <sc-if value="{{ rd.isOther }}">
                         <input type="text" value="{{ rd.otherValue }}" oninput="{{ rd.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; min-width: 180px; flex: 1" style-focus="border-color: #334155">
@@ -2903,7 +2915,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           <div style="margin-bottom: 14px">
             <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">Type</label>
             <sc-raw-select value="{{ feType }}" onchange="{{ onFeTypeChange }}" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none; background: #FFF" style-focus="border-color: #0055B8">
-              <option value="text">Text</option><option value="email">Email</option><option value="tel">Phone (with country code)</option><option value="select">Select (dropdown)</option><option value="radio-group">Single Choice (Radio Buttons) 單選按鈕組</option><option value="checkbox-group">Checkbox Group (multi-select)</option><option value="textarea">Textarea</option><option value="rating">Star Rating (1–5)</option>
+              <option value="text">Text</option><option value="email">Email</option><option value="tel">Phone (with country code)</option><option value="select">Select (dropdown)</option><option value="radio-group">Single Choice (Radio Buttons) 單選按鈕組</option><option value="checkbox-group">Checkbox Group (multi-select)</option><option value="textarea">Textarea</option><option value="rating">Star Rating (1–5)</option><option value="date">Date 日期</option>
             </sc-raw-select>
           </div>
           <div style="margin-bottom: 14px">
@@ -2918,6 +2930,18 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                 <input type="checkbox" checked="{{ feAllowOther }}" onchange="{{ onFeAllowOtherChange }}" style="width: 18px; height: 18px; accent-color: #0055B8">
                 <span style="font-size: 0.875rem; color: #334155">Allow "Other" with free text 允許「其他」並可填寫</span>
               </label>
+            </div>
+          </sc-if>
+          <sc-if value="{{ feShowPerGroupOther }}">
+            <div style="margin-bottom: 14px">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none">
+                <input type="checkbox" checked="{{ fePerGroupOther }}" onchange="{{ onFePerGroupOtherChange }}" style="width: 18px; height: 18px; accent-color: #0055B8">
+                <span style="font-size: 0.875rem; color: #334155">Each group has its own "Other" 每個分組獨立其他</span>
+              </label>
+            </div>
+            <div style="margin-bottom: 14px">
+              <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">Extra empty groups (comma separated) 額外空白分類（逗號分隔）</label>
+              <input type="text" value="{{ feEmptyGroups }}" oninput="{{ onFeEmptyGroupsChange }}" placeholder="e.g. Local 本土" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
             </div>
           </sc-if>
           <sc-if value="{{ feShowOptions }}">
@@ -2998,7 +3022,9 @@ class Component extends DCLogic {
     gdprEn: 'I consent to the organizer collecting and storing my contact information for the purpose of business follow-up. My data will not be shared with third parties.',
     gdprZh: '本人同意主辦單位蒐集並儲存本人之聯絡資訊，用於後續商業聯繫。本人資料不會提供予第三方。',
     customerFields: [], needsFields: [], companyFields: [], staffFields: [],
-    // Three-form flow: firstChoice picks the order of customer/needs; Company Profile always comes third.
+    // Three-form flow: firstChoice picks which of customer/needs goes first;
+    // whichever is picked, Company Profile always slots in as step 2, and the
+    // other of customer/needs is always step 3.
     firstChoice: null,           // 'data' | 'needs'
     formValues: {}, formErrors: {},      // customer info form
     needsValues: {}, needsErrors: {},    // customer needs form
@@ -3008,7 +3034,8 @@ class Component extends DCLogic {
     currentRecordId: null, editingRecordId: null,
     records: [],
     showFieldEditor: false, fieldEditorMode: 'add', fieldEditorTarget: 'customer', editingFieldId: null,
-    feNameEn: '', feNameZh: '', feType: 'text', feRequired: false, feAllowOther: false, feOptions: [],
+    feNameEn: '', feNameZh: '', feType: 'text', feRequired: false, feAllowOther: false,
+    fePerGroupOther: false, feEmptyGroups: '', feOptions: [],
     showClearConfirm: false, clearConfirmValue: '',
     showToast: false, toastMessage: '',
     // Card photo (staff page)
@@ -3064,7 +3091,8 @@ class Component extends DCLogic {
         { en: 'EVA', zh: 'EVA' }, { en: 'Rubber', zh: 'Rubber' }, { en: 'TPU', zh: 'TPU' }, { en: 'PU', zh: 'PU' },
         { en: 'SEBS', zh: 'SEBS' }, { en: 'TPR', zh: 'TPR' }, { en: 'PVC', zh: 'PVC' },
       ]},
-      { id: 'machines_used', nameEn: 'Machines Used', nameZh: '使用機器', type: 'checkbox-group', required: false, isCore: false, order: 5, allowOther: true, options: [
+      { id: 'machines_used', nameEn: 'Machines Used', nameZh: '使用機器', type: 'checkbox-group', required: false, isCore: false, order: 5,
+        allowOther: true, perGroupOther: true, emptyGroups: ['Local 本土'], options: [
         { en: 'MANIN GROUP', zh: 'MANIN GROUP', group: 'Europe 歐洲' }, { en: 'WINTECH', zh: 'WINTECH', group: 'Europe 歐洲' },
         { en: 'DESMA', zh: 'DESMA', group: 'Europe 歐洲' }, { en: 'GUSBI', zh: 'GUSBI', group: 'Europe 歐洲' },
         { en: 'Tiangang', zh: '天崗', group: 'Taiwan 台灣' }, { en: 'Jugang', zh: '鉅鋼', group: 'Taiwan 台灣' },
@@ -3095,12 +3123,10 @@ class Component extends DCLogic {
   }
   getDefaultStaffFields() {
     return [
-      { id: 'greeter', nameEn: 'Greeter', nameZh: '接待人員', type: 'radio-group', required: false, isCore: true, order: 0, allowOther: false, options: [
+      { id: 'greeter', nameEn: 'Greeter', nameZh: '接待人員', type: 'radio-group', required: false, isCore: true, order: 0, allowOther: true, options: [
         { en: 'Su Chiu-Chu', zh: '蘇秋菊' }, { en: 'Chang Shih-Ying', zh: '張詩穎' }, { en: 'Chien Yin-Ting', zh: '簡吟庭' },
       ]},
-      { id: 'visit_date', nameEn: 'Visit Date', nameZh: '訪談日期', type: 'radio-group', required: false, isCore: true, order: 1, allowOther: false, options: [
-        { en: '08/06', zh: '08/06' }, { en: '08/07', zh: '08/07' }, { en: '08/08', zh: '08/08' },
-      ]},
+      { id: 'visit_date', nameEn: 'Visit Date', nameZh: '訪談日期', type: 'date', required: false, isCore: true, order: 1, allowOther: false, options: [] },
       { id: 'nationality', nameEn: 'Nationality', nameZh: '訪客國籍', type: 'text', required: true, isCore: true, order: 2, allowOther: false, options: [] },
       { id: 'language', nameEn: 'Language', nameZh: '語言', type: 'radio-group', required: false, isCore: true, order: 3, allowOther: true, options: [
         { en: 'Mandarin', zh: '中文' }, { en: 'English', zh: '英語' }, { en: 'Hindi', zh: '印度語' },
@@ -3188,15 +3214,28 @@ class Component extends DCLogic {
       if (!needsD) await this.saveFieldDefs('needsFields', needsFields);
     }
 
-    // --- v3.1: new Company Profile field group ---
-    const companyFields = companyD?.value ?? this.getDefaultCompanyFields();
-    if (!companyD) await this.saveFieldDefs('companyFields', companyFields);
+    // --- v3.1: new Company Profile field group; v3.2: machines_used gains
+    //     per-region "Other" + an "Local 本土" section (additive, keeps any
+    //     admin-customized brand options untouched). ---
+    let companyFields = companyD?.value ?? this.getDefaultCompanyFields();
+    let companyChanged = !companyD;
+    companyFields = companyFields.map(f => {
+      if (f.id === 'machines_used' && !f.perGroupOther) {
+        companyChanged = true;
+        return { ...f, allowOther: true, perGroupOther: true, emptyGroups: f.emptyGroups?.length ? f.emptyGroups : ['Local 本土'] };
+      }
+      return f;
+    });
+    if (companyChanged) await this.saveFieldDefs('companyFields', companyFields);
 
     // --- v3.1 migration: reception fields move to the top of Staff Fields,
     //     Potential switches from a 1–5 star rating to the paper form's 7-level
     //     scale, and Product of Interest gets populated with the machine-series
     //     catalog — but only if it's still the untouched empty default, so we
-    //     never clobber an admin's own customized options. ---
+    //     never clobber an admin's own customized options.
+    //     v3.2 migration: Greeter gains "Other" (ad-hoc names), Visit Date
+    //     switches from 3 hardcoded exhibition dates to a real date picker
+    //     (old string values like "08/06" are left as-is on existing records). ---
     let staffFields = staffD?.value ?? this.getDefaultStaffFields();
     let staffChanged = !staffD;
     if (!staffFields.find(f => f.id === 'greeter')) {
@@ -3213,6 +3252,14 @@ class Component extends DCLogic {
       if (f.id === 'product_interest' && (!f.options || f.options.length === 0)) {
         staffChanged = true;
         return { ...f, allowOther: true, options: this.getDefaultStaffFields().find(d => d.id === 'product_interest').options };
+      }
+      if (f.id === 'greeter' && !f.allowOther) {
+        staffChanged = true;
+        return { ...f, allowOther: true };
+      }
+      if (f.id === 'visit_date' && f.type !== 'date') {
+        staffChanged = true;
+        return { ...f, type: 'date', options: [], allowOther: false };
       }
       return f;
     });
@@ -3238,6 +3285,21 @@ class Component extends DCLogic {
 
   storeKeyFor(target) { return { customer: 'customerFields', needs: 'needsFields', company: 'companyFields', staff: 'staffFields' }[target]; }
 
+  todayStr() { return new Date().toISOString().slice(0, 10); }
+
+  // Any blank `date`-type field gets committed to today's date at submit time
+  // (mapFormField already shows today as a live display default; this makes
+  // that default actually persist even if the user never touches the input).
+  applyDateDefaults(fields, values) {
+    const today = this.todayStr();
+    let changed = false;
+    const patch = {};
+    for (const f of fields) {
+      if (f.type === 'date' && !values[f.id]) { patch[f.id] = today; changed = true; }
+    }
+    return changed ? { ...values, ...patch } : values;
+  }
+
   getCountryCodes() {
     return [
       {value:'+886',label:'+886 TW'},{value:'+86',label:'+86 CN'},{value:'+1',label:'+1 US/CA'},
@@ -3256,9 +3318,11 @@ class Component extends DCLogic {
   }
 
   // ===== THREE-FORM FLOW =====
-  // firstChoice fully determines the deterministic order: whichever of
-  // customer/needs is picked at Home goes first, the other goes second, and
-  // Company Profile is always third (never selectable at Home).
+  // firstChoice picks which of customer/needs is filled first; Company
+  // Profile always slots in as step 2, and the other of customer/needs is
+  // always step 3:
+  //   firstChoice==='data'  -> customerForm(1) -> companyForm(2) -> needsForm(3)
+  //   firstChoice==='needs' -> needsForm(1) -> companyForm(2) -> customerForm(3)
   flowResetPatch() {
     return {
       firstChoice: null,
@@ -3316,40 +3380,46 @@ class Component extends DCLogic {
 
   async submitCustomerForm() {
     if (this.state.editingRecordId) { await this.saveEditedRecord(); return; }
-    const { customerFields, formValues, gdprChecked, firstChoice } = this.state;
+    const { customerFields, gdprChecked, firstChoice } = this.state;
+    const formValues = this.applyDateDefaults(customerFields, this.state.formValues);
     const errors = this.validateGroup(customerFields, formValues);
     if (!gdprChecked || Object.keys(errors).length > 0) {
-      this.setState({ formErrors: errors, gdprError: !gdprChecked });
+      this.setState({ formValues, formErrors: errors, gdprError: !gdprChecked });
       return;
     }
     const vals = this.withPhoneCC(formValues);
     const patch = await this.upsertFlowRecord({ customerFields: vals, gdprConsent: true });
-    this.setState({ ...patch, formErrors: {}, screen: firstChoice === 'data' ? 'needsForm' : 'companyForm' });
+    this.setState({ ...patch, formValues, formErrors: {}, screen: firstChoice === 'data' ? 'companyForm' : 'handoff' });
   }
 
   async submitNeedsForm() {
-    const { needsFields, needsValues, firstChoice } = this.state;
+    const { needsFields, firstChoice } = this.state;
+    const needsValues = this.applyDateDefaults(needsFields, this.state.needsValues);
     const errors = this.validateGroup(needsFields, needsValues);
-    if (Object.keys(errors).length > 0) { this.setState({ needsErrors: errors }); return; }
+    if (Object.keys(errors).length > 0) { this.setState({ needsValues, needsErrors: errors }); return; }
     const patch = await this.upsertFlowRecord({ needsFields: { ...needsValues } });
-    this.setState({ ...patch, needsErrors: {}, screen: firstChoice === 'needs' ? 'customerForm' : 'companyForm' });
+    this.setState({ ...patch, needsValues, needsErrors: {}, screen: firstChoice === 'needs' ? 'companyForm' : 'handoff' });
   }
 
   async submitCompanyForm() {
-    const { companyFields, companyValues } = this.state;
+    const { companyFields, firstChoice } = this.state;
+    const companyValues = this.applyDateDefaults(companyFields, this.state.companyValues);
     const errors = this.validateGroup(companyFields, companyValues);
-    if (Object.keys(errors).length > 0) { this.setState({ companyErrors: errors }); return; }
+    if (Object.keys(errors).length > 0) { this.setState({ companyValues, companyErrors: errors }); return; }
     const patch = await this.upsertFlowRecord({ companyFields: { ...companyValues } });
-    this.setState({ ...patch, companyErrors: {}, screen: 'handoff' });
+    this.setState({ ...patch, companyValues, companyErrors: {}, screen: firstChoice === 'data' ? 'needsForm' : 'customerForm' });
   }
 
   async saveEditedRecord() {
-    const { customerFields, needsFields, companyFields, formValues, needsValues, companyValues, editingRecordId, records } = this.state;
+    const { customerFields, needsFields, companyFields, editingRecordId, records } = this.state;
+    const formValues = this.applyDateDefaults(customerFields, this.state.formValues);
+    const needsValues = this.applyDateDefaults(needsFields, this.state.needsValues);
+    const companyValues = this.applyDateDefaults(companyFields, this.state.companyValues);
     const errors = this.validateGroup(customerFields, formValues);
     const nErrors = this.validateGroup(needsFields, needsValues);
     const cErrors = this.validateGroup(companyFields, companyValues);
     if (Object.keys(errors).length > 0 || Object.keys(nErrors).length > 0 || Object.keys(cErrors).length > 0) {
-      this.setState({ formErrors: errors, needsErrors: nErrors, companyErrors: cErrors });
+      this.setState({ formValues, needsValues, companyValues, formErrors: errors, needsErrors: nErrors, companyErrors: cErrors });
       return;
     }
     const vals = this.withPhoneCC(formValues);
@@ -3395,7 +3465,8 @@ class Component extends DCLogic {
   }
 
   async saveStaffNotes() {
-    const { currentRecordId, staffValues, cardPhotoBase64, records } = this.state;
+    const { currentRecordId, cardPhotoBase64, records, staffFields } = this.state;
+    const staffValues = this.applyDateDefaults(staffFields, this.state.staffValues);
     const updated = records.map(r => r.id === currentRecordId
       ? { ...r, staffFields: { ...staffValues }, cardPhoto: cardPhotoBase64 ?? r.cardPhoto ?? null }
       : r);
@@ -3427,21 +3498,33 @@ class Component extends DCLogic {
     return r.staffFields?.[f.id];
   }
 
-  otherTextFor(r, f, group) {
-    const key = f.id + '__otherText';
-    if (group === 'customer') return r.customerFields?.[key];
-    if (group === 'needs') return r.needsFields?.[key] ?? r.customerFields?.[key];
-    if (group === 'company') return r.companyFields?.[key];
-    return r.staffFields?.[key];
+  fieldValueContainer(r, group) {
+    if (group === 'customer') return r.customerFields;
+    if (group === 'needs') return r.needsFields;
+    if (group === 'company') return r.companyFields;
+    return r.staffFields;
   }
 
-  // Resolves a record's stored value for a field, substituting the "Other"
-  // sentinel with the free text the user actually typed.
+  // Resolves a record's stored value for a field, substituting "Other"
+  // sentinels with the free text the user actually typed. Handles both the
+  // legacy single-Other marker ('__other__') and the per-group markers
+  // ('__other__:<group label>') used when a field has `perGroupOther: true`.
   resolveFieldValue(r, f, group) {
     const raw = this.recordValue(r, f, group);
     if (raw == null) return raw;
-    const other = this.otherTextFor(r, f, group);
-    const sub = (v) => v === this.OTHER_VALUE ? ('Other: ' + (other || '')) : v;
+    const container = this.fieldValueContainer(r, group);
+    const fallback = group === 'needs' ? r.customerFields : null; // pre-split needs values
+    const lookup = (key) => container?.[key] ?? fallback?.[key];
+    const otherPrefix = this.OTHER_VALUE + ':';
+    const sub = (v) => {
+      if (v === this.OTHER_VALUE) return 'Other: ' + (lookup(f.id + '__otherText') || '');
+      if (typeof v === 'string' && v.startsWith(otherPrefix)) {
+        const groupLabel = v.slice(otherPrefix.length);
+        const text = lookup(f.id + '__otherText__' + groupLabel) || '';
+        return groupLabel + ' Other: ' + text;
+      }
+      return v;
+    };
     return Array.isArray(raw) ? raw.map(sub) : sub(raw);
   }
 
@@ -3532,21 +3615,25 @@ class Component extends DCLogic {
     this.setState({ showFieldEditor: true, fieldEditorMode: mode, fieldEditorTarget: target, editingFieldId: field?.id ?? null,
       feNameEn: field?.nameEn ?? '', feNameZh: field?.nameZh ?? '', feType: field?.type ?? 'text',
       feRequired: field?.required ?? false, feAllowOther: field?.allowOther ?? false,
+      fePerGroupOther: field?.perGroupOther ?? false, feEmptyGroups: (field?.emptyGroups || []).join(', '),
       feOptions: field?.options ? field.options.map(o => ({ en: o.en, zh: o.zh, group: o.group || '' })) : [] });
   }
 
   async saveField() {
-    const { fieldEditorMode, fieldEditorTarget, editingFieldId, feNameEn, feNameZh, feType, feRequired, feAllowOther, feOptions } = this.state;
+    const { fieldEditorMode, fieldEditorTarget, editingFieldId, feNameEn, feNameZh, feType, feRequired, feAllowOther, fePerGroupOther, feEmptyGroups, feOptions } = this.state;
     if (!feNameEn.trim()) { this.showToastMsg('English name is required'); return; }
     const sk = this.storeKeyFor(fieldEditorTarget);
     let fields = [...this.state[sk]];
     const opts = feOptions.filter(o => o.en.trim() || o.zh.trim())
       .map(o => ({ en: o.en.trim(), zh: o.zh.trim() || o.en.trim(), group: (o.group || '').trim() }));
+    const emptyGroups = feEmptyGroups.split(',').map(s => s.trim()).filter(Boolean);
     if (fieldEditorMode === 'add') {
       const mx = fields.length > 0 ? Math.max(...fields.map(f => f.order)) : -1;
-      fields.push({ id: this.genId(), nameEn: feNameEn.trim(), nameZh: feNameZh.trim() || feNameEn.trim(), type: feType, required: feRequired, allowOther: feAllowOther, isCore: false, order: mx + 1, options: opts });
+      fields.push({ id: this.genId(), nameEn: feNameEn.trim(), nameZh: feNameZh.trim() || feNameEn.trim(), type: feType, required: feRequired,
+        allowOther: feAllowOther, perGroupOther: fePerGroupOther, emptyGroups, isCore: false, order: mx + 1, options: opts });
     } else {
-      fields = fields.map(f => f.id === editingFieldId ? { ...f, nameEn: feNameEn.trim(), nameZh: feNameZh.trim() || feNameEn.trim(), type: feType, required: feRequired, allowOther: feAllowOther, options: opts } : f);
+      fields = fields.map(f => f.id === editingFieldId ? { ...f, nameEn: feNameEn.trim(), nameZh: feNameZh.trim() || feNameEn.trim(), type: feType,
+        required: feRequired, allowOther: feAllowOther, perGroupOther: fePerGroupOther, emptyGroups, options: opts } : f);
     }
     await this.saveFieldDefs(sk, fields);
     this.setState({ [sk]: fields, showFieldEditor: false });
@@ -3672,6 +3759,13 @@ class Component extends DCLogic {
   }
 
   // ===== RENDER =====
+  // Short display labels get a fixed chip width so a row of options lines up
+  // neatly; long paragraph-style options (e.g. Scale) stay full-width so their
+  // text isn't squeezed into a narrow box.
+  widthStyleFor(label) {
+    return label.length > 40 ? 'width: 100%; flex: 1 1 100%;' : 'width: 200px; flex: 0 0 200px;';
+  }
+
   // Maps a field definition to template props. `store`/`errStore` name the
   // state keys holding this group's values/errors so closures stay correct.
   mapFormField(f, store, errStore, palette) {
@@ -3685,10 +3779,12 @@ class Component extends DCLogic {
     const otherKey = f.id + '__otherText';
     const otherText = values[otherKey] ?? '';
     const setOtherText = (text) => this.setState({ [store]: { ...this.state[store], [otherKey]: text } });
+    const setGroupOtherText = (groupLabel, text) => this.setState({ [store]: { ...this.state[store], [otherKey + '__' + groupLabel]: text } });
 
     const label = f.nameEn;
     const labelZh = (f.nameZh && f.nameZh !== f.nameEn) ? f.nameZh : '';
-    const value = values[f.id] ?? '';
+    const isDate = f.type === 'date';
+    const value = isDate ? (values[f.id] || this.todayStr()) : (values[f.id] ?? '');
     const isText = f.type === 'text' || f.type === 'email';
     const isTel = f.type === 'tel';
     const isTextarea = f.type === 'textarea';
@@ -3710,22 +3806,42 @@ class Component extends DCLogic {
     });
 
     // ---- checkbox-group: multi-select, optionally grouped into labeled
-    // sections, optionally with a trailing "Other" chip + free-text input ----
+    // sections. "Other" is either one shared chip appended to the last
+    // section (legacy / default), or — when `perGroupOther` is set — an
+    // independent "Other" + free text per section, so e.g. Machines Used can
+    // have its own "Other" under Europe, Taiwan, China, Korea and a
+    // options-free "Local" section that's Other-only. ----
     const checked = Array.isArray(values[f.id]) ? values[f.id] : [];
     let checkboxGroups = [];
     if (isCheckboxGroup) {
       const buckets = [];
       const byLabel = new Map();
+      const ensureBucket = (gl) => {
+        if (!byLabel.has(gl)) { const b = { label: gl, items: [] }; byLabel.set(gl, b); buckets.push(b); }
+        return byLabel.get(gl);
+      };
       (f.options||[]).forEach(o => {
         const gl = o.group || '';
-        if (!byLabel.has(gl)) { const b = { label: gl, items: [] }; byLabel.set(gl, b); buckets.push(b); }
         const c = checked.includes(o.en);
-        byLabel.get(gl).items.push({ label: biOptLabel(o), checked: c, isOther: false, otherValue: '', onOtherInput: null, ...chipColors(c),
+        ensureBucket(gl).items.push({ label: biOptLabel(o), checked: c, isOther: false, otherValue: '', onOtherInput: null,
+          widthStyle: this.widthStyleFor(biOptLabel(o)), ...chipColors(c),
           onChange: () => { const cur = Array.isArray(values[f.id]) ? [...values[f.id]] : []; const idx = cur.indexOf(o.en); if (idx >= 0) cur.splice(idx,1); else cur.push(o.en); setValue(cur); } });
       });
-      if (f.allowOther) {
+      if (f.allowOther && f.perGroupOther) {
+        (f.emptyGroups || []).forEach(gl => ensureBucket(gl));
+        buckets.forEach(b => {
+          const marker = this.OTHER_VALUE + ':' + b.label;
+          const groupOtherKey = otherKey + '__' + b.label;
+          const c = checked.includes(marker);
+          b.items.push({ label: 'Other 其他', checked: c, isOther: true, otherValue: values[groupOtherKey] ?? '',
+            onOtherInput: (e) => setGroupOtherText(b.label, e.target.value),
+            widthStyle: this.widthStyleFor('Other 其他'), ...chipColors(c),
+            onChange: () => { const cur = Array.isArray(values[f.id]) ? [...values[f.id]] : []; const idx = cur.indexOf(marker); if (idx >= 0) cur.splice(idx,1); else cur.push(marker); setValue(cur); } });
+        });
+      } else if (f.allowOther) {
         const c = checked.includes(this.OTHER_VALUE);
-        const otherItem = { label: 'Other 其他', checked: c, isOther: true, otherValue: otherText, onOtherInput: (e) => setOtherText(e.target.value), ...chipColors(c),
+        const otherItem = { label: 'Other 其他', checked: c, isOther: true, otherValue: otherText, onOtherInput: (e) => setOtherText(e.target.value),
+          widthStyle: this.widthStyleFor('Other 其他'), ...chipColors(c),
           onChange: () => { const cur = Array.isArray(values[f.id]) ? [...values[f.id]] : []; const idx = cur.indexOf(this.OTHER_VALUE); if (idx >= 0) cur.splice(idx,1); else cur.push(this.OTHER_VALUE); setValue(cur); } };
         if (buckets.length > 0) buckets[buckets.length - 1].items.push(otherItem);
         else buckets.push({ label: '', items: [otherItem] });
@@ -3738,12 +3854,14 @@ class Component extends DCLogic {
     if (isRadioGroup) {
       radioItems = (f.options||[]).map(o => {
         const c = value === o.en;
-        return { label: biOptLabel(o), checked: c, isOther: false, otherValue: '', onOtherInput: null, ...chipColors(c),
+        return { label: biOptLabel(o), checked: c, isOther: false, otherValue: '', onOtherInput: null,
+          widthStyle: this.widthStyleFor(biOptLabel(o)), ...chipColors(c),
           onClick: () => setValue(value === o.en ? '' : o.en) };
       });
       if (f.allowOther) {
         const c = value === this.OTHER_VALUE;
-        radioItems.push({ label: 'Other 其他', checked: c, isOther: true, otherValue: otherText, onOtherInput: (e) => setOtherText(e.target.value), ...chipColors(c),
+        radioItems.push({ label: 'Other 其他', checked: c, isOther: true, otherValue: otherText, onOtherInput: (e) => setOtherText(e.target.value),
+          widthStyle: this.widthStyleFor('Other 其他'), ...chipColors(c),
           onClick: () => setValue(value === this.OTHER_VALUE ? '' : this.OTHER_VALUE) });
       }
     }
@@ -3755,7 +3873,7 @@ class Component extends DCLogic {
       onClick: () => setValue(n === ratingValue ? '' : n),
     })) : [];
 
-    return { label, labelZh, required: f.required, isText, isTel, isTextarea, isSelect, isCheckboxGroup, isRadioGroup, isRating,
+    return { label, labelZh, required: f.required, isText, isTel, isTextarea, isSelect, isCheckboxGroup, isRadioGroup, isRating, isDate,
       inputType, placeholder, value, options, checkboxGroups, radioItems, starItems,
       countryCode: isTel ? this.state.selectedCountryCode : undefined,
       onCountryCodeChange: isTel ? (e) => this.setState({ selectedCountryCode: e.target.value }) : undefined,
@@ -3789,17 +3907,19 @@ class Component extends DCLogic {
       mkTab('records', 'Records'), mkTab('settings', 'Settings'),
     ];
 
-    // Form labels — customer/needs are always step 1 or 2 (never last, since
-    // Company Profile always follows); Company Profile is always step 3.
+    // Form labels. Company Profile always sits at step 2; whichever of
+    // customer/needs is firstChoice is step 1 (shows "Next"), the other is
+    // step 3 (shows "Finish").
     const editing = !!editingRecordId;
     const customerFormTitle = editing ? 'Edit Record 編輯資料' : 'Customer Info 客戶資料';
     const customerBackLabel = editing ? 'Cancel 取消' : '← Back 返回';
-    const customerSubmitLabel = editing ? 'Save 儲存' : 'Next 下一步 →';
-    const customerStepLabel = firstChoice === 'data' ? '1 / 3' : '2 / 3';
-    const needsSubmitLabel = 'Next 下一步 →';
-    const needsStepLabel = firstChoice === 'needs' ? '1 / 3' : '2 / 3';
+    const customerSubmitLabel = editing ? 'Save 儲存' : (firstChoice === 'needs' ? 'Finish 完成' : 'Next 下一步 →');
+    const customerStepLabel = firstChoice === 'data' ? '1 / 3' : '3 / 3';
+    const needsSubmitLabel = firstChoice === 'data' ? 'Finish 完成' : 'Next 下一步 →';
+    const needsStepLabel = firstChoice === 'needs' ? '1 / 3' : '3 / 3';
     const needsBackLabel = '← Back 返回';
-    const companyStepLabel = '3 / 3';
+    const companySubmitLabel = 'Next 下一步 →';
+    const companyStepLabel = '2 / 3';
     const showStepChip = !editing;
 
     const bluePalette = { checkedBg: '#F0F6FF', checkedBorder: '#0055B8', checkedText: '#0055B8' };
@@ -3875,9 +3995,10 @@ class Component extends DCLogic {
     });
 
     // Field editor
-    const { showFieldEditor, fieldEditorMode, feNameEn, feNameZh, feType, feRequired, feAllowOther, feOptions: feOpts } = this.state;
+    const { showFieldEditor, fieldEditorMode, feNameEn, feNameZh, feType, feRequired, feAllowOther, fePerGroupOther, feEmptyGroups, feOptions: feOpts } = this.state;
     const feShowOptions = feType === 'select' || feType === 'checkbox-group' || feType === 'radio-group';
     const feShowAllowOther = feType === 'checkbox-group' || feType === 'radio-group';
+    const feShowPerGroupOther = feType === 'checkbox-group' && feAllowOther;
     const feOptions = feOpts.map((o,i) => ({
       en: o.en, zh: o.zh, group: o.group || '',
       onEnChange: (e) => { const opts = [...this.state.feOptions]; opts[i] = {...opts[i], en: e.target.value}; this.setState({feOptions: opts}); },
@@ -3909,21 +4030,21 @@ class Component extends DCLogic {
       onCustomerSubmit: () => this.submitCustomerForm(),
       onCustomerBack: () => {
         if (editingRecordId) { this.setState({ ...this.flowResetPatch(), screen: 'admin', adminTab: 'records' }); }
-        else if (firstChoice === 'needs') { this.setState({ screen: 'needsForm' }); }
+        else if (firstChoice === 'needs') { this.setState({ screen: 'companyForm' }); }
         else { this.goHome(); }
       },
       // Needs form
       needsFormFields, needsSubmitLabel, needsStepLabel, needsBackLabel,
       onNeedsSubmit: () => this.submitNeedsForm(),
       onNeedsBack: () => {
-        if (firstChoice === 'data') { this.setState({ screen: 'customerForm' }); }
+        if (firstChoice === 'data') { this.setState({ screen: 'companyForm' }); }
         else { this.goHome(); }
       },
-      // Company Profile form (always the 3rd step; back goes to whichever of
-      // customer/needs was completed second)
-      companyFormFields, companyStepLabel,
+      // Company Profile form (always step 2; back goes to whichever of
+      // customer/needs was completed first)
+      companyFormFields, companySubmitLabel, companyStepLabel,
       onCompanySubmit: () => this.submitCompanyForm(),
-      onCompanyBack: () => this.setState({ screen: firstChoice === 'data' ? 'needsForm' : 'customerForm' }),
+      onCompanyBack: () => this.setState({ screen: firstChoice === 'data' ? 'customerForm' : 'needsForm' }),
       // Handoff
       onStaffContinue: () => this.setState({ screen: 'staffNotes', staffValues: {}, cardPhotoPreviewSrc: null, cardPhotoBase64: null }),
       // Staff page
@@ -3956,11 +4077,14 @@ class Component extends DCLogic {
       // Field editor
       showFieldEditor, fieldEditorTitle: fieldEditorMode === 'add' ? 'Add Field' : 'Edit Field',
       feNameEn, feNameZh, feType, feRequired, feAllowOther, feShowOptions, feShowAllowOther, feOptions,
+      fePerGroupOther, feEmptyGroups, feShowPerGroupOther,
       onFeNameEnChange: (e) => this.setState({ feNameEn: e.target.value }),
       onFeNameZhChange: (e) => this.setState({ feNameZh: e.target.value }),
       onFeTypeChange: (e) => this.setState({ feType: e.target.value }),
       onFeRequiredChange: () => this.setState({ feRequired: !this.state.feRequired }),
       onFeAllowOtherChange: () => this.setState({ feAllowOther: !this.state.feAllowOther }),
+      onFePerGroupOtherChange: () => this.setState({ fePerGroupOther: !this.state.fePerGroupOther }),
+      onFeEmptyGroupsChange: (e) => this.setState({ feEmptyGroups: e.target.value }),
       onFeAddOption: () => this.setState({ feOptions: [...this.state.feOptions, { en: '', zh: '', group: '' }] }),
       onCloseFieldEditor: () => this.setState({ showFieldEditor: false }),
       onSaveField: () => this.saveField(),
