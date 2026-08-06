@@ -3125,7 +3125,7 @@ class Component extends DCLogic {
       ]},
       { id: 'company_type', nameEn: 'Company Type', nameZh: '公司型態', type: 'radio-group', required: false, isCore: false, order: 2, allowOther: true, options: [
         { en: 'Brand', zh: '品牌' }, { en: 'Shoe Factory', zh: '鞋廠' }, { en: 'Sole Factory', zh: '鞋底廠' }, { en: 'Mold Factory', zh: '模具廠' },
-        { en: 'Material Supplier', zh: '鞋材商' }, { en: 'Trading Company', zh: '貿易商' }, { en: 'Wholesaler', zh: '批發商' },
+        { en: 'Shoe Material Supplier', zh: '鞋材商' }, { en: 'Trading Company', zh: '貿易商' }, { en: 'Wholesaler', zh: '批發商' },
       ]},
       { id: 'product_type', nameEn: 'Product Type', nameZh: '公司產品(鞋型)', type: 'checkbox-group', required: false, isCore: false, order: 3, allowOther: true, options: [
         { en: 'Athletic Shoes (Injection)', zh: '運動鞋(射出)' }, { en: 'Athletic Shoes (Cementing)', zh: '運動鞋(貼底)' },
@@ -3140,21 +3140,21 @@ class Component extends DCLogic {
         allowOther: true, perGroupOther: true, emptyGroups: ['Local 本土'], options: [
         { en: 'MANIN GROUP', zh: 'MANIN GROUP', group: 'Europe 歐洲' }, { en: 'WINTECH', zh: 'WINTECH', group: 'Europe 歐洲' },
         { en: 'DESMA', zh: 'DESMA', group: 'Europe 歐洲' }, { en: 'GUSBI', zh: 'GUSBI', group: 'Europe 歐洲' },
-        { en: 'Tiangang', zh: '天崗', group: 'Taiwan 台灣' }, { en: 'Jugang', zh: '鉅鋼', group: 'Taiwan 台灣' },
-        { en: 'Datian', zh: '大田', group: 'Taiwan 台灣' }, { en: 'Panshi', zh: '磐石', group: 'Taiwan 台灣' },
-        { en: 'Zhongtian', zh: '中天', group: 'Taiwan 台灣' }, { en: 'Guoyi', zh: '國益', group: 'Taiwan 台灣' },
-        { en: 'Quanfeng', zh: '全鋒', group: 'Taiwan 台灣' }, { en: 'Hongqi', zh: '鴻綺', group: 'Taiwan 台灣' },
-        { en: 'Jumin', zh: '鉅閩', group: 'China 大陸' }, { en: 'Shichuang', zh: '世創', group: 'China 大陸' },
+        { en: 'Tien Kang', zh: '天崗', group: 'Taiwan 台灣' }, { en: 'King Steel', zh: '鉅鋼', group: 'Taiwan 台灣' },
+        { en: 'Dahtyan', zh: '大田', group: 'Taiwan 台灣' }, { en: 'Pan Stone', zh: '磐石', group: 'Taiwan 台灣' },
+        { en: 'Chung Tien / CTM', zh: '中天', group: 'Taiwan 台灣' }, { en: 'Kouyi', zh: '國益', group: 'Taiwan 台灣' },
+        { en: 'Chenfeng', zh: '全鋒', group: 'Taiwan 台灣' }, { en: 'Horng Chii', zh: '鴻綺', group: 'Taiwan 台灣' },
+        { en: 'Jumin', zh: '鉅閩', group: 'China 大陸' }, { en: 'Strong', zh: '世創', group: 'China 大陸' },
         { en: 'Xinkaijia', zh: '新凱嘉', group: 'China 大陸' }, { en: 'Jingong', zh: '今功', group: 'China 大陸' },
         { en: 'KUDONG', zh: 'KUDONG', group: 'Korea 韓國' },
       ]},
       { id: 'ownership_type', nameEn: 'Ownership', nameZh: '股份型態', type: 'radio-group', required: false, isCore: false, order: 6, allowOther: true, options: [
-        { en: 'Public Company', zh: '上市公司' }, { en: 'Private Company', zh: '私人公司' },
+        { en: 'Listed Company', zh: '上市公司' }, { en: 'Private Company', zh: '私人公司' },
       ]},
       { id: 'revenue', nameEn: 'Revenue', nameZh: '營業額', type: 'radio-group', required: false, isCore: false, order: 7, allowOther: false, options: [
-        { en: 'Under US$5,000,000', zh: 'US$5,000,000以下' },
-        { en: 'US$5,000,000–10,000,000', zh: 'US$5,000,000-10,000,000' },
-        { en: 'US$100,000,001 and above', zh: 'US$100,000,001以上' },
+        { en: 'US$5,000,000 以下', zh: 'US$5,000,000 以下' },
+        { en: 'US$5,000,000 - 10,000,000', zh: 'US$5,000,000 - 10,000,000' },
+        { en: 'US$10,000,000 以上', zh: 'US$10,000,000 以上' },
       ]},
       { id: 'employees', nameEn: 'Employees', nameZh: '員工人數', type: 'text', required: false, isCore: false, order: 8, allowOther: false, options: [] },
       { id: 'capacity', nameEn: 'Capacity (10k pairs/yr)', nameZh: '產能(萬雙/年)', type: 'text', required: false, isCore: false, order: 9, allowOther: false, options: [] },
@@ -3202,14 +3202,14 @@ class Component extends DCLogic {
   dbClear(store) { return new Promise((res, rej) => { const tx = this.db.transaction(store, 'readwrite'); const r = tx.objectStore(store).clear(); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
 
   async loadAllData() {
-    const [pinD, devD, gdprEnD, gdprZhD, custD, needsD, companyD, staffD, mig33D] = await Promise.all([
+    const [pinD, devD, gdprEnD, gdprZhD, custD, needsD, companyD, staffD, mig33D, mig34D] = await Promise.all([
       this.dbGet('config','pin'), this.dbGet('config','deviceName'),
       this.dbGet('config','gdprEn'), this.dbGet('config','gdprZh'),
       this.dbGet('fieldDefinitions','customerFields'), this.dbGet('fieldDefinitions','needsFields'),
       this.dbGet('fieldDefinitions','companyFields'), this.dbGet('fieldDefinitions','staffFields'),
-      this.dbGet('config','migratedTo33'),
+      this.dbGet('config','migratedTo33'), this.dbGet('config','migratedTo34'),
     ]);
-    const records = await this.dbGetAll('records');
+    let records = await this.dbGetAll('records');
     const defaultDev = 'Device-' + Math.random().toString(36).substr(2,6).toUpperCase();
 
     // --- v2 → v3 migration: split needs fields out of stored customer fields ---
@@ -3357,6 +3357,89 @@ class Component extends DCLogic {
       if (fixed) { groups[key] = fixed; await this.saveFieldDefs(key, fixed); }
     }
     ({ customerFields, needsFields, companyFields, staffFields } = groups);
+
+    // --- Option *value* renames. Unlike the label fixes above these rewrite
+    //     `en`, which is what records store — so the already-collected answers
+    //     have to be rewritten in step with the definitions or they would stop
+    //     matching their option. Machine brands move from the placeholder
+    //     transliterations to the official names, the revenue bands become
+    //     continuous (the old list had no option between 10M and 100M), and two
+    //     labels get more precise wording. One-shot, flag-gated. ---
+    if (!mig34D?.value) {
+      const VALUE_RENAMES = {
+        machines_used: {
+          'Tiangang': 'Tien Kang', 'Jugang': 'King Steel', 'Datian': 'Dahtyan',
+          'Panshi': 'Pan Stone', 'Zhongtian': 'Chung Tien / CTM', 'Guoyi': 'Kouyi',
+          'Quanfeng': 'Chenfeng', 'Hongqi': 'Horng Chii', 'Shichuang': 'Strong',
+        },
+        // Revenue carries a 中文 rewrite too: the band reads the same in both
+        // languages, so en and zh are set identical and the chip renders the
+        // label once instead of repeating it.
+        revenue: {
+          'Under US$5,000,000': { en: 'US$5,000,000 以下', zh: 'US$5,000,000 以下' },
+          'US$5,000,000–10,000,000': { en: 'US$5,000,000 - 10,000,000', zh: 'US$5,000,000 - 10,000,000' },
+          'US$100,000,001 and above': { en: 'US$10,000,000 以上', zh: 'US$10,000,000 以上' },
+        },
+        company_type: { 'Material Supplier': 'Shoe Material Supplier' },
+        ownership_type: { 'Public Company': 'Listed Company' },
+      };
+      // A rename is either a bare new `en` (中文 kept as-is) or an {en, zh} pair.
+      const newEn = (t) => (typeof t === 'string' ? t : t.en);
+      // Definitions: rename the option in place, keeping its group. An option
+      // the admin has already renamed simply won't match.
+      const renameOptions = (fields) => {
+        let touched = false;
+        const out = fields.map(f => {
+          const map = VALUE_RENAMES[f.id];
+          if (!map || !Array.isArray(f.options)) return f;
+          let changed = false;
+          const options = f.options.map(o => {
+            if (!(o.en in map)) return o;
+            changed = true;
+            const t = map[o.en];
+            return typeof t === 'string' ? { ...o, en: t } : { ...o, en: t.en, zh: t.zh };
+          });
+          if (!changed) return f;
+          touched = true;
+          return { ...f, options };
+        });
+        return touched ? out : null;
+      };
+      for (const key of Object.keys(groups)) {
+        const renamed = renameOptions(groups[key]);
+        if (renamed) { groups[key] = renamed; await this.saveFieldDefs(key, renamed); }
+      }
+      ({ customerFields, needsFields, companyFields, staffFields } = groups);
+
+      // Collected values: the field may sit in any container after the v3.3
+      // move, so every container is checked. Values are arrays (checkbox-group)
+      // or plain strings (radio-group).
+      const renameValue = (v, map) => {
+        const one = (x) => (x in map ? newEn(map[x]) : x);
+        return Array.isArray(v) ? v.map(one) : one(v);
+      };
+      const rewritten = [];
+      records = records.map(r => {
+        let dirty = false;
+        const next = { ...r };
+        for (const container of ['customerFields', 'needsFields', 'companyFields', 'staffFields']) {
+          const vals = r[container];
+          if (!vals) continue;
+          let localDirty = false;
+          const copy = { ...vals };
+          for (const [fieldId, map] of Object.entries(VALUE_RENAMES)) {
+            if (copy[fieldId] === undefined) continue;
+            const renamed = renameValue(copy[fieldId], map);
+            if (JSON.stringify(renamed) !== JSON.stringify(copy[fieldId])) { copy[fieldId] = renamed; localDirty = true; }
+          }
+          if (localDirty) { next[container] = copy; dirty = true; }
+        }
+        if (dirty) rewritten.push(next);
+        return dirty ? next : r;
+      });
+      for (const r of rewritten) await this.dbPut('records', r);
+      await this.saveConfig('migratedTo34', true);
+    }
 
     this.setState({
       pin: pinD?.value ?? '0000', deviceName: devD?.value ?? defaultDev,
