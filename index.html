@@ -51,8 +51,6 @@
       [data-mobile-pad] { padding-left: 1rem !important; padding-right: 1rem !important; }
       [data-home-btns] { flex-direction: column !important; gap: 16px !important; align-items: center !important; }
       [data-home-btns] > button { width: 100% !important; max-width: 340px !important; min-width: 240px !important; }
-      [data-cb-wrap] { flex-direction: column !important; }
-      [data-cb-wrap] > label { width: 100% !important; }
       [data-form-actions] { flex-direction: column !important; }
       [data-form-actions] > button, [data-form-actions] > label { flex: unset !important; width: 100% !important; min-height: 52px !important; }
     }
@@ -2352,15 +2350,18 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   <sc-if value="{{ grp.label }}">
                     <div style="font-size: 0.8125rem; font-weight: 700; color: #64748B; margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.03em">{{ grp.label }}</div>
                   </sc-if>
-                  <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
+                  <div data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 4px">
                     <sc-for list="{{ grp.items }}" as="cb">
-                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.widthStyle }}" style-hover="border-color: #93B4E0">
+                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.spanStyle }}" style-hover="border-color: #93B4E0">
                         <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #0055B8; flex-shrink: 0">
-                        <span>{{ cb.label }}</span>
+                        <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0; text-align: left; overflow-wrap: anywhere">
+                          <span style="line-height: 1.35">{{ cb.labelEn }}</span>
+                          <sc-if value="{{ cb.labelZh }}"><span style="line-height: 1.35; font-size: 0.875rem; opacity: 0.72">{{ cb.labelZh }}</span></sc-if>
+                        </span>
                       </label>
                       <sc-if value="{{ cb.checked }}">
                         <sc-if value="{{ cb.isOther }}">
-                          <input type="text" value="{{ cb.otherValue }}" oninput="{{ cb.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; min-width: 180px; flex: 1" style-focus="border-color: #0055B8">
+                          <input type="text" value="{{ cb.otherValue }}" oninput="{{ cb.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; width: 100%; grid-column: 1 / -1" style-focus="border-color: #0055B8">
                         </sc-if>
                       </sc-if>
                     </sc-for>
@@ -2368,12 +2369,15 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                 </sc-for>
               </sc-if>
               <sc-if value="{{ field.isRadioGroup }}">
-                <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
+                <div data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 4px">
                   <sc-for list="{{ field.radioItems }}" as="rd">
-                    <button onclick="{{ rd.onClick }}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; max-width: 100%; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.widthStyle }}" style-hover="border-color: #93B4E0">{{ rd.label }}</button>
+                    <button onclick="{{ rd.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 0; overflow-wrap: anywhere; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.spanStyle }}" style-hover="border-color: #93B4E0">
+                      <span style="line-height: 1.35">{{ rd.labelEn }}</span>
+                      <sc-if value="{{ rd.labelZh }}"><span style="line-height: 1.35; font-size: 0.875rem; opacity: 0.72">{{ rd.labelZh }}</span></sc-if>
+                    </button>
                     <sc-if value="{{ rd.checked }}">
                       <sc-if value="{{ rd.isOther }}">
-                        <input type="text" value="{{ rd.otherValue }}" oninput="{{ rd.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; min-width: 180px; flex: 1" style-focus="border-color: #0055B8">
+                        <input type="text" value="{{ rd.otherValue }}" oninput="{{ rd.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; width: 100%; grid-column: 1 / -1" style-focus="border-color: #0055B8">
                       </sc-if>
                     </sc-if>
                   </sc-for>
@@ -2494,15 +2498,18 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   <sc-if value="{{ grp.label }}">
                     <div style="font-size: 0.8125rem; font-weight: 700; color: #64748B; margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.03em">{{ grp.label }}</div>
                   </sc-if>
-                  <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
+                  <div data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 4px">
                     <sc-for list="{{ grp.items }}" as="cb">
-                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.widthStyle }}" style-hover="border-color: #93B4E0">
+                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.spanStyle }}" style-hover="border-color: #93B4E0">
                         <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #0055B8; flex-shrink: 0">
-                        <span>{{ cb.label }}</span>
+                        <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0; text-align: left; overflow-wrap: anywhere">
+                          <span style="line-height: 1.35">{{ cb.labelEn }}</span>
+                          <sc-if value="{{ cb.labelZh }}"><span style="line-height: 1.35; font-size: 0.875rem; opacity: 0.72">{{ cb.labelZh }}</span></sc-if>
+                        </span>
                       </label>
                       <sc-if value="{{ cb.checked }}">
                         <sc-if value="{{ cb.isOther }}">
-                          <input type="text" value="{{ cb.otherValue }}" oninput="{{ cb.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; min-width: 180px; flex: 1" style-focus="border-color: #0055B8">
+                          <input type="text" value="{{ cb.otherValue }}" oninput="{{ cb.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; width: 100%; grid-column: 1 / -1" style-focus="border-color: #0055B8">
                         </sc-if>
                       </sc-if>
                     </sc-for>
@@ -2510,12 +2517,15 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                 </sc-for>
               </sc-if>
               <sc-if value="{{ field.isRadioGroup }}">
-                <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
+                <div data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 4px">
                   <sc-for list="{{ field.radioItems }}" as="rd">
-                    <button onclick="{{ rd.onClick }}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; max-width: 100%; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.widthStyle }}" style-hover="border-color: #93B4E0">{{ rd.label }}</button>
+                    <button onclick="{{ rd.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 0; overflow-wrap: anywhere; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.spanStyle }}" style-hover="border-color: #93B4E0">
+                      <span style="line-height: 1.35">{{ rd.labelEn }}</span>
+                      <sc-if value="{{ rd.labelZh }}"><span style="line-height: 1.35; font-size: 0.875rem; opacity: 0.72">{{ rd.labelZh }}</span></sc-if>
+                    </button>
                     <sc-if value="{{ rd.checked }}">
                       <sc-if value="{{ rd.isOther }}">
-                        <input type="text" value="{{ rd.otherValue }}" oninput="{{ rd.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; min-width: 180px; flex: 1" style-focus="border-color: #0055B8">
+                        <input type="text" value="{{ rd.otherValue }}" oninput="{{ rd.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; width: 100%; grid-column: 1 / -1" style-focus="border-color: #0055B8">
                       </sc-if>
                     </sc-if>
                   </sc-for>
@@ -2594,15 +2604,18 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   <sc-if value="{{ grp.label }}">
                     <div style="font-size: 0.8125rem; font-weight: 700; color: #64748B; margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.03em">{{ grp.label }}</div>
                   </sc-if>
-                  <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
+                  <div data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 4px">
                     <sc-for list="{{ grp.items }}" as="cb">
-                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.widthStyle }}" style-hover="border-color: #93B4E0">
+                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.spanStyle }}" style-hover="border-color: #93B4E0">
                         <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #0055B8; flex-shrink: 0">
-                        <span>{{ cb.label }}</span>
+                        <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0; text-align: left; overflow-wrap: anywhere">
+                          <span style="line-height: 1.35">{{ cb.labelEn }}</span>
+                          <sc-if value="{{ cb.labelZh }}"><span style="line-height: 1.35; font-size: 0.875rem; opacity: 0.72">{{ cb.labelZh }}</span></sc-if>
+                        </span>
                       </label>
                       <sc-if value="{{ cb.checked }}">
                         <sc-if value="{{ cb.isOther }}">
-                          <input type="text" value="{{ cb.otherValue }}" oninput="{{ cb.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; min-width: 180px; flex: 1" style-focus="border-color: #0055B8">
+                          <input type="text" value="{{ cb.otherValue }}" oninput="{{ cb.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; width: 100%; grid-column: 1 / -1" style-focus="border-color: #0055B8">
                         </sc-if>
                       </sc-if>
                     </sc-for>
@@ -2610,12 +2623,15 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                 </sc-for>
               </sc-if>
               <sc-if value="{{ field.isRadioGroup }}">
-                <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
+                <div data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 4px">
                   <sc-for list="{{ field.radioItems }}" as="rd">
-                    <button onclick="{{ rd.onClick }}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; max-width: 100%; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.widthStyle }}" style-hover="border-color: #93B4E0">{{ rd.label }}</button>
+                    <button onclick="{{ rd.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 0; overflow-wrap: anywhere; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.spanStyle }}" style-hover="border-color: #93B4E0">
+                      <span style="line-height: 1.35">{{ rd.labelEn }}</span>
+                      <sc-if value="{{ rd.labelZh }}"><span style="line-height: 1.35; font-size: 0.875rem; opacity: 0.72">{{ rd.labelZh }}</span></sc-if>
+                    </button>
                     <sc-if value="{{ rd.checked }}">
                       <sc-if value="{{ rd.isOther }}">
-                        <input type="text" value="{{ rd.otherValue }}" oninput="{{ rd.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; min-width: 180px; flex: 1" style-focus="border-color: #0055B8">
+                        <input type="text" value="{{ rd.otherValue }}" oninput="{{ rd.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; width: 100%; grid-column: 1 / -1" style-focus="border-color: #0055B8">
                       </sc-if>
                     </sc-if>
                   </sc-for>
@@ -2702,15 +2718,18 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   <sc-if value="{{ grp.label }}">
                     <div style="font-size: 0.8125rem; font-weight: 700; color: #64748B; margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.03em">{{ grp.label }}</div>
                   </sc-if>
-                  <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
+                  <div data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 4px">
                     <sc-for list="{{ grp.items }}" as="cb">
-                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.widthStyle }}" style-hover="border-color: #64748B">
+                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.spanStyle }}" style-hover="border-color: #64748B">
                         <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #334155; flex-shrink: 0">
-                        <span>{{ cb.label }}</span>
+                        <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0; text-align: left; overflow-wrap: anywhere">
+                          <span style="line-height: 1.35">{{ cb.labelEn }}</span>
+                          <sc-if value="{{ cb.labelZh }}"><span style="line-height: 1.35; font-size: 0.875rem; opacity: 0.72">{{ cb.labelZh }}</span></sc-if>
+                        </span>
                       </label>
                       <sc-if value="{{ cb.checked }}">
                         <sc-if value="{{ cb.isOther }}">
-                          <input type="text" value="{{ cb.otherValue }}" oninput="{{ cb.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; min-width: 180px; flex: 1" style-focus="border-color: #334155">
+                          <input type="text" value="{{ cb.otherValue }}" oninput="{{ cb.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; width: 100%; grid-column: 1 / -1" style-focus="border-color: #334155">
                         </sc-if>
                       </sc-if>
                     </sc-for>
@@ -2718,12 +2737,15 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                 </sc-for>
               </sc-if>
               <sc-if value="{{ field.isRadioGroup }}">
-                <div data-cb-wrap="" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px">
+                <div data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 4px">
                   <sc-for list="{{ field.radioItems }}" as="rd">
-                    <button onclick="{{ rd.onClick }}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; max-width: 100%; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.widthStyle }}" style-hover="border-color: #64748B">{{ rd.label }}</button>
+                    <button onclick="{{ rd.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: 0.9375rem; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 0; overflow-wrap: anywhere; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.spanStyle }}" style-hover="border-color: #64748B">
+                      <span style="line-height: 1.35">{{ rd.labelEn }}</span>
+                      <sc-if value="{{ rd.labelZh }}"><span style="line-height: 1.35; font-size: 0.875rem; opacity: 0.72">{{ rd.labelZh }}</span></sc-if>
+                    </button>
                     <sc-if value="{{ rd.checked }}">
                       <sc-if value="{{ rd.isOther }}">
-                        <input type="text" value="{{ rd.otherValue }}" oninput="{{ rd.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; min-width: 180px; flex: 1" style-focus="border-color: #334155">
+                        <input type="text" value="{{ rd.otherValue }}" oninput="{{ rd.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; outline: none; width: 100%; grid-column: 1 / -1" style-focus="border-color: #334155">
                       </sc-if>
                     </sc-if>
                   </sc-for>
@@ -3085,14 +3107,14 @@ class Component extends DCLogic {
         { en: 'Customization / OEM', zh: '客製化需求' }, { en: 'Become a Distributor', zh: '尋求代理' },
       ]},
       { id: 'product_interest', nameEn: 'Product of Interest', nameZh: '感興趣產品', type: 'checkbox-group', required: false, isCore: false, order: 1, allowOther: true, options: [
-        { en: '1-Gun 12-Station', zh: '1槍12站', group: 'Gentrex Series 系列' },
-        { en: '1-Gun 24-Station', zh: '1槍24站', group: 'Gentrex Series 系列' },
-        { en: '2-Gun 24-Station', zh: '2槍24站', group: 'Gentrex Series 系列' },
-        { en: 'EVA Single Color', zh: 'EVA單色', group: 'EVA Series 系列' },
-        { en: 'EVA Preform + Vacuum Cover', zh: 'EVA子胚+真空罩', group: 'EVA Series 系列' },
-        { en: '278 Rotary Cold/Hot Press', zh: '278圓盤冷熱壓', group: 'EVA Series 系列' },
-        { en: '268 Linear Cold/Hot Press', zh: '268線性冷熱壓', group: 'EVA Series 系列' },
-        { en: '203 Vacuum Press', zh: '203真空壓', group: 'EVA Series 系列' },
+        { en: '1-Gun 12-Station', zh: '1槍12站', group: 'Gentrex Series' },
+        { en: '1-Gun 24-Station', zh: '1槍24站', group: 'Gentrex Series' },
+        { en: '2-Gun 24-Station', zh: '2槍24站', group: 'Gentrex Series' },
+        { en: 'EVA Single Color', zh: 'EVA單色', group: 'EVA Series' },
+        { en: 'EVA Preform + Vacuum Cover', zh: 'EVA子胚+真空罩', group: 'EVA Series' },
+        { en: '278 Rotary Cold/Hot Press', zh: '278圓盤冷熱壓', group: 'EVA Series' },
+        { en: '268 Linear Cold/Hot Press', zh: '268線性冷熱壓', group: 'EVA Series' },
+        { en: '203 Vacuum Press', zh: '203真空壓', group: 'EVA Series' },
         { en: '361', zh: '361', group: 'Rubber Series 橡膠系列' },
         { en: '361V', zh: '361V', group: 'Rubber Series 橡膠系列' },
         { en: '371', zh: '371', group: 'Rubber Series 橡膠系列' },
@@ -3333,17 +3355,27 @@ class Component extends DCLogic {
       { field: 'product_type', en: 'Sandals', from: '脫涼鞋', to: '拖涼鞋' },
       { field: 'material_type', en: 'Rubber', from: 'Rubber', to: '橡膠' },
     ];
+    // Section headings whose 中文 half only repeated the English. Gentrex and
+    // EVA are proper nouns with no Chinese form, so their half was a bare 系列
+    // sitting next to "Series"; Rubber keeps 橡膠系列, which carries real content.
+    const groupRenames = [
+      { field: 'product_interest', from: 'Gentrex Series 系列', to: 'Gentrex Series' },
+      { field: 'product_interest', from: 'EVA Series 系列', to: 'EVA Series' },
+    ];
     const applyLabelFixes = (fields) => {
       let touched = false;
       const out = fields.map(f => {
         const fixes = labelFixes.filter(x => x.field === f.id);
-        if (!fixes.length || !Array.isArray(f.options)) return f;
+        const renames = groupRenames.filter(x => x.field === f.id);
+        if ((!fixes.length && !renames.length) || !Array.isArray(f.options)) return f;
         let changed = false;
         const options = f.options.map(o => {
-          const fix = fixes.find(x => x.en === o.en && x.from === o.zh);
-          if (!fix) return o;
-          changed = true;
-          return { ...o, zh: fix.to };
+          let next = o;
+          const fix = fixes.find(x => x.en === next.en && x.from === next.zh);
+          if (fix) { next = { ...next, zh: fix.to }; changed = true; }
+          const ren = renames.find(x => x.from === next.group);
+          if (ren) { next = { ...next, group: ren.to }; changed = true; }
+          return next;
         });
         if (!changed) return f;
         touched = true;
@@ -3991,8 +4023,23 @@ class Component extends DCLogic {
   // Short display labels get a fixed chip width so a row of options lines up
   // neatly; long paragraph-style options (e.g. Scale) stay full-width so their
   // text isn't squeezed into a narrow box.
-  widthStyleFor(label) {
-    return label.length > 40 ? 'width: 100%; flex: 1 1 100%;' : 'width: 200px; flex: 0 0 200px;';
+  // Roughly how many half-width characters fit on about two lines of a
+  // minimum-width chip. Past this the chip is given a full row of its own
+  // instead of a single grid cell.
+  CHIP_LINE_LIMIT = 40;
+
+  // Rough rendered width of a string in half-width character units — CJK glyphs
+  // are about twice as wide as Latin ones, so they count double.
+  lineWidth(s) {
+    return [...(s || '')].reduce((n, ch) => n + (/[⺀-鿿＀-￯]/.test(ch) ? 2 : 1), 0);
+  }
+
+  // English and 中文 render on their own lines, so what can overflow a chip is
+  // the longer single line, not the two added together. Everything else is left
+  // to the grid, which derives its column count from the available width.
+  spanStyleFor(en, zh) {
+    return Math.max(this.lineWidth(en), this.lineWidth(zh)) > this.CHIP_LINE_LIMIT
+      ? 'grid-column: 1 / -1;' : '';
   }
 
   // Maps a field definition to template props. `store`/`errStore` name the
@@ -4026,6 +4073,9 @@ class Component extends DCLogic {
       ? '-- Select 請選擇 --'
       : `Enter ${f.nameEn}` + (labelZh ? ` 請輸入${f.nameZh}` : '');
     const biOptLabel = (o) => o.en + (o.zh && o.zh !== o.en ? ' ' + o.zh : '');
+    // Chips render the two languages on separate lines, so they stay split.
+    // `biOptLabel` is still used for <option>, which can only be one line.
+    const optZh = (o) => (o.zh && o.zh !== o.en ? o.zh : '');
     const options = (f.options||[]).map(o => ({ value: o.en, label: biOptLabel(o) }));
 
     const chipColors = (checked) => ({
@@ -4052,8 +4102,8 @@ class Component extends DCLogic {
       (f.options||[]).forEach(o => {
         const gl = o.group || '';
         const c = checked.includes(o.en);
-        ensureBucket(gl).items.push({ label: biOptLabel(o), checked: c, isOther: false, otherValue: '', onOtherInput: null,
-          widthStyle: this.widthStyleFor(biOptLabel(o)), ...chipColors(c),
+        ensureBucket(gl).items.push({ labelEn: o.en, labelZh: optZh(o), checked: c, isOther: false, otherValue: '', onOtherInput: null,
+          spanStyle: this.spanStyleFor(o.en, optZh(o)), ...chipColors(c),
           onChange: () => { const cur = Array.isArray(values[f.id]) ? [...values[f.id]] : []; const idx = cur.indexOf(o.en); if (idx >= 0) cur.splice(idx,1); else cur.push(o.en); setValue(cur); } });
       });
       if (f.allowOther && f.perGroupOther) {
@@ -4062,15 +4112,15 @@ class Component extends DCLogic {
           const marker = this.OTHER_VALUE + ':' + b.label;
           const groupOtherKey = otherKey + '__' + b.label;
           const c = checked.includes(marker);
-          b.items.push({ label: 'Other 其他', checked: c, isOther: true, otherValue: values[groupOtherKey] ?? '',
+          b.items.push({ labelEn: 'Other', labelZh: '其他', checked: c, isOther: true, otherValue: values[groupOtherKey] ?? '',
             onOtherInput: (e) => setGroupOtherText(b.label, e.target.value),
-            widthStyle: this.widthStyleFor('Other 其他'), ...chipColors(c),
+            spanStyle: '', ...chipColors(c),
             onChange: () => { const cur = Array.isArray(values[f.id]) ? [...values[f.id]] : []; const idx = cur.indexOf(marker); if (idx >= 0) cur.splice(idx,1); else cur.push(marker); setValue(cur); } });
         });
       } else if (f.allowOther) {
         const c = checked.includes(this.OTHER_VALUE);
-        const otherItem = { label: 'Other 其他', checked: c, isOther: true, otherValue: otherText, onOtherInput: (e) => setOtherText(e.target.value),
-          widthStyle: this.widthStyleFor('Other 其他'), ...chipColors(c),
+        const otherItem = { labelEn: 'Other', labelZh: '其他', checked: c, isOther: true, otherValue: otherText, onOtherInput: (e) => setOtherText(e.target.value),
+          spanStyle: '', ...chipColors(c),
           onChange: () => { const cur = Array.isArray(values[f.id]) ? [...values[f.id]] : []; const idx = cur.indexOf(this.OTHER_VALUE); if (idx >= 0) cur.splice(idx,1); else cur.push(this.OTHER_VALUE); setValue(cur); } };
         if (buckets.length > 0) buckets[buckets.length - 1].items.push(otherItem);
         else buckets.push({ label: '', items: [otherItem] });
@@ -4083,14 +4133,14 @@ class Component extends DCLogic {
     if (isRadioGroup) {
       radioItems = (f.options||[]).map(o => {
         const c = value === o.en;
-        return { label: biOptLabel(o), checked: c, isOther: false, otherValue: '', onOtherInput: null,
-          widthStyle: this.widthStyleFor(biOptLabel(o)), ...chipColors(c),
+        return { labelEn: o.en, labelZh: optZh(o), checked: c, isOther: false, otherValue: '', onOtherInput: null,
+          spanStyle: this.spanStyleFor(o.en, optZh(o)), ...chipColors(c),
           onClick: () => setValue(value === o.en ? '' : o.en) };
       });
       if (f.allowOther) {
         const c = value === this.OTHER_VALUE;
-        radioItems.push({ label: 'Other 其他', checked: c, isOther: true, otherValue: otherText, onOtherInput: (e) => setOtherText(e.target.value),
-          widthStyle: this.widthStyleFor('Other 其他'), ...chipColors(c),
+        radioItems.push({ labelEn: 'Other', labelZh: '其他', checked: c, isOther: true, otherValue: otherText, onOtherInput: (e) => setOtherText(e.target.value),
+          spanStyle: '', ...chipColors(c),
           onClick: () => setValue(value === this.OTHER_VALUE ? '' : this.OTHER_VALUE) });
       }
     }
