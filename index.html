@@ -2278,7 +2278,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           <span style="font-size: 0.9375rem; color: #64748B">客戶需求填寫</span>
         </button>
       </div>
-      <div style="position: absolute; bottom: 24px; font-size: 0.8125rem; color: #94A3B8">v3.2 — Offline Exhibition Form</div>
+      <div style="position: absolute; bottom: 24px; font-size: 0.8125rem; color: #94A3B8">v3.3 — Offline Exhibition Form</div>
     </div>
   </sc-if>
 
@@ -2286,17 +2286,17 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
   <sc-if value="{{ showPinDialog }}">
     <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s ease" onclick="{{ onClosePinDialog }}">
       <div style="background: #FFF; border-radius: 16px; padding: 40px; width: 360px; max-width: 90vw; text-align: center" onclick="{{ stopProp }}">
-        <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 8px; color: #1A1A2E">Admin Access</div>
-        <div style="font-size: 0.875rem; color: #64748B; margin-bottom: 24px">Enter 4-digit PIN</div>
+        <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 8px; color: #1A1A2E">管理者登入</div>
+        <div style="font-size: 0.875rem; color: #64748B; margin-bottom: 24px">請輸入 4 位數 PIN 碼</div>
         <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 16px">
           <input id="pin-input" type="password" maxlength="4" inputmode="numeric" pattern="[0-9]*" value="{{ pinValue }}" oninput="{{ onPinInput }}" onkeydown="{{ onPinKeyDown }}" style="width: 160px; height: 56px; text-align: center; font-size: 2rem; letter-spacing: 12px; border: 2px solid #D1D5DB; border-radius: 12px; outline: none; -webkit-text-security: disc">
         </div>
         <sc-if value="{{ pinError }}">
-          <div style="color: #DC2626; font-size: 0.875rem; margin-bottom: 12px">Incorrect PIN</div>
+          <div style="color: #DC2626; font-size: 0.875rem; margin-bottom: 12px">PIN 碼錯誤</div>
         </sc-if>
         <div style="display: flex; gap: 12px; justify-content: center; margin-top: 8px">
-          <button onclick="{{ onClosePinDialog }}" style="height: 44px; padding: 0 24px; border: 1px solid #D1D5DB; background: #FFF; border-radius: 8px; font-size: 0.9375rem; color: #64748B; cursor: pointer" style-hover="background: #F9FAFB">Cancel</button>
-          <button onclick="{{ onSubmitPin }}" style="height: 44px; padding: 0 24px; border: none; background: #0055B8; border-radius: 8px; font-size: 0.9375rem; color: #FFF; cursor: pointer; font-weight: 500" style-hover="background: #004494">Enter</button>
+          <button onclick="{{ onClosePinDialog }}" style="height: 44px; padding: 0 24px; border: 1px solid #D1D5DB; background: #FFF; border-radius: 8px; font-size: 0.9375rem; color: #64748B; cursor: pointer" style-hover="background: #F9FAFB">取消</button>
+          <button onclick="{{ onSubmitPin }}" style="height: 44px; padding: 0 24px; border: none; background: #0055B8; border-radius: 8px; font-size: 0.9375rem; color: #FFF; cursor: pointer; font-weight: 500" style-hover="background: #004494">登入</button>
         </div>
       </div>
     </div>
@@ -2394,6 +2394,36 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               </sc-if>
             </div>
           </sc-for>
+
+          <!-- Business card photo (moved here from the staff page in v3.3) -->
+          <div style="margin-bottom: 1.25rem">
+            <label style="display: block; font-size: 0.9375rem; font-weight: 600; color: #334155; margin-bottom: 6px">
+              Business Card
+              <span style="font-weight: 400; color: #64748B; margin-left: 6px">名片拍照</span>
+            </label>
+            <sc-if value="{{ showCaptureButtons }}">
+              <label data-mobile-full="" style="height: 56px; width: 100%; background: #FFF; color: #0055B8; border: 2px dashed #93B4E0; border-radius: 12px; font-size: 1rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px" style-hover="background: #F0F6FF; border-color: #0055B8">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                Capture 拍攝名片
+                <input type="file" accept="image/*" capture="environment" onchange="{{ onCardFileSelected }}" style="display: none">
+              </label>
+            </sc-if>
+            <sc-if value="{{ showPhotoPreview }}">
+              <div style="width: 100%; display: flex; flex-direction: column; gap: 12px">
+                <div style="width: 100%; border-radius: 12px; overflow: hidden; border: 2px solid #E2E8F0; background: #000">
+                  {{ cardPhotoPreviewImg }}
+                </div>
+                <div data-form-actions="" style="display: flex; gap: 12px; width: 100%">
+                  <label style="flex: 1; height: 48px; background: #FFF; color: #64748B; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 0.9375rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center" style-hover="background: #F9FAFB">
+                    Retake 重拍
+                    <input type="file" accept="image/*" capture="environment" onchange="{{ onCardFileSelected }}" style="display: none">
+                  </label>
+                  <button onclick="{{ onRemoveCardPhoto }}" style="flex: 1; height: 48px; background: #FFF; color: #DC2626; border: 2px solid #FCA5A5; border-radius: 10px; font-size: 0.9375rem; font-weight: 500; cursor: pointer" style-hover="background: #FEF2F2">Remove 移除</button>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
           <div style="margin-top: 8px; padding: 1.25rem; background: #F8FAFC; border-radius: 12px; border: 1px solid #E2E8F0">
             <label style="display: flex; gap: 12px; cursor: pointer; align-items: flex-start; user-select: none">
               <input type="checkbox" checked="{{ gdprChecked }}" onchange="{{ onGdprToggle }}" style="width: 20px; height: 20px; accent-color: #0055B8; flex-shrink: 0; margin-top: 2px">
@@ -2708,35 +2738,6 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             </div>
           </sc-for>
 
-          <!-- Business card photo (inline) -->
-          <div style="margin-bottom: 1.25rem">
-            <label style="display: block; font-size: 0.9375rem; font-weight: 600; color: #334155; margin-bottom: 6px">
-              Business Card
-              <span style="font-weight: 400; color: #64748B; margin-left: 6px">名片拍照</span>
-            </label>
-            <sc-if value="{{ showCaptureButtons }}">
-              <label data-mobile-full="" style="height: 56px; width: 100%; background: #FFF; color: #334155; border: 2px dashed #CBD5E1; border-radius: 12px; font-size: 1rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px" style-hover="background: #F8FAFC; border-color: #94A3B8">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-                Capture 拍攝名片
-                <input type="file" accept="image/*" capture="environment" onchange="{{ onCardFileSelected }}" style="display: none">
-              </label>
-            </sc-if>
-            <sc-if value="{{ showPhotoPreview }}">
-              <div style="width: 100%; display: flex; flex-direction: column; gap: 12px">
-                <div style="width: 100%; border-radius: 12px; overflow: hidden; border: 2px solid #E2E8F0; background: #000">
-                  {{ cardPhotoPreviewImg }}
-                </div>
-                <div data-form-actions="" style="display: flex; gap: 12px; width: 100%">
-                  <label style="flex: 1; height: 48px; background: #FFF; color: #64748B; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 0.9375rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center" style-hover="background: #F9FAFB">
-                    Retake 重拍
-                    <input type="file" accept="image/*" capture="environment" onchange="{{ onCardFileSelected }}" style="display: none">
-                  </label>
-                  <button onclick="{{ onRemoveCardPhoto }}" style="flex: 1; height: 48px; background: #FFF; color: #DC2626; border: 2px solid #FCA5A5; border-radius: 10px; font-size: 0.9375rem; font-weight: 500; cursor: pointer" style-hover="background: #FEF2F2">Remove 移除</button>
-                </div>
-              </div>
-            </sc-if>
-          </div>
-
           <div data-form-actions="" style="display: flex; gap: 12px; margin-top: 1.75rem; padding-bottom: 2.5rem">
             <button onclick="{{ onSkipStaffNotes }}" style="flex: 1; height: 52px; background: #FFF; color: #64748B; border: 2px solid #D1D5DB; border-radius: 12px; font-size: 1rem; font-weight: 500; cursor: pointer" style-hover="background: #F9FAFB; border-color: #94A3B8">Skip 跳過</button>
             <button onclick="{{ onSaveStaffNotes }}" style="flex: 2; height: 52px; background: #334155; color: #FFF; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer" style-hover="background: #1E293B" style-active="transform: scale(0.98)">Save &amp; Next 儲存並繼續</button>
@@ -2752,9 +2753,9 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
       <div style="background: #1E293B; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0">
         <div style="display: flex; align-items: center; gap: 12px">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-          <span style="color: #E2E8F0; font-size: 1rem; font-weight: 600">Admin Panel</span>
+          <span style="color: #E2E8F0; font-size: 1rem; font-weight: 600">後台管理</span>
         </div>
-        <button onclick="{{ onExitAdmin }}" style="color: #94A3B8; background: rgba(255,255,255,0.08); border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.875rem; cursor: pointer; font-weight: 500" style-hover="background: rgba(255,255,255,0.15); color: #FFF">← Exit to Form</button>
+        <button onclick="{{ onExitAdmin }}" style="color: #94A3B8; background: rgba(255,255,255,0.08); border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.875rem; cursor: pointer; font-weight: 500" style-hover="background: rgba(255,255,255,0.15); color: #FFF">← 返回表單</button>
       </div>
       <div style="background: #FFF; border-bottom: 1px solid #E2E8F0; display: flex; gap: 0; padding: 0 16px; flex-shrink: 0; overflow-x: auto">
         <sc-for list="{{ adminTabs }}" as="tab">
@@ -2768,9 +2769,9 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           <div style="max-width: 800px; margin: 0 auto">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px">
               <div style="font-size: 1.125rem; font-weight: 700; color: #1A1A2E">{{ adminListTitle }}</div>
-              <button onclick="{{ onAddField }}" style="height: 40px; padding: 0 16px; background: #0055B8; color: #FFF; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px" style-hover="background: #004494">+ Add Field</button>
+              <button onclick="{{ onAddField }}" style="height: 40px; padding: 0 16px; background: #0055B8; color: #FFF; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px" style-hover="background: #004494">＋ 新增欄位</button>
             </div>
-            <div style="font-size: 0.8125rem; color: #94A3B8; margin-bottom: 16px">Drag the handle to reorder fields 按住把手拖曳可調整欄位順序</div>
+            <div style="font-size: 0.8125rem; color: #94A3B8; margin-bottom: 16px">按住左側把手拖曳可調整欄位順序</div>
             <sc-for list="{{ adminFields }}" as="af">
               <div data-field-row="" style="background: #FFF; border-radius: 10px; padding: 16px; margin-bottom: 8px; border: 1px solid #E2E8F0; display: flex; gap: 12px; align-items: flex-start">
                 <div data-drag-handle="" style="color: #94A3B8; flex-shrink: 0; cursor: grab; touch-action: none; padding: 6px 8px; margin: -6px 0 -6px -8px; border-radius: 6px" style-hover="background: #F1F5F9; color: #475569">
@@ -2778,14 +2779,14 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                 </div>
                 <div style="flex: 1; min-width: 0">
                   <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
-                    <span style="font-size: 0.9375rem; font-weight: 600; color: #1A1A2E">{{ af.nameEn }}</span>
-                    <span style="font-size: 0.875rem; color: #64748B">{{ af.nameZh }}</span>
+                    <span style="font-size: 0.9375rem; font-weight: 600; color: #1A1A2E">{{ af.nameZh }}</span>
+                    <span style="font-size: 0.8125rem; color: #94A3B8">{{ af.nameEn }}</span>
                     <span style="font-size: 0.75rem; padding: 2px 8px; background: #F1F5F9; border-radius: 4px; color: #64748B">{{ af.type }}</span>
-                    <sc-if value="{{ af.required }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #FEF2F2; border-radius: 4px; color: #DC2626">required</span></sc-if>
-                    <sc-if value="{{ af.isCore }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #ECFDF5; border-radius: 4px; color: #059669">core</span></sc-if>
-                    <sc-if value="{{ af.allowOther }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #FFF7ED; border-radius: 4px; color: #C2410C">+Other</span></sc-if>
+                    <sc-if value="{{ af.required }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #FEF2F2; border-radius: 4px; color: #DC2626">必填</span></sc-if>
+                    <sc-if value="{{ af.isCore }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #ECFDF5; border-radius: 4px; color: #059669">核心</span></sc-if>
+                    <sc-if value="{{ af.allowOther }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #FFF7ED; border-radius: 4px; color: #C2410C">可填其他</span></sc-if>
                   </div>
-                  <sc-if value="{{ af.hasOptions }}"><div style="font-size: 0.8125rem; color: #94A3B8; margin-top: 4px">Options: {{ af.optionsSummary }}</div></sc-if>
+                  <sc-if value="{{ af.hasOptions }}"><div style="font-size: 0.8125rem; color: #94A3B8; margin-top: 4px">選項：{{ af.optionsSummary }}</div></sc-if>
                 </div>
                 <div style="display: flex; gap: 4px; flex-shrink: 0">
                   <button onclick="{{ af.onEdit }}" style="width: 32px; height: 32px; border: 1px solid #E2E8F0; background: #FFF; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748B" style-hover="background: #F1F5F9"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
@@ -2805,13 +2806,13 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               {{ recordStats }}
             </div>
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px">
-              <div style="font-size: 1.125rem; font-weight: 700; color: #1A1A2E">Records ({{ recordCount }})</div>
+              <div style="font-size: 1.125rem; font-weight: 700; color: #1A1A2E">資料紀錄（{{ recordCount }} 筆）</div>
               <div style="display: flex; gap: 8px">
                 <button onclick="{{ onExportData }}" disabled="{{ exporting }}" style="height: 40px; padding: 0 16px; background: #059669; color: #FFF; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; opacity: {{ exportBtnOpacity }}" style-hover="background: #047857">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                   {{ exportBtnLabel }}
                 </button>
-                <button onclick="{{ onClearAllData }}" style="height: 40px; padding: 0 16px; background: #FFF; color: #DC2626; border: 1px solid #FCA5A5; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer" style-hover="background: #FEF2F2">Clear All</button>
+                <button onclick="{{ onClearAllData }}" style="height: 40px; padding: 0 16px; background: #FFF; color: #DC2626; border: 1px solid #FCA5A5; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer" style-hover="background: #FEF2F2">清除全部</button>
               </div>
             </div>
             <sc-if value="{{ hasRecords }}">
@@ -2820,7 +2821,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   <sc-raw-thead>
                     <sc-raw-tr style="background: #F8FAFC">
                       <sc-for list="{{ recordHeaders }}" as="hdr"><sc-raw-th style="padding: 10px 14px; text-align: left; font-weight: 600; color: #475569; border-bottom: 1px solid #E2E8F0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em">{{ hdr }}</sc-raw-th></sc-for>
-                      <sc-raw-th style="padding: 10px 14px; text-align: left; font-weight: 600; color: #475569; border-bottom: 1px solid #E2E8F0; font-size: 0.75rem">Actions</sc-raw-th>
+                      <sc-raw-th style="padding: 10px 14px; text-align: left; font-weight: 600; color: #475569; border-bottom: 1px solid #E2E8F0; font-size: 0.75rem">操作</sc-raw-th>
                     </sc-raw-tr>
                   </sc-raw-thead>
                   <sc-raw-tbody>
@@ -2831,8 +2832,8 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                           <sc-if value="{{ row.hasPhoto }}">
                             <button onclick="{{ row.onViewPhoto }}" style="color: #0055B8; background: none; border: none; cursor: pointer; font-size: 0.8125rem; padding: 4px 8px; border-radius: 4px" style-hover="background: #F0F6FF">📷</button>
                           </sc-if>
-                          <button onclick="{{ row.onEdit }}" style="color: #0055B8; background: none; border: none; cursor: pointer; font-size: 0.8125rem; padding: 4px 8px; border-radius: 4px" style-hover="background: #F0F6FF">Edit</button>
-                          <button onclick="{{ row.onDelete }}" style="color: #DC2626; background: none; border: none; cursor: pointer; font-size: 0.8125rem; padding: 4px 8px; border-radius: 4px" style-hover="background: #FEF2F2">Delete</button>
+                          <button onclick="{{ row.onEdit }}" style="color: #0055B8; background: none; border: none; cursor: pointer; font-size: 0.8125rem; padding: 4px 8px; border-radius: 4px" style-hover="background: #F0F6FF">編輯</button>
+                          <button onclick="{{ row.onDelete }}" style="color: #DC2626; background: none; border: none; cursor: pointer; font-size: 0.8125rem; padding: 4px 8px; border-radius: 4px" style-hover="background: #FEF2F2">刪除</button>
                         </div>
                       </sc-raw-td>
                     </sc-raw-tr></sc-for>
@@ -2849,11 +2850,11 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   </div>
                   <div style="font-size:0.875rem;color:#334155;line-height:1.6;white-space:pre-line;word-break:break-word;padding:8px 0">{{ mrow.summary }}</div>
                   <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end;flex-wrap:wrap">
-                    <button onclick="{{ mrow.onEdit }}" style="color:#0055B8;background:none;border:1px solid #BFDBFE;cursor:pointer;font-size:0.8125rem;padding:6px 14px;border-radius:6px" style-hover="background:#F0F6FF">Edit</button>
+                    <button onclick="{{ mrow.onEdit }}" style="color:#0055B8;background:none;border:1px solid #BFDBFE;cursor:pointer;font-size:0.8125rem;padding:6px 14px;border-radius:6px" style-hover="background:#F0F6FF">編輯</button>
                     <sc-if value="{{ mrow.hasPhoto }}">
-                      <button onclick="{{ mrow.onViewPhoto }}" style="color:#0055B8;background:none;border:1px solid #BFDBFE;cursor:pointer;font-size:0.8125rem;padding:6px 14px;border-radius:6px" style-hover="background:#F0F6FF">Photo</button>
+                      <button onclick="{{ mrow.onViewPhoto }}" style="color:#0055B8;background:none;border:1px solid #BFDBFE;cursor:pointer;font-size:0.8125rem;padding:6px 14px;border-radius:6px" style-hover="background:#F0F6FF">照片</button>
                     </sc-if>
-                    <button onclick="{{ mrow.onDelete }}" style="color:#DC2626;background:none;border:1px solid #FCA5A5;cursor:pointer;font-size:0.8125rem;padding:6px 14px;border-radius:6px" style-hover="background:#FEF2F2">Delete</button>
+                    <button onclick="{{ mrow.onDelete }}" style="color:#DC2626;background:none;border:1px solid #FCA5A5;cursor:pointer;font-size:0.8125rem;padding:6px 14px;border-radius:6px" style-hover="background:#FEF2F2">刪除</button>
                   </div>
                 </div>
                 </sc-for>
@@ -2862,7 +2863,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             <sc-if value="{{ noRecords }}">
               <div style="text-align: center; padding: 60px 20px; color: #94A3B8; background: #FFF; border-radius: 10px; border: 1px solid #E2E8F0">
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 12px; opacity: 0.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
-                <div style="font-size: 0.9375rem">No records yet</div>
+                <div style="font-size: 0.9375rem">尚無資料紀錄</div>
               </div>
             </sc-if>
           </div>
@@ -2872,25 +2873,25 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
         <sc-if value="{{ showAdminSettings }}">
           <div style="max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px">
             <div style="background: #FFF; border-radius: 10px; padding: 20px; border: 1px solid #E2E8F0">
-              <div style="font-size: 1rem; font-weight: 700; color: #1A1A2E; margin-bottom: 12px">Device Name</div>
-              <input type="text" value="{{ deviceName }}" oninput="{{ onDeviceNameChange }}" placeholder="e.g. Tablet-A" style="width: 100%; height: 44px; padding: 0 14px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.9375rem; outline: none" style-focus="border-color: #0055B8">
-              <div style="font-size: 0.8125rem; color: #94A3B8; margin-top: 6px">Attached to each record for multi-device identification</div>
+              <div style="font-size: 1rem; font-weight: 700; color: #1A1A2E; margin-bottom: 12px">裝置名稱</div>
+              <input type="text" value="{{ deviceName }}" oninput="{{ onDeviceNameChange }}" placeholder="例如 Tablet-A" style="width: 100%; height: 44px; padding: 0 14px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.9375rem; outline: none" style-focus="border-color: #0055B8">
+              <div style="font-size: 0.8125rem; color: #94A3B8; margin-top: 6px">附加在每筆紀錄上，多台平板時用於辨識資料來源</div>
             </div>
             <div style="background: #FFF; border-radius: 10px; padding: 20px; border: 1px solid #E2E8F0">
-              <div style="font-size: 1rem; font-weight: 700; color: #1A1A2E; margin-bottom: 12px">Admin PIN</div>
+              <div style="font-size: 1rem; font-weight: 700; color: #1A1A2E; margin-bottom: 12px">管理者 PIN 碼</div>
               <input type="text" value="{{ adminPin }}" oninput="{{ onPinChange }}" maxlength="4" inputmode="numeric" pattern="[0-9]*" style="width: 120px; height: 44px; padding: 0 14px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 1.25rem; letter-spacing: 8px; text-align: center; outline: none" style-focus="border-color: #0055B8">
-              <div style="font-size: 0.8125rem; color: #94A3B8; margin-top: 6px">4-digit PIN to access admin panel</div>
+              <div style="font-size: 0.8125rem; color: #94A3B8; margin-top: 6px">進入後台所需的 4 位數 PIN 碼</div>
             </div>
             <div style="background: #FFF; border-radius: 10px; padding: 20px; border: 1px solid #E2E8F0">
-              <div style="font-size: 1rem; font-weight: 700; color: #1A1A2E; margin-bottom: 12px">GDPR Consent (English)</div>
+              <div style="font-size: 1rem; font-weight: 700; color: #1A1A2E; margin-bottom: 12px">GDPR 同意聲明（英文）</div>
               <textarea value="{{ gdprEn }}" oninput="{{ onGdprEnChange }}" rows="3" style="width: 100%; padding: 10px 14px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none; resize: vertical; line-height: 1.5" style-focus="border-color: #0055B8"></textarea>
             </div>
             <div style="background: #FFF; border-radius: 10px; padding: 20px; border: 1px solid #E2E8F0">
-              <div style="font-size: 1rem; font-weight: 700; color: #1A1A2E; margin-bottom: 12px">GDPR Consent (中文)</div>
+              <div style="font-size: 1rem; font-weight: 700; color: #1A1A2E; margin-bottom: 12px">GDPR 同意聲明（中文）</div>
               <textarea value="{{ gdprZh }}" oninput="{{ onGdprZhChange }}" rows="3" style="width: 100%; padding: 10px 14px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none; resize: vertical; line-height: 1.5" style-focus="border-color: #0055B8"></textarea>
             </div>
             <div style="padding-bottom: 40px">
-              <button onclick="{{ onSaveSettings }}" style="width: 100%; height: 48px; background: #0055B8; color: #FFF; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer" style-hover="background: #004494">Save Settings</button>
+              <button onclick="{{ onSaveSettings }}" style="width: 100%; height: 48px; background: #0055B8; color: #FFF; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer" style-hover="background: #004494">儲存設定</button>
             </div>
           </div>
         </sc-if>
@@ -2905,30 +2906,30 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
         <div style="padding: 24px 24px 0">
           <div style="font-size: 1.125rem; font-weight: 700; color: #1A1A2E; margin-bottom: 20px">{{ fieldEditorTitle }}</div>
           <div style="margin-bottom: 14px">
-            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">Field Name (EN)</label>
-            <input type="text" value="{{ feNameEn }}" oninput="{{ onFeNameEnChange }}" placeholder="e.g. Country" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
+            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">欄位名稱（英文，供匯出使用）</label>
+            <input type="text" value="{{ feNameEn }}" oninput="{{ onFeNameEnChange }}" placeholder="例如 Country" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
           </div>
           <div style="margin-bottom: 14px">
-            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">Field Name (中文)</label>
-            <input type="text" value="{{ feNameZh }}" oninput="{{ onFeNameZhChange }}" placeholder="e.g. 國家" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
+            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">欄位名稱（中文）</label>
+            <input type="text" value="{{ feNameZh }}" oninput="{{ onFeNameZhChange }}" placeholder="例如 國家" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
           </div>
           <div style="margin-bottom: 14px">
-            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">Type</label>
+            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">欄位類型</label>
             <sc-raw-select value="{{ feType }}" onchange="{{ onFeTypeChange }}" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none; background: #FFF" style-focus="border-color: #0055B8">
-              <option value="text">Text</option><option value="email">Email</option><option value="tel">Phone (with country code)</option><option value="select">Select (dropdown)</option><option value="radio-group">Single Choice (Radio Buttons) 單選按鈕組</option><option value="checkbox-group">Checkbox Group (multi-select)</option><option value="textarea">Textarea</option><option value="rating">Star Rating (1–5)</option><option value="date">Date 日期</option>
+              <option value="text">單行文字</option><option value="email">電子信箱</option><option value="tel">電話（含國碼）</option><option value="select">下拉選單</option><option value="radio-group">單選按鈕組</option><option value="checkbox-group">多選核取組</option><option value="textarea">多行文字</option><option value="rating">星級評分（1–5）</option><option value="date">日期</option>
             </sc-raw-select>
           </div>
           <div style="margin-bottom: 14px">
             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none">
               <input type="checkbox" checked="{{ feRequired }}" onchange="{{ onFeRequiredChange }}" style="width: 18px; height: 18px; accent-color: #0055B8">
-              <span style="font-size: 0.875rem; color: #334155">Required field</span>
+              <span style="font-size: 0.875rem; color: #334155">必填欄位</span>
             </label>
           </div>
           <sc-if value="{{ feShowAllowOther }}">
             <div style="margin-bottom: 14px">
               <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none">
                 <input type="checkbox" checked="{{ feAllowOther }}" onchange="{{ onFeAllowOtherChange }}" style="width: 18px; height: 18px; accent-color: #0055B8">
-                <span style="font-size: 0.875rem; color: #334155">Allow "Other" with free text 允許「其他」並可填寫</span>
+                <span style="font-size: 0.875rem; color: #334155">允許「其他」並可自由填寫</span>
               </label>
             </div>
           </sc-if>
@@ -2936,56 +2937,66 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             <div style="margin-bottom: 14px">
               <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none">
                 <input type="checkbox" checked="{{ fePerGroupOther }}" onchange="{{ onFePerGroupOtherChange }}" style="width: 18px; height: 18px; accent-color: #0055B8">
-                <span style="font-size: 0.875rem; color: #334155">Each group has its own "Other" 每個分組獨立其他</span>
+                <span style="font-size: 0.875rem; color: #334155">每個分組各自獨立「其他」</span>
               </label>
             </div>
             <div style="margin-bottom: 14px">
-              <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">Extra empty groups (comma separated) 額外空白分類（逗號分隔）</label>
-              <input type="text" value="{{ feEmptyGroups }}" oninput="{{ onFeEmptyGroupsChange }}" placeholder="e.g. Local 本土" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
+              <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">額外空白分類（逗號分隔）</label>
+              <input type="text" value="{{ feEmptyGroups }}" oninput="{{ onFeEmptyGroupsChange }}" placeholder="例如 Local 本土" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
             </div>
           </sc-if>
           <sc-if value="{{ feShowOptions }}">
             <div style="margin-bottom: 14px">
-              <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 8px">Options</label>
+              <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 8px">選項</label>
               <div style="display: flex; gap: 8px; margin-bottom: 4px; padding: 0 2px">
-                <span style="width: 90px; font-size: 0.6875rem; font-weight: 600; color: #94A3B8; text-transform: uppercase; flex-shrink: 0">Group</span>
-                <span style="flex: 1; font-size: 0.6875rem; font-weight: 600; color: #94A3B8; text-transform: uppercase">English</span>
+                <span style="width: 90px; font-size: 0.6875rem; font-weight: 600; color: #94A3B8; text-transform: uppercase; flex-shrink: 0">分類</span>
+                <span style="flex: 1; font-size: 0.6875rem; font-weight: 600; color: #94A3B8; text-transform: uppercase">英文</span>
                 <span style="flex: 1; font-size: 0.6875rem; font-weight: 600; color: #94A3B8; text-transform: uppercase">中文</span>
                 <span style="width: 28px; flex-shrink: 0"></span>
               </div>
               <sc-for list="{{ feOptions }}" as="opt">
                 <div style="display: flex; gap: 8px; margin-bottom: 6px; align-items: center">
-                  <input type="text" value="{{ opt.group }}" oninput="{{ opt.onGroupChange }}" placeholder="e.g. Europe" style="width: 90px; flex-shrink: 0; height: 36px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.8125rem; outline: none" style-focus="border-color: #0055B8">
-                  <input type="text" value="{{ opt.en }}" oninput="{{ opt.onEnChange }}" placeholder="English" style="flex: 1; height: 36px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.8125rem; outline: none" style-focus="border-color: #0055B8">
+                  <input type="text" value="{{ opt.group }}" oninput="{{ opt.onGroupChange }}" placeholder="例如 Europe" style="width: 90px; flex-shrink: 0; height: 36px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.8125rem; outline: none" style-focus="border-color: #0055B8">
+                  <input type="text" value="{{ opt.en }}" oninput="{{ opt.onEnChange }}" placeholder="英文" style="flex: 1; height: 36px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.8125rem; outline: none" style-focus="border-color: #0055B8">
                   <input type="text" value="{{ opt.zh }}" oninput="{{ opt.onZhChange }}" placeholder="中文" style="flex: 1; height: 36px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.8125rem; outline: none" style-focus="border-color: #0055B8">
                   <button onclick="{{ opt.onRemove }}" style="width: 28px; height: 28px; border: none; background: #FEF2F2; color: #DC2626; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0" style-hover="background: #FEE2E2">×</button>
                 </div>
               </sc-for>
-              <button onclick="{{ onFeAddOption }}" style="height: 32px; padding: 0 12px; background: #F1F5F9; color: #475569; border: 1px dashed #CBD5E1; border-radius: 6px; font-size: 0.8125rem; cursor: pointer; margin-top: 4px" style-hover="background: #E2E8F0">+ Add Option</button>
+              <button onclick="{{ onFeAddOption }}" style="height: 32px; padding: 0 12px; background: #F1F5F9; color: #475569; border: 1px dashed #CBD5E1; border-radius: 6px; font-size: 0.8125rem; cursor: pointer; margin-top: 4px" style-hover="background: #E2E8F0">＋ 新增選項</button>
             </div>
           </sc-if>
         </div>
         <div style="padding: 16px 24px 24px; display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid #F1F5F9; margin-top: 8px">
-          <button onclick="{{ onCloseFieldEditor }}" style="height: 40px; padding: 0 20px; border: 1px solid #D1D5DB; background: #FFF; border-radius: 8px; font-size: 0.875rem; color: #64748B; cursor: pointer" style-hover="background: #F9FAFB">Cancel</button>
-          <button onclick="{{ onSaveField }}" style="height: 40px; padding: 0 20px; border: none; background: #0055B8; border-radius: 8px; font-size: 0.875rem; color: #FFF; cursor: pointer; font-weight: 500" style-hover="background: #004494">Save Field</button>
+          <button onclick="{{ onCloseFieldEditor }}" style="height: 40px; padding: 0 20px; border: 1px solid #D1D5DB; background: #FFF; border-radius: 8px; font-size: 0.875rem; color: #64748B; cursor: pointer" style-hover="background: #F9FAFB">取消</button>
+          <button onclick="{{ onSaveField }}" style="height: 40px; padding: 0 20px; border: none; background: #0055B8; border-radius: 8px; font-size: 0.875rem; color: #FFF; cursor: pointer; font-weight: 500" style-hover="background: #004494">儲存欄位</button>
         </div>
       </div>
     </div>
   </sc-if>
 
-  <!-- ===== CLEAR CONFIRM ===== -->
-  <sc-if value="{{ showClearConfirm }}">
-    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s ease" onclick="{{ onCloseClearConfirm }}">
-      <div style="background: #FFF; border-radius: 16px; padding: 32px; width: 400px; max-width: 90vw; text-align: center" onclick="{{ stopProp }}">
+  <!-- ===== DELETE CONFIRM (two stages, shared by every destructive action) ===== -->
+  <sc-if value="{{ confirmOpen }}">
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s ease; padding: 20px" onclick="{{ onConfirmCancel }}">
+      <div style="background: #FFF; border-radius: 16px; padding: 32px; width: 420px; max-width: 100%; text-align: center" onclick="{{ stopProp }}">
         <div style="width: 56px; height: 56px; background: #FEF2F2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
         </div>
-        <div style="font-size: 1.125rem; font-weight: 700; color: #1A1A2E; margin-bottom: 8px">Delete All Records?</div>
-        <div style="font-size: 0.875rem; color: #64748B; margin-bottom: 20px; line-height: 1.5">Type <strong>DELETE</strong> to confirm.</div>
-        <input type="text" value="{{ clearConfirmValue }}" oninput="{{ onClearConfirmInput }}" placeholder="Type DELETE" style="width: 100%; height: 44px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 8px; font-size: 1rem; text-align: center; outline: none; margin-bottom: 16px" style-focus="border-color: #DC2626">
+        <div style="font-size: 1.125rem; font-weight: 700; color: #1A1A2E; margin-bottom: 8px">{{ confirmTitle }}</div>
+        <div style="font-size: 0.875rem; color: #64748B; margin-bottom: 20px; line-height: 1.6">{{ confirmMessage }}</div>
+        <sc-if value="{{ confirmShowTypeBox }}">
+          <input type="text" value="{{ confirmTypedValue }}" oninput="{{ onConfirmTypedInput }}" placeholder="請輸入 DELETE" style="width: 100%; height: 44px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 8px; font-size: 1rem; text-align: center; outline: none; margin-bottom: 16px" style-focus="border-color: #DC2626">
+        </sc-if>
+        <sc-if value="{{ confirmStage2 }}">
+          <div style="font-size: 0.8125rem; color: #B91C1C; background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 8px; padding: 10px 12px; margin-bottom: 16px">第 2 次確認</div>
+        </sc-if>
         <div style="display: flex; gap: 12px">
-          <button onclick="{{ onCloseClearConfirm }}" style="flex: 1; height: 44px; border: 1px solid #D1D5DB; background: #FFF; border-radius: 8px; font-size: 0.9375rem; color: #64748B; cursor: pointer" style-hover="background: #F9FAFB">Cancel</button>
-          <button onclick="{{ onConfirmClear }}" disabled="{{ clearConfirmDisabled }}" style="flex: 1; height: 44px; border: none; background: #DC2626; border-radius: 8px; font-size: 0.9375rem; color: #FFF; cursor: pointer; font-weight: 500; opacity: {{ clearConfirmOpacity }}" style-hover="background: #B91C1C">Delete All</button>
+          <button onclick="{{ onConfirmCancel }}" style="flex: 1; height: 44px; border: 1px solid #D1D5DB; background: #FFF; border-radius: 8px; font-size: 0.9375rem; color: #64748B; cursor: pointer" style-hover="background: #F9FAFB">取消</button>
+          <sc-if value="{{ confirmStage1 }}">
+            <button onclick="{{ onConfirmAdvance }}" disabled="{{ confirmNextDisabled }}" style="flex: 1; height: 44px; border: none; background: #DC2626; border-radius: 8px; font-size: 0.9375rem; color: #FFF; cursor: pointer; font-weight: 500; opacity: {{ confirmNextOpacity }}" style-hover="background: #B91C1C">繼續</button>
+          </sc-if>
+          <sc-if value="{{ confirmStage2 }}">
+            <button onclick="{{ onConfirmRun }}" style="flex: 1; height: 44px; border: none; background: #DC2626; border-radius: 8px; font-size: 0.9375rem; color: #FFF; cursor: pointer; font-weight: 700" style-hover="background: #B91C1C">確定刪除</button>
+          </sc-if>
         </div>
       </div>
     </div>
@@ -3036,7 +3047,11 @@ class Component extends DCLogic {
     showFieldEditor: false, fieldEditorMode: 'add', fieldEditorTarget: 'customer', editingFieldId: null,
     feNameEn: '', feNameZh: '', feType: 'text', feRequired: false, feAllowOther: false,
     fePerGroupOther: false, feEmptyGroups: '', feOptions: [],
-    showClearConfirm: false, clearConfirmValue: '',
+    // Two-stage delete confirmation (see askConfirm). The pending action itself
+    // lives on `this._pendingConfirm`, not in state — setState() treats a
+    // function argument as an updater and would invoke it.
+    confirmOpen: false, confirmStage: 1, confirmTitle: '', confirmMessage: '',
+    confirmTypeToConfirm: false, confirmTypedValue: '',
     showToast: false, toastMessage: '',
     // Card photo (staff page)
     cardPhotoPreviewSrc: null,
@@ -3056,6 +3071,11 @@ class Component extends DCLogic {
       { id: 'company', nameEn: 'Company', nameZh: '公司', type: 'text', required: true, isCore: true, order: 1, allowOther: false, options: [] },
       { id: 'email', nameEn: 'Email', nameZh: '電子信箱', type: 'email', required: true, isCore: true, order: 2, allowOther: false, options: [] },
       { id: 'phone', nameEn: 'Phone', nameZh: '電話（含國碼）', type: 'tel', required: false, isCore: true, order: 3, allowOther: false, options: [] },
+      { id: 'nationality', nameEn: 'Nationality', nameZh: '訪客國籍', type: 'text', required: true, isCore: true, order: 4, allowOther: false, options: [] },
+      { id: 'language', nameEn: 'Language', nameZh: '語言', type: 'radio-group', required: false, isCore: true, order: 5, allowOther: true, options: [
+        { en: 'Mandarin', zh: '中文' }, { en: 'English', zh: '英語' }, { en: 'Hindi', zh: '印度語' },
+        { en: 'Arabic', zh: '阿拉伯語' }, { en: 'French', zh: '法語' }, { en: 'Spanish', zh: '西班牙語' },
+      ]},
     ];
   }
   getDefaultNeedsFields() {
@@ -3064,6 +3084,31 @@ class Component extends DCLogic {
         { en: 'Request Quote', zh: '索取報價' }, { en: 'Sample Required', zh: '樣品需求' },
         { en: 'Customization / OEM', zh: '客製化需求' }, { en: 'Become a Distributor', zh: '尋求代理' },
       ]},
+      { id: 'product_interest', nameEn: 'Product of Interest', nameZh: '感興趣產品', type: 'checkbox-group', required: false, isCore: false, order: 1, allowOther: true, options: [
+        { en: '1-Gun 12-Station', zh: '1槍12站', group: 'Gentrex Series 系列' },
+        { en: '1-Gun 24-Station', zh: '1槍24站', group: 'Gentrex Series 系列' },
+        { en: '2-Gun 24-Station', zh: '2槍24站', group: 'Gentrex Series 系列' },
+        { en: 'EVA Single Color', zh: 'EVA單色', group: 'EVA Series 系列' },
+        { en: 'EVA Preform + Vacuum Cover', zh: 'EVA子胚+真空罩', group: 'EVA Series 系列' },
+        { en: '278 Rotary Cold/Hot Press', zh: '278圓盤冷熱壓', group: 'EVA Series 系列' },
+        { en: '268 Linear Cold/Hot Press', zh: '268線性冷熱壓', group: 'EVA Series 系列' },
+        { en: '203 Vacuum Press', zh: '203真空壓', group: 'EVA Series 系列' },
+        { en: '361', zh: '361', group: 'Rubber Series 橡膠系列' },
+        { en: '361V', zh: '361V', group: 'Rubber Series 橡膠系列' },
+        { en: '371', zh: '371', group: 'Rubber Series 橡膠系列' },
+        { en: '398(4-Split)', zh: '398(4拆)', group: 'Rubber Series 橡膠系列' },
+        { en: '862', zh: '862', group: 'Rubber Series 橡膠系列' },
+        { en: '330', zh: '330', group: 'Rubber Series 橡膠系列' },
+        { en: 'PU Machine', zh: 'PU機' }, { en: 'Rain Boot Machine', zh: '雨鞋機' },
+        { en: 'TR Series', zh: 'TR系' }, { en: 'TPU Series', zh: 'TPU系' },
+        { en: '3670 Series', zh: '3670系' }, { en: '3670U', zh: '3670U' }, { en: '3680 Series', zh: '3680系' },
+        { en: '839 Single/Dual Color', zh: '839單/雙色' }, { en: '996 Series', zh: '996系' },
+      ]},
+      { id: 'potential', nameEn: 'Deal Probability', nameZh: '成交機率', type: 'radio-group', required: false, isCore: false, order: 2, allowOther: false, options: [
+        { en: 'A', zh: '100%' }, { en: 'B', zh: '80%以上' }, { en: 'C', zh: '60%以上' }, { en: 'D', zh: '40%以上' },
+        { en: 'E', zh: '20%以上' }, { en: 'F', zh: '商機' }, { en: 'G', zh: '0%看看而已' },
+      ]},
+      { id: 'notes', nameEn: 'Notes', nameZh: '備註 / 會談記錄', type: 'textarea', required: false, isCore: false, order: 3, allowOther: false, options: [] },
     ];
   }
   getDefaultCompanyFields() {
@@ -3127,36 +3172,6 @@ class Component extends DCLogic {
         { en: 'Su Chiu-Chu', zh: '蘇秋菊' }, { en: 'Chang Shih-Ying', zh: '張詩穎' }, { en: 'Chien Yin-Ting', zh: '簡吟庭' },
       ]},
       { id: 'visit_date', nameEn: 'Visit Date', nameZh: '訪談日期', type: 'date', required: false, isCore: true, order: 1, allowOther: false, options: [] },
-      { id: 'nationality', nameEn: 'Nationality', nameZh: '訪客國籍', type: 'text', required: true, isCore: true, order: 2, allowOther: false, options: [] },
-      { id: 'language', nameEn: 'Language', nameZh: '語言', type: 'radio-group', required: false, isCore: true, order: 3, allowOther: true, options: [
-        { en: 'Mandarin', zh: '中文' }, { en: 'English', zh: '英語' }, { en: 'Hindi', zh: '印度語' },
-        { en: 'Arabic', zh: '阿拉伯語' }, { en: 'French', zh: '法語' }, { en: 'Spanish', zh: '西班牙語' },
-      ]},
-      { id: 'potential', nameEn: 'Potential', nameZh: '潛力評級', type: 'radio-group', required: false, isCore: false, order: 4, allowOther: false, options: [
-        { en: 'A', zh: '100%' }, { en: 'B', zh: '80%以上' }, { en: 'C', zh: '60%以上' }, { en: 'D', zh: '40%以上' },
-        { en: 'E', zh: '20%以上' }, { en: 'F', zh: '商機' }, { en: 'G', zh: '0%看看而已' },
-      ]},
-      { id: 'product_interest', nameEn: 'Product of Interest', nameZh: '感興趣產品', type: 'checkbox-group', required: false, isCore: false, order: 5, allowOther: true, options: [
-        { en: '1-Gun 12-Station', zh: '1槍12站', group: 'Gentrex Series 系列' },
-        { en: '1-Gun 24-Station', zh: '1槍24站', group: 'Gentrex Series 系列' },
-        { en: '2-Gun 24-Station', zh: '2槍24站', group: 'Gentrex Series 系列' },
-        { en: 'EVA Single Color', zh: 'EVA單色', group: 'EVA Series 系列' },
-        { en: 'EVA Preform + Vacuum Cover', zh: 'EVA子胚+真空罩', group: 'EVA Series 系列' },
-        { en: '278 Rotary Cold/Hot Press', zh: '278圓盤冷熱壓', group: 'EVA Series 系列' },
-        { en: '268 Linear Cold/Hot Press', zh: '268線性冷熱壓', group: 'EVA Series 系列' },
-        { en: '203 Vacuum Press', zh: '203真空壓', group: 'EVA Series 系列' },
-        { en: '361', zh: '361', group: 'Rubber Series 橡膠系列' },
-        { en: '361V', zh: '361V', group: 'Rubber Series 橡膠系列' },
-        { en: '371', zh: '371', group: 'Rubber Series 橡膠系列' },
-        { en: '398(4-Split)', zh: '398(4拆)', group: 'Rubber Series 橡膠系列' },
-        { en: '862', zh: '862', group: 'Rubber Series 橡膠系列' },
-        { en: '330', zh: '330', group: 'Rubber Series 橡膠系列' },
-        { en: 'PU Machine', zh: 'PU機' }, { en: 'Rain Boot Machine', zh: '雨鞋機' },
-        { en: 'TR Series', zh: 'TR系' }, { en: 'TPU Series', zh: 'TPU系' },
-        { en: '3670 Series', zh: '3670系' }, { en: '3670U', zh: '3670U' }, { en: '3680 Series', zh: '3680系' },
-        { en: '839 Single/Dual Color', zh: '839單/雙色' }, { en: '996 Series', zh: '996系' },
-      ]},
-      { id: 'notes', nameEn: 'Notes', nameZh: '備註 / 會談記錄', type: 'textarea', required: false, isCore: false, order: 6, allowOther: false, options: [] },
     ];
   }
 
@@ -3187,11 +3202,12 @@ class Component extends DCLogic {
   dbClear(store) { return new Promise((res, rej) => { const tx = this.db.transaction(store, 'readwrite'); const r = tx.objectStore(store).clear(); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
 
   async loadAllData() {
-    const [pinD, devD, gdprEnD, gdprZhD, custD, needsD, companyD, staffD] = await Promise.all([
+    const [pinD, devD, gdprEnD, gdprZhD, custD, needsD, companyD, staffD, mig33D] = await Promise.all([
       this.dbGet('config','pin'), this.dbGet('config','deviceName'),
       this.dbGet('config','gdprEn'), this.dbGet('config','gdprZh'),
       this.dbGet('fieldDefinitions','customerFields'), this.dbGet('fieldDefinitions','needsFields'),
       this.dbGet('fieldDefinitions','companyFields'), this.dbGet('fieldDefinitions','staffFields'),
+      this.dbGet('config','migratedTo33'),
     ]);
     const records = await this.dbGetAll('records');
     const defaultDev = 'Device-' + Math.random().toString(36).substr(2,6).toUpperCase();
@@ -3268,6 +3284,43 @@ class Component extends DCLogic {
       await this.saveFieldDefs('staffFields', staffFields);
     }
 
+    // --- v3.3 migration: the staff page hands off most of its fields —
+    //     Nationality/Language move to Customer Info, Product of Interest /
+    //     Deal Probability / Notes move to Customer Needs — leaving only the
+    //     two reception fields behind, and `potential` is relabelled 成交機率
+    //     (its id stays put so old record values still resolve).
+    //     Gated by a one-shot config flag rather than the shape checks used
+    //     above: this migration *removes* fields from staffFields, so a shape
+    //     check would resurrect any of them the admin later deletes.
+    //     Each field carries over its existing definition, so admin-customized
+    //     options/labels survive. Values already collected stay put in
+    //     record.staffFields and are read back via the fallbacks in
+    //     recordValue() / fieldValueContainer(). ---
+    if (!mig33D?.value) {
+      const TO_CUSTOMER = ['nationality', 'language'];
+      const TO_NEEDS = ['product_interest', 'potential', 'notes'];
+      const defC = this.getDefaultCustomerFields(), defN = this.getDefaultNeedsFields();
+      // Prefer the admin's existing definition (wherever it currently lives),
+      // falling back to the v3.3 default only if it was never present.
+      const adopt = (ids, dest, defs) => [
+        ...dest.filter(f => !ids.includes(f.id)),
+        ...ids.map(id => staffFields.find(f => f.id === id) || dest.find(f => f.id === id)
+          || defs.find(f => f.id === id)).filter(Boolean),
+      ].map((f, i) => ({ ...f, order: i }));
+      customerFields = adopt(TO_CUSTOMER, customerFields, defC);
+      needsFields = adopt(TO_NEEDS, needsFields, defN)
+        .map(f => f.id === 'potential' ? { ...f, nameEn: 'Deal Probability', nameZh: '成交機率' } : f);
+      staffFields = staffFields
+        .filter(f => ![...TO_CUSTOMER, ...TO_NEEDS].includes(f.id))
+        .map((f, i) => ({ ...f, order: i }));
+      await Promise.all([
+        this.saveFieldDefs('customerFields', customerFields),
+        this.saveFieldDefs('needsFields', needsFields),
+        this.saveFieldDefs('staffFields', staffFields),
+      ]);
+      await this.saveConfig('migratedTo33', true);
+    }
+
     this.setState({
       pin: pinD?.value ?? '0000', deviceName: devD?.value ?? defaultDev,
       gdprEn: gdprEnD?.value ?? this.state.gdprEn, gdprZh: gdprZhD?.value ?? this.state.gdprZh,
@@ -3284,6 +3337,15 @@ class Component extends DCLogic {
   genUUID() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random()*16|0; return (c==='x'?r:(r&0x3|0x8)).toString(16); }); }
 
   storeKeyFor(target) { return { customer: 'customerFields', needs: 'needsFields', company: 'companyFields', staff: 'staffFields' }[target]; }
+
+  // Admin-facing Chinese names for the field types. The stored `type` values
+  // themselves stay in English — these are display labels only.
+  FIELD_TYPE_LABELS = {
+    text: '單行文字', email: '電子信箱', tel: '電話（含國碼）', select: '下拉選單',
+    'radio-group': '單選按鈕組', 'checkbox-group': '多選核取組', textarea: '多行文字',
+    rating: '星級評分（1–5）', date: '日期',
+  };
+  typeLabel(t) { return this.FIELD_TYPE_LABELS[t] || t; }
 
   todayStr() { return new Date().toISOString().slice(0, 10); }
 
@@ -3388,7 +3450,11 @@ class Component extends DCLogic {
       return;
     }
     const vals = this.withPhoneCC(formValues);
-    const patch = await this.upsertFlowRecord({ customerFields: vals, gdprConsent: true });
+    // The business card is captured on this form as of v3.3, so it is written
+    // here. cardPhotoBase64 is the single source of truth for the photo while
+    // a flow is in progress (editRecord preloads it), hence a plain assignment.
+    const patch = await this.upsertFlowRecord({ customerFields: vals, gdprConsent: true,
+      cardPhoto: this.state.cardPhotoBase64 ?? null });
     this.setState({ ...patch, formValues, formErrors: {}, screen: firstChoice === 'data' ? 'companyForm' : 'handoff' });
   }
 
@@ -3424,12 +3490,13 @@ class Component extends DCLogic {
     }
     const vals = this.withPhoneCC(formValues);
     const updated = records.map(r => r.id === editingRecordId
-      ? { ...r, customerFields: vals, needsFields: { ...needsValues }, companyFields: { ...companyValues } }
+      ? { ...r, customerFields: vals, needsFields: { ...needsValues }, companyFields: { ...companyValues },
+          cardPhoto: this.state.cardPhotoBase64 ?? null }
       : r);
     const rec = updated.find(r => r.id === editingRecordId);
     if (rec) await this.dbPut('records', rec);
     this.setState({ ...this.flowResetPatch(), records: updated, screen: 'admin', adminTab: 'records' });
-    this.showToastMsg('Record updated!');
+    this.showToastMsg('紀錄已更新');
   }
 
   // ===== STAFF PAGE =====
@@ -3465,15 +3532,15 @@ class Component extends DCLogic {
   }
 
   async saveStaffNotes() {
-    const { currentRecordId, cardPhotoBase64, records, staffFields } = this.state;
+    const { currentRecordId, records, staffFields } = this.state;
     const staffValues = this.applyDateDefaults(staffFields, this.state.staffValues);
     const updated = records.map(r => r.id === currentRecordId
-      ? { ...r, staffFields: { ...staffValues }, cardPhoto: cardPhotoBase64 ?? r.cardPhoto ?? null }
+      ? { ...r, staffFields: { ...staffValues } }
       : r);
     const rec = updated.find(r => r.id === currentRecordId);
     if (rec) await this.dbPut('records', rec);
     this.setState({ ...this.flowResetPatch(), records: updated, screen: 'home' });
-    this.showToastMsg('Saved! 已儲存');
+    this.showToastMsg('已儲存');
   }
 
   // ===== EXPORT XLSX+ZIP =====
@@ -3490,19 +3557,24 @@ class Component extends DCLogic {
     ];
   }
 
-  recordValue(r, f, group) {
-    if (group === 'customer') return r.customerFields?.[f.id];
-    // Old records stored needs values inside customerFields before the split.
-    if (group === 'needs') return r.needsFields?.[f.id] ?? r.customerFields?.[f.id];
-    if (group === 'company') return r.companyFields?.[f.id];
-    return r.staffFields?.[f.id];
+  // Containers to search for a group's values, in priority order. Fields have
+  // migrated between groups across versions — needs split out of customer in
+  // v3.0, and Nationality/Language/Product of Interest/Deal Probability/Notes
+  // moved off the staff page in v3.3 — so an older record may still hold the
+  // value under the group that used to own the field. Reads fall through those
+  // previous homes; writes always go to the field's current group.
+  fieldValueContainers(r, group) {
+    if (group === 'customer') return [r.customerFields, r.staffFields];
+    if (group === 'needs') return [r.needsFields, r.customerFields, r.staffFields];
+    if (group === 'company') return [r.companyFields];
+    return [r.staffFields];
   }
 
-  fieldValueContainer(r, group) {
-    if (group === 'customer') return r.customerFields;
-    if (group === 'needs') return r.needsFields;
-    if (group === 'company') return r.companyFields;
-    return r.staffFields;
+  recordValue(r, f, group) {
+    for (const c of this.fieldValueContainers(r, group)) {
+      if (c?.[f.id] !== undefined) return c[f.id];
+    }
+    return undefined;
   }
 
   // Resolves a record's stored value for a field, substituting "Other"
@@ -3512,9 +3584,11 @@ class Component extends DCLogic {
   resolveFieldValue(r, f, group) {
     const raw = this.recordValue(r, f, group);
     if (raw == null) return raw;
-    const container = this.fieldValueContainer(r, group);
-    const fallback = group === 'needs' ? r.customerFields : null; // pre-split needs values
-    const lookup = (key) => container?.[key] ?? fallback?.[key];
+    const containers = this.fieldValueContainers(r, group);
+    const lookup = (key) => {
+      for (const c of containers) { if (c?.[key] !== undefined) return c[key]; }
+      return undefined;
+    };
     const otherPrefix = this.OTHER_VALUE + ':';
     const sub = (v) => {
       if (v === this.OTHER_VALUE) return 'Other: ' + (lookup(f.id + '__otherText') || '');
@@ -3535,9 +3609,9 @@ class Component extends DCLogic {
   }
 
   async exportData() {
-    if (!window.ExportLib) { this.showToastMsg('Export library not loaded'); return; }
+    if (!window.ExportLib) { this.showToastMsg('匯出模組未載入'); return; }
     this.setState({ exporting: true });
-    this.showToastMsg('Exporting...');
+    this.showToastMsg('匯出中…');
 
     try {
       await new Promise(r => setTimeout(r, 50)); // Let UI update
@@ -3597,12 +3671,36 @@ class Component extends DCLogic {
       const a = document.createElement('a');
       a.href = url; a.download = `export_${ts}.zip`; a.click();
       URL.revokeObjectURL(url);
-      this.showToastMsg('Export complete!');
+      this.showToastMsg('匯出完成');
     } catch (err) {
       console.error('Export error:', err);
-      this.showToastMsg('Export failed: ' + err.message);
+      this.showToastMsg('匯出失敗：' + err.message);
     }
     this.setState({ exporting: false });
+  }
+
+  // ===== DELETE CONFIRMATION =====
+  // Every destructive action goes through two stages: stage 1 states what is
+  // about to be deleted, stage 2 makes the user confirm again that it cannot be
+  // undone. `typeToConfirm` additionally gates stage 1 behind typing DELETE
+  // (used for "clear all records").
+  askConfirm({ title, message, typeToConfirm = false, onConfirm }) {
+    this._pendingConfirm = onConfirm;
+    this.setState({ confirmOpen: true, confirmStage: 1, confirmTitle: title, confirmMessage: message,
+      confirmTypeToConfirm: typeToConfirm, confirmTypedValue: '' });
+  }
+  advanceConfirm() {
+    if (this.state.confirmTypeToConfirm && this.state.confirmTypedValue !== 'DELETE') return;
+    this.setState({ confirmStage: 2 });
+  }
+  closeConfirm() {
+    this._pendingConfirm = null;
+    this.setState({ confirmOpen: false, confirmStage: 1, confirmTypedValue: '' });
+  }
+  runConfirm() {
+    const action = this._pendingConfirm;
+    this.closeConfirm();
+    if (action) action();
   }
 
   // ===== ADMIN =====
@@ -3621,7 +3719,7 @@ class Component extends DCLogic {
 
   async saveField() {
     const { fieldEditorMode, fieldEditorTarget, editingFieldId, feNameEn, feNameZh, feType, feRequired, feAllowOther, fePerGroupOther, feEmptyGroups, feOptions } = this.state;
-    if (!feNameEn.trim()) { this.showToastMsg('English name is required'); return; }
+    if (!feNameEn.trim()) { this.showToastMsg('請填寫欄位名稱（英文）'); return; }
     const sk = this.storeKeyFor(fieldEditorTarget);
     let fields = [...this.state[sk]];
     const opts = feOptions.filter(o => o.en.trim() || o.zh.trim())
@@ -3637,14 +3735,14 @@ class Component extends DCLogic {
     }
     await this.saveFieldDefs(sk, fields);
     this.setState({ [sk]: fields, showFieldEditor: false });
-    this.showToastMsg(fieldEditorMode === 'add' ? 'Field added' : 'Field updated');
+    this.showToastMsg(fieldEditorMode === 'add' ? '欄位已新增' : '欄位已更新');
   }
 
   async deleteField(target, id) {
     const sk = this.storeKeyFor(target);
     let fields = this.state[sk].filter(f => f.id !== id).sort((a,b) => a.order - b.order).map((f,i) => ({...f, order: i}));
     await this.saveFieldDefs(sk, fields);
-    this.setState({ [sk]: fields }); this.showToastMsg('Field deleted');
+    this.setState({ [sk]: fields }); this.showToastMsg('欄位已刪除');
   }
 
   async reorderField(target, fromIdx, toIdx) {
@@ -3723,39 +3821,50 @@ class Component extends DCLogic {
     document.addEventListener('pointercancel', onUp);
   }
 
+  // Collects one group's stored values for editing — the field values plus the
+  // "__otherText" side keys — following the same container fallbacks as
+  // reading, so values left behind by a field's previous group still load.
+  editValuesFor(rec, fields, group) {
+    const ids = new Set(fields.map(f => f.id));
+    const owns = (key) => ids.has(key) || fields.some(f => key.startsWith(f.id + '__otherText'));
+    const out = {};
+    for (const c of this.fieldValueContainers(rec, group)) {
+      for (const [k, v] of Object.entries(c || {})) {
+        if (out[k] === undefined && owns(k)) out[k] = v;
+      }
+    }
+    return out;
+  }
+
   editRecord(id) {
     const rec = this.state.records.find(x => x.id === id);
     if (!rec) return;
-    const vals = { ...rec.customerFields };
+    const vals = this.editValuesFor(rec, this.state.customerFields, 'customer');
     const phoneF = this.state.customerFields.find(f => f.type === 'tel');
     let cc = '+886';
     if (phoneF && vals[phoneF.id]) { const p = String(vals[phoneF.id]).split(' '); if (p.length > 1) { cc = p[0]; vals[phoneF.id] = p.slice(1).join(' '); } }
-    const needsVals = {};
-    for (const f of this.state.needsFields) {
-      const v = this.recordValue(rec, f, 'needs');
-      if (v !== undefined) needsVals[f.id] = v;
-      const otherKey = f.id + '__otherText';
-      if (rec.needsFields?.[otherKey] !== undefined || rec.customerFields?.[otherKey] !== undefined)
-        needsVals[otherKey] = rec.needsFields?.[otherKey] ?? rec.customerFields?.[otherKey];
-    }
-    const companyVals = { ...rec.companyFields };
+    const needsVals = this.editValuesFor(rec, this.state.needsFields, 'needs');
+    const companyVals = this.editValuesFor(rec, this.state.companyFields, 'company');
     this.setState({ screen: 'customerForm', formValues: vals, formErrors: {}, needsValues: needsVals, needsErrors: {},
       companyValues: companyVals, companyErrors: {},
+      // The business card lives on the customer form as of v3.3, so preload the
+      // saved photo — otherwise re-submitting an edited record would wipe it.
+      cardPhotoPreviewSrc: rec.cardPhoto ?? null, cardPhotoBase64: rec.cardPhoto ?? null,
       gdprChecked: true, gdprError: false, selectedCountryCode: cc, editingRecordId: id });
   }
 
-  async deleteRecord(id) { await this.dbDelete('records', id); this.setState({ records: this.state.records.filter(r => r.id !== id) }); this.showToastMsg('Record deleted'); }
+  async deleteRecord(id) { await this.dbDelete('records', id); this.setState({ records: this.state.records.filter(r => r.id !== id) }); this.showToastMsg('紀錄已刪除'); }
 
   async clearAllRecords() {
-    if (this.state.clearConfirmValue !== 'DELETE') return;
     await this.dbClear('records');
-    this.setState({ records: [], showClearConfirm: false, clearConfirmValue: '' }); this.showToastMsg('All records cleared');
+    this.setState({ records: [] });
+    this.showToastMsg('已清除全部紀錄');
   }
 
   async saveSettings() {
     await Promise.all([this.saveConfig('pin', this.state.pin), this.saveConfig('deviceName', this.state.deviceName),
       this.saveConfig('gdprEn', this.state.gdprEn), this.saveConfig('gdprZh', this.state.gdprZh)]);
-    this.showToastMsg('Settings saved');
+    this.showToastMsg('設定已儲存');
   }
 
   // ===== RENDER =====
@@ -3903,8 +4012,8 @@ class Component extends DCLogic {
       borderColor: adminTab === id ? '#0055B8' : 'transparent',
     });
     const adminTabs = [
-      mkTab('customer', 'Customer Fields'), mkTab('needs', 'Needs Fields'), mkTab('company', 'Company Profile'), mkTab('staff', 'Staff Fields'),
-      mkTab('records', 'Records'), mkTab('settings', 'Settings'),
+      mkTab('customer', '客戶資料欄位'), mkTab('needs', '客戶需求欄位'), mkTab('company', '公司背景欄位'), mkTab('staff', '業務備註欄位'),
+      mkTab('records', '資料紀錄'), mkTab('settings', '系統設定'),
     ];
 
     // Form labels. Company Profile always sits at step 2; whichever of
@@ -3952,24 +4061,29 @@ class Component extends DCLogic {
       : null;
 
     // Admin field lists (shared block across the four group tabs)
-    const listTitles = { customer: 'Customer Fields', needs: 'Needs Fields', company: 'Company Profile 公司背景資料', staff: 'Staff Note Fields' };
+    const listTitles = { customer: '客戶資料欄位', needs: '客戶需求欄位', company: '公司背景資料欄位', staff: '業務備註欄位' };
     const adminListTitle = listTitles[adminTab] || '';
     const listTarget = showAdminFieldList ? adminTab : 'customer';
     const listFields = showAdminFieldList ? this.sortedFields(this.storeKeyFor(listTarget)) : [];
     const adminFields = listFields.map(f => ({
-      nameEn: f.nameEn, nameZh: f.nameZh, type: f.type, required: f.required, isCore: f.isCore||false, allowOther: f.allowOther||false, canDelete: !f.isCore,
+      nameZh: f.nameZh || f.nameEn, nameEn: f.nameEn, type: this.typeLabel(f.type),
+      required: f.required, isCore: f.isCore||false, allowOther: f.allowOther||false, canDelete: !f.isCore,
       hasOptions: f.type === 'select' || f.type === 'checkbox-group' || f.type === 'radio-group',
-      optionsSummary: (f.options||[]).map(o => o.en).join(', ') || '(none)',
+      optionsSummary: (f.options||[]).map(o => o.zh || o.en).join('、') || '（無）',
       onEdit: () => this.openFieldEditor('edit', listTarget, f),
-      onDelete: () => this.deleteField(listTarget, f.id),
+      onDelete: () => this.askConfirm({
+        title: '刪除欄位？',
+        message: `即將刪除欄位「${f.nameZh || f.nameEn}」。已蒐集的紀錄中，此欄位的資料將不再顯示於列表與匯出。`,
+        onConfirm: () => this.deleteField(listTarget, f.id),
+      }),
     }));
 
     // Records
     const recordCount = records.length;
     const photoCount = records.filter(r => r.cardPhoto).length;
-    const recordStats = `${recordCount} record${recordCount !== 1 ? 's' : ''} collected, ${photoCount} with business card photo${photoCount !== 1 ? 's' : ''}`;
+    const recordStats = `已蒐集 ${recordCount} 筆紀錄，其中 ${photoCount} 筆含名片照片`;
     const allFields = this.allFieldGroups();
-    const recordHeaders = ['#', 'Time', 'Device', ...allFields.map(e => e.f.nameEn), 'Card'];
+    const recordHeaders = ['#', '時間', '裝置', ...allFields.map(e => e.f.nameZh || e.f.nameEn), '名片'];
     const displayVal = (e, r) => {
       const v = this.resolveFieldValue(r, e.f, e.group);
       if (Array.isArray(v)) return v.join(', ');
@@ -3984,14 +4098,19 @@ class Component extends DCLogic {
       ];
       const summaryParts = allFields.map(e => {
         const val = displayVal(e, r);
-        return val !== '' && val != null ? (e.f.nameEn + ': ' + val) : '';
+        return val !== '' && val != null ? ((e.f.nameZh || e.f.nameEn) + '：' + val) : '';
       }).filter(Boolean);
+      const who = [r.customerFields?.name, r.customerFields?.company].filter(Boolean).join(' / ');
       return { cells, hasPhoto: !!r.cardPhoto,
         num: String(i+1), time: new Date(r.timestamp).toLocaleString(),
         summary: summaryParts.join('\n'),
         onViewPhoto: () => this.setState({ showPhotoLightbox: true, lightboxPhotoSrc: r.cardPhoto }),
         onEdit: () => this.editRecord(r.id),
-        onDelete: () => this.deleteRecord(r.id) };
+        onDelete: () => this.askConfirm({
+          title: '刪除這筆紀錄？',
+          message: `即將刪除第 ${i+1} 筆紀錄${who ? '（' + who + '）' : ''}，包含其名片照片。`,
+          onConfirm: () => this.deleteRecord(r.id),
+        }) };
     });
 
     // Field editor
@@ -4007,7 +4126,8 @@ class Component extends DCLogic {
       onRemove: () => { const opts = [...this.state.feOptions]; opts.splice(i,1); this.setState({feOptions: opts}); },
     }));
 
-    const { showClearConfirm, clearConfirmValue, showPinDialog, pinValue, pinError } = this.state;
+    const { confirmOpen, confirmStage, confirmTitle, confirmMessage, confirmTypeToConfirm, confirmTypedValue,
+      showPinDialog, pinValue, pinError } = this.state;
 
     return {
       showHome, showCustomerForm, showNeedsForm, showCompanyForm, showHandoff, showStaffNotes, showAdmin,
@@ -4046,12 +4166,16 @@ class Component extends DCLogic {
       onCompanySubmit: () => this.submitCompanyForm(),
       onCompanyBack: () => this.setState({ screen: firstChoice === 'data' ? 'customerForm' : 'needsForm' }),
       // Handoff
-      onStaffContinue: () => this.setState({ screen: 'staffNotes', staffValues: {}, cardPhotoPreviewSrc: null, cardPhotoBase64: null }),
+      onStaffContinue: () => this.setState({ screen: 'staffNotes', staffValues: {} }),
       // Staff page
       staffCustomerName, staffCustomerCompany, staffFormFields,
       showCaptureButtons, showPhotoPreview, cardPhotoPreviewImg,
       onCardFileSelected: (e) => this.handleCardFileSelected(e),
-      onRemoveCardPhoto: () => this.setState({ cardPhotoPreviewSrc: null, cardPhotoBase64: null }),
+      onRemoveCardPhoto: () => this.askConfirm({
+        title: '移除名片照片？',
+        message: '即將移除這張名片照片。若此紀錄先前已存檔，儲存後照片也會一併刪除。',
+        onConfirm: () => this.setState({ cardPhotoPreviewSrc: null, cardPhotoBase64: null }),
+      }),
       onSaveStaffNotes: () => this.saveStaffNotes(),
       onSkipStaffNotes: () => { this.goHome(); },
       // Admin
@@ -4064,9 +4188,14 @@ class Component extends DCLogic {
       recordHeaders, recordRows,
       onExportData: () => this.exportData(),
       exporting: this.state.exporting,
-      exportBtnLabel: this.state.exporting ? 'Exporting...' : 'Export Data',
+      exportBtnLabel: this.state.exporting ? '匯出中…' : '匯出資料',
       exportBtnOpacity: this.state.exporting ? '0.6' : '1',
-      onClearAllData: () => this.setState({ showClearConfirm: true, clearConfirmValue: '' }),
+      onClearAllData: () => this.askConfirm({
+        title: '清除全部紀錄？',
+        message: `即將刪除全部 ${recordCount} 筆紀錄與所有名片照片。請輸入 DELETE 以繼續。`,
+        typeToConfirm: true,
+        onConfirm: () => this.clearAllRecords(),
+      }),
       // Settings
       deviceName: this.state.deviceName, adminPin: this.state.pin, gdprEn: this.state.gdprEn, gdprZh: this.state.gdprZh,
       onDeviceNameChange: (e) => this.setState({ deviceName: e.target.value }),
@@ -4075,7 +4204,7 @@ class Component extends DCLogic {
       onGdprZhChange: (e) => this.setState({ gdprZh: e.target.value }),
       onSaveSettings: () => this.saveSettings(),
       // Field editor
-      showFieldEditor, fieldEditorTitle: fieldEditorMode === 'add' ? 'Add Field' : 'Edit Field',
+      showFieldEditor, fieldEditorTitle: fieldEditorMode === 'add' ? '新增欄位' : '編輯欄位',
       feNameEn, feNameZh, feType, feRequired, feAllowOther, feShowOptions, feShowAllowOther, feOptions,
       fePerGroupOther, feEmptyGroups, feShowPerGroupOther,
       onFeNameEnChange: (e) => this.setState({ feNameEn: e.target.value }),
@@ -4088,13 +4217,18 @@ class Component extends DCLogic {
       onFeAddOption: () => this.setState({ feOptions: [...this.state.feOptions, { en: '', zh: '', group: '' }] }),
       onCloseFieldEditor: () => this.setState({ showFieldEditor: false }),
       onSaveField: () => this.saveField(),
-      // Clear
-      showClearConfirm, clearConfirmValue,
-      clearConfirmDisabled: clearConfirmValue !== 'DELETE',
-      clearConfirmOpacity: clearConfirmValue !== 'DELETE' ? '0.4' : '1',
-      onClearConfirmInput: (e) => this.setState({ clearConfirmValue: e.target.value }),
-      onCloseClearConfirm: () => this.setState({ showClearConfirm: false }),
-      onConfirmClear: () => this.clearAllRecords(),
+      // Two-stage delete confirmation
+      confirmOpen, confirmTitle,
+      confirmMessage: confirmStage === 1 ? confirmMessage : '此動作無法復原。確定要刪除嗎？',
+      confirmStage1: confirmStage === 1, confirmStage2: confirmStage === 2,
+      confirmShowTypeBox: confirmStage === 1 && confirmTypeToConfirm,
+      confirmTypedValue,
+      confirmNextDisabled: confirmTypeToConfirm && confirmTypedValue !== 'DELETE',
+      confirmNextOpacity: (confirmTypeToConfirm && confirmTypedValue !== 'DELETE') ? '0.4' : '1',
+      onConfirmTypedInput: (e) => this.setState({ confirmTypedValue: e.target.value }),
+      onConfirmAdvance: () => this.advanceConfirm(),
+      onConfirmRun: () => this.runConfirm(),
+      onConfirmCancel: () => this.closeConfirm(),
       // Photo lightbox
       showPhotoLightbox: this.state.showPhotoLightbox,
       lightboxPhotoImg: this.state.lightboxPhotoSrc
