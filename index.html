@@ -3724,6 +3724,26 @@ class Component extends DCLogic {
 
   sortedFields(key) { return [...this.state[key]].sort((a,b) => a.order - b.order); }
 
+  // Columns shown in the admin Records list — deliberately a short, scannable
+  // subset. The complete data still goes out in the export, which builds its own
+  // column list from allFieldGroups(). Add or remove entries here to change it.
+  RECORD_LIST_FIELDS = [
+    { id: 'name', group: 'customer' },
+    { id: 'company', group: 'customer' },
+    { id: 'greeter', group: 'staff' },
+  ];
+
+  // Resolved against the live field definitions rather than hard-coded titles,
+  // so a heading follows a rename and a deleted field simply drops out.
+  recordListFields() {
+    return this.RECORD_LIST_FIELDS
+      .map(({ id, group }) => {
+        const f = this.sortedFields(this.storeKeyFor(group)).find(x => x.id === id);
+        return f ? { f, group } : null;
+      })
+      .filter(Boolean);
+  }
+
   allFieldGroups() {
     return [
       ...this.sortedFields('customerFields').map(f => ({ f, group: 'customer' })),
@@ -4278,8 +4298,8 @@ class Component extends DCLogic {
     const recordCount = records.length;
     const photoCount = records.filter(r => r.cardPhoto).length;
     const recordStats = `已蒐集 ${recordCount} 筆紀錄，其中 ${photoCount} 筆含名片照片`;
-    const allFields = this.allFieldGroups();
-    const recordHeaders = ['#', '時間', '裝置', ...allFields.map(e => e.f.nameZh || e.f.nameEn), '名片'];
+    const recordCols = this.recordListFields();
+    const recordHeaders = ['#', '時間', ...recordCols.map(e => e.f.nameZh || e.f.nameEn)];
     const displayVal = (e, r) => {
       const v = this.resolveFieldValue(r, e.f, e.group);
       if (Array.isArray(v)) return v.join(', ');
@@ -4288,11 +4308,10 @@ class Component extends DCLogic {
     };
     const recordRows = records.map((r,i) => {
       const cells = [
-        String(i+1), new Date(r.timestamp).toLocaleString(), r.device||'',
-        ...allFields.map(e => displayVal(e, r)),
-        r.cardPhoto ? '📷' : '—',
+        String(i+1), new Date(r.timestamp).toLocaleString(),
+        ...recordCols.map(e => displayVal(e, r)),
       ];
-      const summaryParts = allFields.map(e => {
+      const summaryParts = recordCols.map(e => {
         const val = displayVal(e, r);
         return val !== '' && val != null ? ((e.f.nameZh || e.f.nameEn) + '：' + val) : '';
       }).filter(Boolean);
