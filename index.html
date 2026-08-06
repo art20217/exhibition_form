@@ -2297,8 +2297,8 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
   <!-- ===== PIN DIALOG ===== -->
   <sc-if value="{{ showPinDialog }}">
-    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s ease" onclick="{{ onClosePinDialog }}">
-      <div style="background: #FFF; border-radius: 16px; padding: 40px; width: 360px; max-width: 90vw; text-align: center" onclick="{{ stopProp }}">
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s ease">
+      <div style="background: #FFF; border-radius: 16px; padding: 40px; width: 360px; max-width: 90vw; text-align: center">
         <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 8px; color: #1A1A2E">管理者登入</div>
         <div style="font-size: 0.875rem; color: #64748B; margin-bottom: 24px">請輸入 4 位數 PIN 碼</div>
         <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 16px">
@@ -2863,16 +2863,16 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             </div>
             <sc-if value="{{ hasRecords }}">
               <div data-records-table style="background: #FFF; border-radius: 10px; border: 1px solid #E2E8F0; overflow-x: auto">
-                <sc-raw-table style="width: 100%; border-collapse: collapse; font-size: 0.8125rem; white-space: nowrap">
+                <sc-raw-table style="width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 0.8125rem">
                   <sc-raw-thead>
                     <sc-raw-tr style="background: #F8FAFC">
-                      <sc-for list="{{ recordHeaders }}" as="hdr"><sc-raw-th style="padding: 10px 14px; text-align: left; font-weight: 600; color: #475569; border-bottom: 1px solid #E2E8F0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em">{{ hdr }}</sc-raw-th></sc-for>
-                      <sc-raw-th style="padding: 10px 14px; text-align: left; font-weight: 600; color: #475569; border-bottom: 1px solid #E2E8F0; font-size: 0.75rem">操作</sc-raw-th>
+                      <sc-for list="{{ recordHeaders }}" as="hdr"><sc-raw-th style="padding: 10px 14px; text-align: left; font-weight: 600; color: #475569; border-bottom: 1px solid #E2E8F0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; {{ hdr.style }}">{{ hdr.label }}</sc-raw-th></sc-for>
+                      <sc-raw-th style="padding: 10px 14px; text-align: left; font-weight: 600; color: #475569; border-bottom: 1px solid #E2E8F0; font-size: 0.75rem; width: 132px">操作</sc-raw-th>
                     </sc-raw-tr>
                   </sc-raw-thead>
                   <sc-raw-tbody>
                     <sc-for list="{{ recordRows }}" as="row"><sc-raw-tr style="border-bottom: 1px solid #F1F5F9" style-hover="background: #F9FAFB">
-                      <sc-for list="{{ row.cells }}" as="cell"><sc-raw-td style="padding: 10px 14px; color: #334155; max-width: 200px; overflow: hidden; text-overflow: ellipsis">{{ cell }}</sc-raw-td></sc-for>
+                      <sc-for list="{{ row.cells }}" as="cell"><sc-raw-td style="padding: 10px 14px; color: #334155; overflow-wrap: anywhere; {{ cell.style }}">{{ cell.text }}</sc-raw-td></sc-for>
                       <sc-raw-td style="padding: 10px 14px">
                         <div style="display: flex; gap: 8px; align-items: center">
                           <sc-if value="{{ row.hasPhoto }}">
@@ -2947,8 +2947,8 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
   <!-- ===== FIELD EDITOR MODAL ===== -->
   <sc-if value="{{ showFieldEditor }}">
-    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s ease; padding: 20px" onclick="{{ onCloseFieldEditor }}">
-      <div style="background: #FFF; border-radius: 16px; width: 520px; max-width: 100%; max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch" onclick="{{ stopProp }}">
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s ease; padding: 20px">
+      <div style="background: #FFF; border-radius: 16px; width: 520px; max-width: 100%; max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch">
         <div style="padding: 24px 24px 0">
           <div style="font-size: 1.125rem; font-weight: 700; color: #1A1A2E; margin-bottom: 20px">{{ fieldEditorTitle }}</div>
           <div style="margin-bottom: 14px">
@@ -3022,8 +3022,8 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
   <!-- ===== DELETE CONFIRM (two stages, shared by every destructive action) ===== -->
   <sc-if value="{{ confirmOpen }}">
-    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s ease; padding: 20px" onclick="{{ onConfirmCancel }}">
-      <div style="background: #FFF; border-radius: 16px; padding: 32px; width: 420px; max-width: 100%; text-align: center" onclick="{{ stopProp }}">
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s ease; padding: 20px">
+      <div style="background: #FFF; border-radius: 16px; padding: 32px; width: 420px; max-width: 100%; text-align: center">
         <div style="width: 56px; height: 56px; background: #FEF2F2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
         </div>
@@ -3050,9 +3050,9 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
   <!-- ===== PHOTO LIGHTBOX ===== -->
   <sc-if value="{{ showPhotoLightbox }}">
-    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s ease; padding: 20px; cursor: pointer" onclick="{{ onClosePhotoLightbox }}">
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s ease; padding: 20px">
       {{ lightboxPhotoImg }}
-      <button style="position: absolute; top: 20px; right: 20px; width: 44px; height: 44px; background: rgba(255,255,255,0.2); border: none; border-radius: 50%; color: #FFF; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center" style-hover="background: rgba(255,255,255,0.3)">×</button>
+      <button onclick="{{ onClosePhotoLightbox }}" style="position: absolute; top: 20px; right: 20px; width: 44px; height: 44px; background: rgba(255,255,255,0.2); border: none; border-radius: 50%; color: #FFF; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center" style-hover="background: rgba(255,255,255,0.3)">×</button>
     </div>
   </sc-if>
 
@@ -4299,7 +4299,15 @@ class Component extends DCLogic {
     const photoCount = records.filter(r => r.cardPhoto).length;
     const recordStats = `已蒐集 ${recordCount} 筆紀錄，其中 ${photoCount} 筆含名片照片`;
     const recordCols = this.recordListFields();
-    const recordHeaders = ['#', '時間', ...recordCols.map(e => e.f.nameZh || e.f.nameEn)];
+    // # / 時間 / 操作 get fixed widths; the field columns are left unsized so
+    // table-layout: fixed splits the remaining space equally among them —
+    // adding or removing a RECORD_LIST_FIELDS entry reflows on its own.
+    const TIME_COL = 'width: 168px; white-space: nowrap';
+    const recordHeaders = [
+      { label: '#', style: 'width: 56px' },
+      { label: '時間', style: TIME_COL },
+      ...recordCols.map(e => ({ label: e.f.nameZh || e.f.nameEn, style: '' })),
+    ];
     const displayVal = (e, r) => {
       const v = this.resolveFieldValue(r, e.f, e.group);
       if (Array.isArray(v)) return v.join(', ');
@@ -4308,8 +4316,9 @@ class Component extends DCLogic {
     };
     const recordRows = records.map((r,i) => {
       const cells = [
-        String(i+1), new Date(r.timestamp).toLocaleString(),
-        ...recordCols.map(e => displayVal(e, r)),
+        { text: String(i+1), style: '' },
+        { text: new Date(r.timestamp).toLocaleString(), style: TIME_COL },
+        ...recordCols.map(e => ({ text: displayVal(e, r), style: '' })),
       ];
       const summaryParts = recordCols.map(e => {
         const val = displayVal(e, r);
@@ -4352,7 +4361,6 @@ class Component extends DCLogic {
       onPinInput: (e) => this.setState({ pinValue: e.target.value.replace(/\D/g,'').slice(0,4), pinError: false }),
       onPinKeyDown: (e) => { if (e.key === 'Enter') this.submitPin(); },
       onSubmitPin: () => this.submitPin(),
-      stopProp: (e) => e.stopPropagation(),
       // Home
       onChooseData: () => this.startFlow('data'),
       onChooseNeeds: () => this.startFlow('needs'),
