@@ -2264,34 +2264,204 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 <!-- ROOT -->
 <div style="width: 100vw; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; background: #F5F6F8">
 
-  <!-- ===== HOME (choose which form to fill first) ===== -->
-  <sc-if value="{{ showHome }}">
-    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #FFFFFF; position: relative; animation: fadeIn 0.3s ease; padding: 1.5rem">
-      <div style="position: absolute; top: 20px; right: 20px; z-index: 10">
-        <button onclick="{{ onOpenPinDialog }}" style="width: 44px; height: 44px; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.25; border-radius: 8px" style-hover="opacity: 0.5; background: #F0F0F0" style-active="opacity: 0.7">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-        </button>
-      </div>
-      <div style="margin-bottom: 40px; text-align: center">
-        <div style="width: 72px; height: 72px; background: #0055B8; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+  <!-- ===== EVENT LIST (root screen) ===== -->
+  <sc-if value="{{ showEvents }}">
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.3s ease">
+      <div data-page-header="" style="background: #0055B8; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0">
+        <div style="display: flex; align-items: center; gap: 12px; min-width: 0">
+          <svg style="flex-shrink: 0" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          <span data-page-title="" style="display: flex; flex-direction: column; min-width: 0">
+            <span style="color: #FFF; font-size: var(--fs-page); font-weight: 600; line-height: 1.25">Exhibitions</span>
+            <span style="color: rgba(255,255,255,0.8); font-size: var(--fs-sm); line-height: 1.3">活動管理</span>
+          </span>
         </div>
-        <div style="font-size: 1.125rem; font-weight: 600; color: #64748B; letter-spacing: 0.05em; text-transform: uppercase">Exhibition Registration</div>
-        <div style="font-size: 0.9375rem; color: #94A3B8; margin-top: 4px">訪客資料登記</div>
+        <sc-if value="{{ manageMode }}">
+          <button onclick="{{ onLockManage }}" style="color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.15); border: none; padding: 8px 14px; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25); color: #FFF">🔓 管理中（點此鎖定）</button>
+        </sc-if>
+        <sc-if value="{{ manageLocked }}">
+          <button onclick="{{ onUnlockManage }}" style="width: 44px; height: 44px; border: none; background: rgba(255,255,255,0.12); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 8px; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          </button>
+        </sc-if>
       </div>
-      <div data-home-btns="" style="display: flex; gap: 24px">
-        <button onclick="{{ onChooseData }}" style="width: 260px; height: 116px; border: 2px solid #D1D5DB; background: #FFF; border-radius: 14px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s" style-hover="border-color: #0055B8; background: #F0F6FF" style-active="transform: scale(0.97)">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0055B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          <span style="font-size: 1.1875rem; font-weight: 700; color: #1A1A2E">Customer Info</span>
-          <span style="font-size: 0.9375rem; color: #64748B">客戶資料填寫</span>
-        </button>
-        <button onclick="{{ onChooseNeeds }}" style="width: 260px; height: 116px; border: 2px solid #D1D5DB; background: #FFF; border-radius: 14px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s" style-hover="border-color: #0055B8; background: #F0F6FF" style-active="transform: scale(0.97)">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0055B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-          <span style="font-size: 1.1875rem; font-weight: 700; color: #1A1A2E">Customer Needs</span>
-          <span style="font-size: 0.9375rem; color: #64748B">客戶需求填寫</span>
+      <div data-mobile-pad="" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 1.5rem">
+        <div style="max-width: 760px; margin: 0 auto">
+          <sc-if value="{{ manageMode }}">
+            <button onclick="{{ onAddEvent }}" data-add-event="" style="width: 100%; height: 52px; margin-bottom: 20px; background: #0055B8; color: #FFF; border: none; border-radius: 12px; font-size: var(--fs-body); font-weight: 600; cursor: pointer" style-hover="background: #004494">＋ 新增活動</button>
+          </sc-if>
+
+          <sc-if value="{{ hasActiveEvents }}">
+            <div style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E; margin: 0 0 10px">使用中</div>
+            <sc-for list="{{ activeEvents }}" as="ev">
+              <div data-event-card="" style="background: #FFF; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 12px; overflow: hidden">
+                <button onclick="{{ ev.onOpen }}" style="width: 100%; text-align: left; background: transparent; border: none; padding: 18px 20px; cursor: pointer; display: block" style-hover="background: #F0F6FF">
+                  <div style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E; line-height: 1.3">{{ ev.name }}</div>
+                  <div style="font-size: var(--fs-sm); color: #0055B8; margin-top: 4px">{{ ev.dateLabel }}</div>
+                  <div style="font-size: var(--fs-sm); color: #94A3B8; margin-top: 2px">{{ ev.meta }}</div>
+                </button>
+                <sc-if value="{{ manageMode }}">
+                  <div style="display: flex; gap: 8px; padding: 0 20px 14px; flex-wrap: wrap">
+                    <button onclick="{{ ev.onEdit }}" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F0F6FF">編輯</button>
+                    <button onclick="{{ ev.onToggleStatus }}" style="height: 36px; padding: 0 14px; background: #FFF; color: #475569; border: 1px solid #D1D5DB; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F8FAFC">{{ ev.statusLabel }}</button>
+                    <button onclick="{{ ev.onDelete }}" style="height: 36px; padding: 0 14px; background: #FFF; color: #DC2626; border: 1px solid #FCA5A5; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #FEF2F2">刪除</button>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </sc-if>
+
+          <sc-if value="{{ hasEndedEvents }}">
+            <div style="font-size: var(--fs-h3); font-weight: 700; color: #64748B; margin: 26px 0 10px">已結束</div>
+            <sc-for list="{{ endedEvents }}" as="ev">
+              <div data-event-card="" style="background: #FFF; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 12px; overflow: hidden; opacity: 0.75">
+                <button onclick="{{ ev.onOpen }}" style="width: 100%; text-align: left; background: transparent; border: none; padding: 18px 20px; cursor: pointer; display: block" style-hover="background: #F8FAFC">
+                  <div style="font-size: var(--fs-h3); font-weight: 700; color: #475569; line-height: 1.3">{{ ev.name }}</div>
+                  <div style="font-size: var(--fs-sm); color: #64748B; margin-top: 4px">{{ ev.dateLabel }}</div>
+                  <div style="font-size: var(--fs-sm); color: #94A3B8; margin-top: 2px">{{ ev.meta }}</div>
+                </button>
+                <sc-if value="{{ manageMode }}">
+                  <div style="display: flex; gap: 8px; padding: 0 20px 14px; flex-wrap: wrap">
+                    <button onclick="{{ ev.onEdit }}" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F0F6FF">編輯</button>
+                    <button onclick="{{ ev.onToggleStatus }}" style="height: 36px; padding: 0 14px; background: #FFF; color: #475569; border: 1px solid #D1D5DB; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F8FAFC">{{ ev.statusLabel }}</button>
+                    <button onclick="{{ ev.onDelete }}" style="height: 36px; padding: 0 14px; background: #FFF; color: #DC2626; border: 1px solid #FCA5A5; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #FEF2F2">刪除</button>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </sc-if>
+
+          <div style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; padding: 28px 0 8px">v3.4 — Offline Exhibition Form</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===== EVENT PAGE (pick who is filling in + on which day, then a form) ===== -->
+  <sc-if value="{{ showEventHome }}">
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.3s ease">
+      <div data-page-header="" style="background: #0055B8; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0">
+        <div style="display: flex; align-items: center; gap: 12px; min-width: 0">
+          <button onclick="{{ onBackToEvents }}" style="color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.15); border: none; padding: 8px 12px; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25); color: #FFF">← 活動列表</button>
+          <span data-page-title="" style="display: flex; flex-direction: column; min-width: 0">
+            <span style="color: #FFF; font-size: var(--fs-page); font-weight: 600; line-height: 1.25">{{ eventTitle }}</span>
+            <span style="color: rgba(255,255,255,0.8); font-size: var(--fs-sm); line-height: 1.3">{{ eventDateLabel }}</span>
+          </span>
+        </div>
+        <button onclick="{{ onOpenPinDialog }}" style="width: 44px; height: 44px; border: none; background: rgba(255,255,255,0.12); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 8px; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
         </button>
       </div>
-      <div style="position: absolute; bottom: 24px; font-size: 0.8125rem; color: #94A3B8">v3.3 — Offline Exhibition Form</div>
+      <div data-mobile-pad="" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 1.5rem">
+        <div style="max-width: 640px; margin: 0 auto">
+
+          <sc-if value="{{ hasSession }}">
+            <div data-session-banner="" style="background: #F0F6FF; border: 1px solid #BFDBFE; border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap">
+              <span style="font-size: var(--fs-body); font-weight: 600; color: #0055B8; overflow-wrap: anywhere">{{ sessionBanner }}</span>
+              <button onclick="{{ onResetSession }}" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap" style-hover="background: #E8F1FC">重新選擇</button>
+            </div>
+          </sc-if>
+
+          <div style="margin-bottom: 1.5rem">
+            <div style="font-size: var(--fs-h2); font-weight: 700; color: #1A1A2E; line-height: 1.25">Filled in by</div>
+            <div style="font-size: var(--fs-body); color: #64748B; line-height: 1.4; margin: 2px 0 10px">填單人員（可複選）</div>
+            <div data-staff-picker="" data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px">
+              <sc-for list="{{ eventStaffItems }}" as="st">
+                <button onclick="{{ st.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 0; overflow-wrap: anywhere; background: {{ st.bgColor }}; border-color: {{ st.borderColor }}; color: {{ st.textColor }}; {{ st.spanStyle }}" style-hover="border-color: #93B4E0">
+                  <span style="font-size: var(--fs-body); line-height: 1.35">{{ st.labelEn }}</span>
+                  <sc-if value="{{ st.labelZh }}"><span style="font-size: var(--fs-sm); line-height: 1.35; opacity: 0.72">{{ st.labelZh }}</span></sc-if>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 1.75rem">
+            <div style="font-size: var(--fs-h2); font-weight: 700; color: #1A1A2E; line-height: 1.25">Date</div>
+            <div style="font-size: var(--fs-body); color: #64748B; line-height: 1.4; margin: 2px 0 10px">填單日期</div>
+            <sc-if value="{{ eventDateMode }}">
+              <div data-date-picker="" data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr)); gap: 10px">
+                <sc-for list="{{ eventDateItems }}" as="dt">
+                  <button onclick="{{ dt.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 0; background: {{ dt.bgColor }}; border-color: {{ dt.borderColor }}; color: {{ dt.textColor }}" style-hover="border-color: #93B4E0">
+                    <span style="font-size: var(--fs-body); font-weight: 600; line-height: 1.35">{{ dt.labelEn }}</span>
+                    <span style="font-size: var(--fs-xs); line-height: 1.35; opacity: 0.72">{{ dt.labelZh }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ eventDateNoChips }}">
+              <input type="date" value="{{ eventDateValue }}" oninput="{{ onEventDateInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none" style-focus="border-color: #0055B8">
+            </sc-if>
+          </div>
+
+          <sc-if value="{{ showEntryHint }}">
+            <div data-entry-hint="" style="background: #FFF7ED; border: 1px solid #FED7AA; color: #C2410C; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; font-size: var(--fs-sm)">{{ entryHint }}</div>
+          </sc-if>
+
+          <div data-home-btns="" style="display: flex; gap: 16px; padding-bottom: 2.5rem">
+            <button onclick="{{ onChooseData }}" disabled="{{ entryDisabled }}" data-entry-customer="" style="flex: 1; height: 128px; border: 2px solid #D1D5DB; background: #FFF; border-radius: 14px; cursor: {{ entryCursor }}; opacity: {{ entryOpacity }}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s" style-hover="border-color: #0055B8; background: #F0F6FF" style-active="transform: scale(0.97)">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0055B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              <span style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E">Customer Info</span>
+              <span style="font-size: var(--fs-sm); color: #64748B">客戶資料填寫</span>
+            </button>
+            <button onclick="{{ onChooseNeeds }}" disabled="{{ entryDisabled }}" data-entry-needs="" style="flex: 1; height: 128px; border: 2px solid #D1D5DB; background: #FFF; border-radius: 14px; cursor: {{ entryCursor }}; opacity: {{ entryOpacity }}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s" style-hover="border-color: #0055B8; background: #F0F6FF" style-active="transform: scale(0.97)">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0055B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              <span style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E">Customer Needs</span>
+              <span style="font-size: var(--fs-sm); color: #64748B">客戶需求填寫</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===== EVENT EDITOR MODAL (backdrop locked, like every other popup) ===== -->
+  <sc-if value="{{ showEventEditor }}">
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s ease; padding: 20px">
+      <div style="background: #FFF; border-radius: 16px; width: 520px; max-width: 100%; max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch">
+        <div style="padding: 24px 24px 0">
+          <div style="font-size: 1.125rem; font-weight: 700; color: #1A1A2E; margin-bottom: 20px">{{ eventEditorTitle }}</div>
+          <div style="margin-bottom: 14px">
+            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">活動名稱</label>
+            <input type="text" value="{{ evName }}" oninput="{{ onEvNameChange }}" placeholder="例如 2026 美國展" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
+          </div>
+          <div data-mobile-stack="" style="display: flex; gap: 12px; margin-bottom: 14px">
+            <div style="flex: 1">
+              <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">開始日期</label>
+              <input type="date" value="{{ evStart }}" oninput="{{ onEvStartChange }}" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
+            </div>
+            <div style="flex: 1">
+              <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">結束日期</label>
+              <input type="date" value="{{ evEnd }}" oninput="{{ onEvEndChange }}" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
+            </div>
+          </div>
+          <sc-if value="{{ showEvSource }}">
+            <div style="margin-bottom: 14px">
+              <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">表單欄位來源</label>
+              <sc-raw-select value="{{ evSource }}" onchange="{{ onEvSourceChange }}" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none; background: #FFF" style-focus="border-color: #0055B8">
+                <sc-for list="{{ evSourceOptions }}" as="so"><option value="{{ so.value }}">{{ so.label }}</option></sc-for>
+              </sc-raw-select>
+              <div style="font-size: 0.75rem; color: #94A3B8; margin-top: 6px">複製而來的欄位是獨立副本，日後修改不會互相影響。</div>
+            </div>
+          </sc-if>
+          <div style="margin-bottom: 14px">
+            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 6px">接待人員</label>
+            <sc-for list="{{ evStaffRows }}" as="sr">
+              <div data-staff-row="" style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center">
+                <input type="text" value="{{ sr.en }}" oninput="{{ sr.onEnChange }}" placeholder="英文（匯出用）" style="flex: 1; min-width: 0; height: 38px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
+                <input type="text" value="{{ sr.zh }}" oninput="{{ sr.onZhChange }}" placeholder="中文（顯示用）" style="flex: 1; min-width: 0; height: 38px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
+                <button onclick="{{ sr.onRemove }}" style="width: 34px; height: 34px; flex-shrink: 0; border: none; background: #FEF2F2; color: #DC2626; border-radius: 8px; cursor: pointer; font-size: 1rem" style-hover="background: #FEE2E2">×</button>
+              </div>
+            </sc-for>
+            <button onclick="{{ onAddStaffRow }}" style="height: 36px; padding: 0 14px; background: #F1F5F9; color: #475569; border: none; border-radius: 8px; font-size: 0.8125rem; cursor: pointer" style-hover="background: #E2E8F0">＋ 新增人員</button>
+          </div>
+          <sc-if value="{{ evError }}">
+            <div style="color: #DC2626; font-size: 0.8125rem; margin-bottom: 10px">{{ evError }}</div>
+          </sc-if>
+        </div>
+        <div style="padding: 16px 24px 24px; display: flex; gap: 12px; justify-content: flex-end; position: sticky; bottom: 0; background: #FFF; border-top: 1px solid #F1F5F9">
+          <button onclick="{{ onCloseEventEditor }}" style="height: 42px; padding: 0 20px; border: 1px solid #D1D5DB; background: #FFF; border-radius: 8px; font-size: 0.875rem; color: #64748B; cursor: pointer" style-hover="background: #F9FAFB">取消</button>
+          <button onclick="{{ onSaveEvent }}" style="height: 42px; padding: 0 24px; border: none; background: #0055B8; border-radius: 8px; font-size: 0.875rem; color: #FFF; cursor: pointer; font-weight: 600" style-hover="background: #004494">儲存活動</button>
+        </div>
+      </div>
     </div>
   </sc-if>
 
@@ -2689,10 +2859,17 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
       </div>
       <div style="font-size: 1.75rem; font-weight: 700; color: #1A1A2E; margin-bottom: 8px; text-align: center">Thank you! 感謝您的填寫！</div>
       <div style="font-size: 1rem; color: #64748B; text-align: center; line-height: 1.7">Please return the tablet to our staff.<br>請將平板交還給工作人員。</div>
-      <button onclick="{{ onStaffContinue }}" style="position: absolute; bottom: 28px; right: 28px; height: 44px; padding: 0 20px; background: transparent; color: #94A3B8; border: 1px solid #E2E8F0; border-radius: 10px; font-size: 0.875rem; cursor: pointer; display: flex; align-items: center; gap: 8px" style-hover="background: #F8FAFC; color: #475569">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-        Staff 工作人員 →
-      </button>
+      <sc-if value="{{ showStaffEntry }}">
+        <button onclick="{{ onStaffContinue }}" style="position: absolute; bottom: 28px; right: 28px; height: 44px; padding: 0 20px; background: transparent; color: #94A3B8; border: 1px solid #E2E8F0; border-radius: 10px; font-size: 0.875rem; cursor: pointer; display: flex; align-items: center; gap: 8px" style-hover="background: #F8FAFC; color: #475569">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+          Staff 工作人員 →
+        </button>
+      </sc-if>
+      <sc-if value="{{ showHandoffDone }}">
+        <button onclick="{{ onHandoffDone }}" style="position: absolute; bottom: 28px; right: 28px; height: 44px; padding: 0 20px; background: transparent; color: #94A3B8; border: 1px solid #E2E8F0; border-radius: 10px; font-size: 0.875rem; cursor: pointer; display: flex; align-items: center; gap: 8px" style-hover="background: #F8FAFC; color: #475569">
+          Done 完成，返回 →
+        </button>
+      </sc-if>
     </div>
   </sc-if>
 
@@ -2799,7 +2976,10 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
       <div style="background: #1E293B; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0">
         <div style="display: flex; align-items: center; gap: 12px">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-          <span style="color: #E2E8F0; font-size: 1rem; font-weight: 600">後台管理</span>
+          <span data-page-title="" style="display: flex; flex-direction: column; min-width: 0">
+            <span style="color: #E2E8F0; font-size: 1rem; font-weight: 600; line-height: 1.25">後台管理</span>
+            <span style="color: #94A3B8; font-size: 0.8125rem; line-height: 1.3; overflow-wrap: anywhere">{{ adminEventName }}</span>
+          </span>
         </div>
         <button onclick="{{ onExitAdmin }}" style="color: #94A3B8; background: rgba(255,255,255,0.08); border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.875rem; cursor: pointer; font-weight: 500" style-hover="background: rgba(255,255,255,0.15); color: #FFF">← 返回表單</button>
       </div>
@@ -2831,11 +3011,13 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                     <sc-if value="{{ af.required }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #FEF2F2; border-radius: 4px; color: #DC2626">必填</span></sc-if>
                     <sc-if value="{{ af.isCore }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #ECFDF5; border-radius: 4px; color: #059669">核心</span></sc-if>
                     <sc-if value="{{ af.allowOther }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #FFF7ED; border-radius: 4px; color: #C2410C">可填其他</span></sc-if>
+                    <sc-if value="{{ af.fromEvent }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #EFF6FF; border-radius: 4px; color: #1D4ED8">由活動設定</span></sc-if>
                   </div>
                   <sc-if value="{{ af.hasOptions }}"><div style="font-size: 0.8125rem; color: #94A3B8; margin-top: 4px">選項：{{ af.optionsSummary }}</div></sc-if>
+                  <sc-if value="{{ af.fromEvent }}"><div style="font-size: 0.8125rem; color: #94A3B8; margin-top: 4px">此欄位的內容由活動頁的填單人員／填單日期帶入，請到活動列表編輯該活動。</div></sc-if>
                 </div>
                 <div style="display: flex; gap: 4px; flex-shrink: 0">
-                  <button onclick="{{ af.onEdit }}" style="width: 32px; height: 32px; border: 1px solid #E2E8F0; background: #FFF; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748B" style-hover="background: #F1F5F9"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                  <sc-if value="{{ af.canEdit }}"><button onclick="{{ af.onEdit }}" style="width: 32px; height: 32px; border: 1px solid #E2E8F0; background: #FFF; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748B" style-hover="background: #F1F5F9"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button></sc-if>
                   <sc-if value="{{ af.canDelete }}"><button onclick="{{ af.onDelete }}" style="width: 32px; height: 32px; border: 1px solid #FEE2E2; background: #FFF; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #DC2626" style-hover="background: #FEF2F2">×</button></sc-if>
                 </div>
               </div>
@@ -2918,6 +3100,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
         <!-- TAB: Settings -->
         <sc-if value="{{ showAdminSettings }}">
           <div style="max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px">
+            <div style="background: #F0F6FF; border: 1px solid #BFDBFE; border-radius: 10px; padding: 12px 20px; font-size: 0.875rem; color: #1E40AF">此頁設定適用於所有活動。表單欄位與資料紀錄則各活動獨立。</div>
             <div style="background: #FFF; border-radius: 10px; padding: 20px; border: 1px solid #E2E8F0">
               <div style="font-size: 1rem; font-weight: 700; color: #1A1A2E; margin-bottom: 12px">裝置名稱</div>
               <input type="text" value="{{ deviceName }}" oninput="{{ onDeviceNameChange }}" placeholder="例如 Tablet-A" style="width: 100%; height: 44px; padding: 0 14px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.9375rem; outline: none" style-focus="border-color: #0055B8">
@@ -3040,8 +3223,8 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           <sc-if value="{{ confirmStage1 }}">
             <button onclick="{{ onConfirmAdvance }}" disabled="{{ confirmNextDisabled }}" style="flex: 1; height: 44px; border: none; background: #DC2626; border-radius: 8px; font-size: 0.9375rem; color: #FFF; cursor: pointer; font-weight: 500; opacity: {{ confirmNextOpacity }}" style-hover="background: #B91C1C">繼續</button>
           </sc-if>
-          <sc-if value="{{ confirmStage2 }}">
-            <button onclick="{{ onConfirmRun }}" style="flex: 1; height: 44px; border: none; background: #DC2626; border-radius: 8px; font-size: 0.9375rem; color: #FFF; cursor: pointer; font-weight: 700" style-hover="background: #B91C1C">確定刪除</button>
+          <sc-if value="{{ confirmShowAction }}">
+            <button onclick="{{ onConfirmRun }}" style="flex: 1; height: 44px; border: none; background: #DC2626; border-radius: 8px; font-size: 0.9375rem; color: #FFF; cursor: pointer; font-weight: 700" style-hover="background: #B91C1C">{{ confirmActionLabel }}</button>
           </sc-if>
         </div>
       </div>
@@ -3068,12 +3251,26 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 <script type="text/x-dc" data-dc-script="">
 class Component extends DCLogic {
   DB_NAME = 'ExhibitionFormDB';
-  DB_VERSION = 1;
+  DB_VERSION = 2;
   OTHER_VALUE = '__other__';
 
+  // The four field groups, in the order they are presented. Field definitions
+  // are stored per event under `<eventId>::<group>` (see defKey).
+  DEF_GROUPS = ['customerFields', 'needsFields', 'companyFields', 'staffFields'];
+
   state = {
-    screen: 'home',
-    showPinDialog: false, pinValue: '', pinError: false,
+    screen: 'events',
+    // Events. `state.records` always holds *every* record (the event list shows
+    // a per-event count); anything scoped to the open event filters by eventId.
+    events: [], currentEventId: null,
+    eventsManageMode: false,        // unlocked by PIN on the event list
+    showEventEditor: false, eventEditorMode: 'add', editingEventId: null,
+    evName: '', evStart: '', evEnd: '', evStaff: [], evSource: 'default', evError: '',
+    // Who is filling this form in, and on which day — chosen on the event page
+    // before either form can be opened, then carried into every record until
+    // the user leaves the event or presses 重新選擇.
+    sessionGreeters: [], sessionDate: '',
+    showPinDialog: false, pinValue: '', pinError: false, pinPurpose: 'admin',
     adminTab: 'customer',
     pin: '0000', deviceName: '',
     gdprEn: 'I consent to the organizer collecting and storing my contact information for the purpose of business follow-up. My data will not be shared with third parties.',
@@ -3097,7 +3294,7 @@ class Component extends DCLogic {
     // lives on `this._pendingConfirm`, not in state — setState() treats a
     // function argument as an updater and would invoke it.
     confirmOpen: false, confirmStage: 1, confirmTitle: '', confirmMessage: '',
-    confirmTypeToConfirm: false, confirmTypedValue: '',
+    confirmTypeToConfirm: false, confirmTypedValue: '', confirmActionLabel: '確定刪除', confirmSingle: false,
     showToast: false, toastMessage: '',
     // Card photo (staff page)
     cardPhotoPreviewSrc: null,
@@ -3220,6 +3417,14 @@ class Component extends DCLogic {
       { id: 'visit_date', nameEn: 'Visit Date', nameZh: '訪談日期', type: 'date', required: false, isCore: true, order: 1, allowOther: false, options: [] },
     ];
   }
+  // Reception staff for a brand-new event, when there is no earlier event to
+  // copy from. Same {en, zh} shape the Greeter options have always used, so a
+  // record's stored value keeps its meaning across the v3.4 change.
+  getDefaultStaffList() {
+    return [
+      { en: 'Su Chiu-Chu', zh: '蘇秋菊' }, { en: 'Chang Shih-Ying', zh: '張詩穎' }, { en: 'Chien Yin-Ting', zh: '簡吟庭' },
+    ];
+  }
 
   async componentDidMount() {
     await this.initDB();
@@ -3238,6 +3443,10 @@ class Component extends DCLogic {
         if (!db.objectStoreNames.contains('config')) db.createObjectStore('config', { keyPath: 'key' });
         if (!db.objectStoreNames.contains('records')) db.createObjectStore('records', { keyPath: 'id' });
         if (!db.objectStoreNames.contains('fieldDefinitions')) db.createObjectStore('fieldDefinitions', { keyPath: 'key' });
+        // v3.4. Only the store is created here — moving the existing data into a
+        // default event happens in loadAllData(), where the async helpers used by
+        // every other migration are available.
+        if (!db.objectStoreNames.contains('events')) db.createObjectStore('events', { keyPath: 'id' });
       };
     });
   }
@@ -3248,15 +3457,116 @@ class Component extends DCLogic {
   dbClear(store) { return new Promise((res, rej) => { const tx = this.db.transaction(store, 'readwrite'); const r = tx.objectStore(store).clear(); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
 
   async loadAllData() {
-    const [pinD, devD, gdprEnD, gdprZhD, custD, needsD, companyD, staffD, mig33D, mig34D] = await Promise.all([
+    const [pinD, devD, gdprEnD, gdprZhD] = await Promise.all([
       this.dbGet('config','pin'), this.dbGet('config','deviceName'),
       this.dbGet('config','gdprEn'), this.dbGet('config','gdprZh'),
+    ]);
+    let records = await this.dbGetAll('records');
+    let events = await this.dbGetAll('events');
+    const defaultDev = 'Device-' + Math.random().toString(36).substr(2,6).toUpperCase();
+
+    // --- v3.4: everything now lives under an event. A database with no events
+    //     is either a pre-v3.4 install or a fresh one; both are seeded here, so
+    //     the app always opens with at least one event to walk into (event
+    //     creation is PIN-gated and must not be the only way in). ---
+    if (!events.length) {
+      const seeded = await this.seedFirstEvent(records);
+      events = seeded.events;
+      records = seeded.records;
+    }
+
+    this.setState({
+      pin: pinD?.value ?? '0000', deviceName: devD?.value ?? defaultDev,
+      gdprEn: gdprEnD?.value ?? this.state.gdprEn, gdprZh: gdprZhD?.value ?? this.state.gdprZh,
+      events: this.sortEvents(events),
+      records: records.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)),
+    });
+    if (!devD) await this.dbPut('config', { key: 'deviceName', value: defaultDev });
+  }
+
+  // Newest first, so the event most likely to be in use sits at the top.
+  sortEvents(events) {
+    return [...events].sort((a,b) => String(b.startDate||'').localeCompare(String(a.startDate||''))
+      || String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
+  }
+
+  defKey(eventId, group) { return eventId + '::' + group; }
+
+  // Writes a field group for the event currently open. The unprefixed
+  // saveFieldDefs() below still exists for the legacy migration, which runs
+  // before any event is known.
+  saveEventDefs(group, v) { return this.saveFieldDefs(this.defKey(this.state.currentEventId, group), v); }
+
+  async loadEventDefs(eventId) {
+    const rows = await Promise.all(this.DEF_GROUPS.map(g => this.dbGet('fieldDefinitions', this.defKey(eventId, g))));
+    const out = {};
+    this.DEF_GROUPS.forEach((g, i) => { out[g] = rows[i]?.value ?? []; });
+    return out;
+  }
+
+  // Adopts a pre-v3.4 database (or an empty one) into a first event: run the
+  // whole historical migration chain, hand the result to a new event, and move
+  // the definitions from the old unprefixed keys to the per-event ones.
+  async seedFirstEvent(records) {
+    const legacy = await this.migrateLegacyFieldDefs(records);
+    records = legacy.records;
+    let { customerFields, needsFields, companyFields, staffFields } = legacy;
+
+    // Reception moves to the event: Greeter's options become the event's staff
+    // list and it turns multi-select, Visit Date becomes the event's fill-in
+    // date. Both keep their definitions — the Records column and the export
+    // column resolve through them — but are now filled from the event page,
+    // which `source: 'event'` marks.
+    const greeter = staffFields.find(f => f.id === 'greeter');
+    const staff = (greeter?.options || [])
+      .filter(o => o && o.en)
+      .map(o => ({ en: o.en, zh: o.zh || o.en }));
+    staffFields = staffFields.map(f => {
+      if (f.id === 'greeter') return { ...f, type: 'checkbox-group', source: 'event', allowOther: false, options: [] };
+      if (f.id === 'visit_date') return { ...f, type: 'date', source: 'event', allowOther: false, options: [] };
+      return f;
+    });
+
+    const days = records.map(r => String(r.timestamp || '').slice(0, 10))
+      .filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+    const ev = {
+      id: this.genUUID(),
+      name: records.length ? '2026 美國展' : '新活動',
+      startDate: days[0] || this.todayStr(),
+      endDate: days[days.length - 1] || this.todayStr(),
+      staff: staff.length ? staff : this.getDefaultStaffList(),
+      status: 'active',
+      createdAt: new Date().toISOString(),
+    };
+    await this.dbPut('events', ev);
+
+    const defs = { customerFields, needsFields, companyFields, staffFields };
+    for (const g of this.DEF_GROUPS) {
+      await this.saveFieldDefs(this.defKey(ev.id, g), defs[g]);
+      await this.dbDelete('fieldDefinitions', g);
+    }
+
+    const stamped = [];
+    for (const r of records) {
+      if (r.eventId) { stamped.push(r); continue; }
+      const next = { ...r, eventId: ev.id };
+      await this.dbPut('records', next);
+      stamped.push(next);
+    }
+    return { events: [ev], records: stamped };
+  }
+
+  // The full pre-v3.4 migration chain (v2 → v3 → v3.1 → v3.2 → v3.3 → label and
+  // value corrections), unchanged. It reads and writes the *unprefixed*
+  // fieldDefinitions keys because it predates events; seedFirstEvent() moves the
+  // result onto the per-event keys afterwards. Runs at most once per database,
+  // since a database that has an event never enters this path again.
+  async migrateLegacyFieldDefs(records) {
+    const [custD, needsD, companyD, staffD, mig33D, mig34D] = await Promise.all([
       this.dbGet('fieldDefinitions','customerFields'), this.dbGet('fieldDefinitions','needsFields'),
       this.dbGet('fieldDefinitions','companyFields'), this.dbGet('fieldDefinitions','staffFields'),
       this.dbGet('config','migratedTo33'), this.dbGet('config','migratedTo34'),
     ]);
-    let records = await this.dbGetAll('records');
-    const defaultDev = 'Device-' + Math.random().toString(36).substr(2,6).toUpperCase();
 
     // --- v2 → v3 migration: split needs fields out of stored customer fields ---
     let customerFields, needsFields;
@@ -3497,13 +3807,7 @@ class Component extends DCLogic {
       await this.saveConfig('migratedTo34', true);
     }
 
-    this.setState({
-      pin: pinD?.value ?? '0000', deviceName: devD?.value ?? defaultDev,
-      gdprEn: gdprEnD?.value ?? this.state.gdprEn, gdprZh: gdprZhD?.value ?? this.state.gdprZh,
-      customerFields, needsFields, companyFields, staffFields,
-      records: records.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)),
-    });
-    if (!devD) await this.dbPut('config', { key: 'deviceName', value: defaultDev });
+    return { customerFields, needsFields, companyFields, staffFields, records };
   }
 
   saveConfig(k, v) { return this.dbPut('config', { key: k, value: v }); }
@@ -3555,6 +3859,132 @@ class Component extends DCLogic {
     ];
   }
 
+  // ===== EVENTS =====
+  currentEvent() { return this.state.events.find(e => e.id === this.state.currentEventId) || null; }
+
+  eventRecords(eventId) { return this.state.records.filter(r => r.eventId === eventId); }
+
+  dateRangeLabel(ev) {
+    if (!ev) return '';
+    return ev.startDate === ev.endDate ? ev.startDate : ev.startDate + ' → ' + ev.endDate;
+  }
+
+  // Every day of the event, inclusive. Capped: a mis-typed year would otherwise
+  // render thousands of chips, so past the cap the event page falls back to a
+  // plain date picker (see eventDateMode in renderVals).
+  EVENT_DATE_CAP = 31;
+  eventDates(ev) {
+    if (!ev?.startDate || !ev?.endDate || ev.endDate < ev.startDate) return [];
+    const out = [];
+    const d = new Date(ev.startDate + 'T00:00:00');
+    const end = new Date(ev.endDate + 'T00:00:00');
+    while (d <= end && out.length <= this.EVENT_DATE_CAP) {
+      out.push(d.toISOString().slice(0, 10));
+      d.setDate(d.getDate() + 1);
+    }
+    return out.length > this.EVENT_DATE_CAP ? [] : out;
+  }
+
+  async openEvent(id) {
+    const defs = await this.loadEventDefs(id);
+    const ev = this.state.events.find(e => e.id === id);
+    const today = this.todayStr();
+    // Pre-select today only when the event is actually running — outside the
+    // range a silent default would misdate the record, so make the user choose.
+    const inRange = ev && today >= ev.startDate && today <= ev.endDate;
+    this.setState({ ...defs, ...this.flowResetPatch(), currentEventId: id, screen: 'eventHome',
+      sessionGreeters: [], sessionDate: inRange ? today : '', eventsManageMode: false });
+  }
+
+  backToEvents() {
+    this.setState({ ...this.flowResetPatch(), screen: 'events', currentEventId: null,
+      customerFields: [], needsFields: [], companyFields: [], staffFields: [],
+      sessionGreeters: [], sessionDate: '', eventsManageMode: false });
+  }
+
+  openEventEditor(mode, ev) {
+    const today = this.todayStr();
+    this.setState({
+      showEventEditor: true, eventEditorMode: mode, editingEventId: ev?.id ?? null, evError: '',
+      evName: ev?.name ?? '', evStart: ev?.startDate ?? today, evEnd: ev?.endDate ?? today,
+      evStaff: (ev?.staff ?? this.getDefaultStaffList()).map(s => ({ en: s.en, zh: s.zh })),
+      evSource: 'default',
+    });
+  }
+
+  async saveEvent() {
+    const { eventEditorMode, editingEventId, evName, evStart, evEnd, evStaff, evSource, events } = this.state;
+    const staff = evStaff.map(s => ({ en: (s.en || '').trim(), zh: (s.zh || '').trim() }))
+      .filter(s => s.en || s.zh)
+      .map(s => ({ en: s.en || s.zh, zh: s.zh || s.en }));
+    if (!evName.trim()) { this.setState({ evError: '請填寫活動名稱' }); return; }
+    if (!evStart || !evEnd) { this.setState({ evError: '請填寫活動日期區間' }); return; }
+    if (evEnd < evStart) { this.setState({ evError: '結束日期不可早於開始日期' }); return; }
+    if (!staff.length) { this.setState({ evError: '請至少設定一位接待人員' }); return; }
+
+    if (eventEditorMode === 'edit') {
+      const next = events.map(e => e.id === editingEventId
+        ? { ...e, name: evName.trim(), startDate: evStart, endDate: evEnd, staff } : e);
+      const ev = next.find(e => e.id === editingEventId);
+      await this.dbPut('events', ev);
+      // Names may have been removed from the roster — drop any that vanished
+      // from the live selection so a record can't be stamped with a stale name.
+      const valid = new Set(staff.map(s => s.en));
+      this.setState({ events: this.sortEvents(next),
+        sessionGreeters: this.state.sessionGreeters.filter(g => valid.has(g)),
+        showEventEditor: false });
+      this.showToastMsg('活動已更新');
+      return;
+    }
+
+    const ev = { id: this.genUUID(), name: evName.trim(), startDate: evStart, endDate: evEnd,
+      staff, status: 'active', createdAt: new Date().toISOString() };
+    await this.dbPut('events', ev);
+    // Field definitions: either the built-in defaults, or a deep copy of another
+    // event's — copied, never shared, so editing one event never touches another.
+    let defs;
+    if (evSource === 'default') {
+      defs = { customerFields: this.getDefaultCustomerFields(), needsFields: this.getDefaultNeedsFields(),
+        companyFields: this.getDefaultCompanyFields(), staffFields: this.getDefaultStaffFields() };
+    } else {
+      defs = await this.loadEventDefs(evSource);
+    }
+    // Reception is supplied by the event itself, not by the field editor.
+    defs.staffFields = (defs.staffFields || []).map(f => {
+      if (f.id === 'greeter') return { ...f, type: 'checkbox-group', source: 'event', allowOther: false, options: [] };
+      if (f.id === 'visit_date') return { ...f, type: 'date', source: 'event', allowOther: false, options: [] };
+      return f;
+    });
+    for (const g of this.DEF_GROUPS) {
+      await this.saveFieldDefs(this.defKey(ev.id, g), JSON.parse(JSON.stringify(defs[g] || [])));
+    }
+    this.setState({ events: this.sortEvents([...events, ev]), showEventEditor: false });
+    this.showToastMsg('活動已建立');
+  }
+
+  async setEventStatus(id, status) {
+    const next = this.state.events.map(e => e.id === id ? { ...e, status } : e);
+    const ev = next.find(e => e.id === id);
+    await this.dbPut('events', ev);
+    this.setState({ events: this.sortEvents(next) });
+    this.showToastMsg(status === 'ended' ? '活動已結束' : '活動已重新啟用');
+  }
+
+  async deleteEvent(id) {
+    const doomed = this.state.records.filter(r => r.eventId === id);
+    for (const r of doomed) await this.dbDelete('records', r.id);
+    for (const g of this.DEF_GROUPS) await this.dbDelete('fieldDefinitions', this.defKey(id, g));
+    await this.dbDelete('events', id);
+    this.setState({ events: this.state.events.filter(e => e.id !== id),
+      records: this.state.records.filter(r => r.eventId !== id) });
+    this.showToastMsg('活動已刪除');
+  }
+
+  toggleSessionGreeter(en) {
+    const cur = this.state.sessionGreeters;
+    this.setState({ sessionGreeters: cur.includes(en) ? cur.filter(x => x !== en) : [...cur, en] });
+  }
+
   // ===== THREE-FORM FLOW =====
   // firstChoice picks which of customer/needs is filled first; Company
   // Profile always slots in as step 2, and the other of customer/needs is
@@ -3570,10 +4000,17 @@ class Component extends DCLogic {
       cardPhotoPreviewSrc: null, cardPhotoBase64: null,
     };
   }
+  // The event page gates both entries, but guard here too: this is the single
+  // point every path into a form goes through.
+  canStartFlow() {
+    const ev = this.currentEvent();
+    return !!ev && ev.status !== 'ended' && this.state.sessionGreeters.length > 0 && !!this.state.sessionDate;
+  }
   startFlow(choice) {
+    if (!this.canStartFlow()) { this.showToastMsg('請先選擇填單人員與填單日期'); return; }
     this.setState({ ...this.flowResetPatch(), firstChoice: choice, screen: choice === 'data' ? 'customerForm' : 'needsForm' });
   }
-  goHome() { this.setState({ ...this.flowResetPatch(), screen: 'home' }); }
+  goHome() { this.setState({ ...this.flowResetPatch(), screen: 'eventHome' }); }
 
   validateGroup(fields, values) {
     const errors = {};
@@ -3607,9 +4044,15 @@ class Component extends DCLogic {
       if (rec) await this.dbPut('records', rec);
       return { records: updated, currentRecordId };
     }
+    // The reception answers chosen on the event page are written the moment the
+    // record comes into existence, so a flow abandoned midway still carries who
+    // was at the table and on which day.
     const record = {
       id: this.genUUID(), timestamp: new Date().toISOString(), device: this.state.deviceName,
-      customerFields: {}, needsFields: {}, companyFields: {}, staffFields: {}, gdprConsent: false, cardPhoto: null,
+      eventId: this.state.currentEventId,
+      customerFields: {}, needsFields: {}, companyFields: {},
+      staffFields: { greeter: [...this.state.sessionGreeters], visit_date: this.state.sessionDate },
+      gdprConsent: false, cardPhoto: null,
       ...patch,
     };
     await this.dbPut('records', record);
@@ -3709,13 +4152,15 @@ class Component extends DCLogic {
 
   async saveStaffNotes() {
     const { currentRecordId, records, staffFields } = this.state;
-    const staffValues = this.applyDateDefaults(staffFields, this.state.staffValues);
+    const staffValues = this.applyDateDefaults(staffFields.filter(f => !f.source), this.state.staffValues);
+    // Merge rather than replace: greeter and visit_date were written from the
+    // event page at record creation and are not on this form.
     const updated = records.map(r => r.id === currentRecordId
-      ? { ...r, staffFields: { ...staffValues } }
+      ? { ...r, staffFields: { ...r.staffFields, ...staffValues } }
       : r);
     const rec = updated.find(r => r.id === currentRecordId);
     if (rec) await this.dbPut('records', rec);
-    this.setState({ ...this.flowResetPatch(), records: updated, screen: 'home' });
+    this.setState({ ...this.flowResetPatch(), records: updated, screen: 'eventHome' });
     this.showToastMsg('已儲存');
   }
 
@@ -3811,14 +4256,17 @@ class Component extends DCLogic {
 
     try {
       await new Promise(r => setTimeout(r, 50)); // Let UI update
-      const { records } = this.state;
+      // Scoped to the event that is open: its field definitions describe only
+      // its own records, so mixing events into one sheet would misalign columns.
+      const ev = this.currentEvent();
+      const records = this.eventRecords(this.state.currentEventId);
       const allFields = this.allFieldGroups();
 
       // Phone columns exported as text so Excel keeps the leading "+"
       const textCols = new Set();
-      allFields.forEach((e, i) => { if (e.f.type === 'tel') textCols.add(i + 4); }); // offset by ID,Timestamp,Device,Language
+      allFields.forEach((e, i) => { if (e.f.type === 'tel') textCols.add(i + 5); }); // offset by ID,Timestamp,Device,Event,Language
 
-      const headers = ['ID', 'Timestamp', 'Device', 'Language', ...allFields.map(e => e.f.nameEn), 'GDPR Consent', 'Card Photo Filename'];
+      const headers = ['ID', 'Timestamp', 'Device', 'Event', 'Language', ...allFields.map(e => e.f.nameEn), 'GDPR Consent', 'Card Photo Filename'];
       const rows = [];
       const photoFiles = [];
 
@@ -3833,7 +4281,7 @@ class Component extends DCLogic {
         }
 
         rows.push([
-          r.id, r.timestamp, r.device || '', r.language || '',
+          r.id, r.timestamp, r.device || '', ev?.name || '', r.language || '',
           ...allFields.map(e => {
             const val = this.resolveFieldValue(r, e.f, e.group);
             if (Array.isArray(val)) return val.join('; ');
@@ -3865,7 +4313,8 @@ class Component extends DCLogic {
       const blob = new Blob([zipData], { type: 'application/zip' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = `export_${ts}.zip`; a.click();
+      const evTag = this.sanitizeFilename(ev?.name);
+      a.href = url; a.download = `export_${evTag ? evTag + '_' : ''}${ts}.zip`; a.click();
       URL.revokeObjectURL(url);
       this.showToastMsg('匯出完成');
     } catch (err) {
@@ -3880,10 +4329,15 @@ class Component extends DCLogic {
   // about to be deleted, stage 2 makes the user confirm again that it cannot be
   // undone. `typeToConfirm` additionally gates stage 1 behind typing DELETE
   // (used for "clear all records").
-  askConfirm({ title, message, typeToConfirm = false, onConfirm }) {
+  //
+  // `singleStage` is for reversible actions — ending or reactivating an event
+  // destroys nothing, so a second "this cannot be undone" stage would be both
+  // tedious and untrue. Anything that deletes data keeps both stages.
+  askConfirm({ title, message, typeToConfirm = false, actionLabel = '確定刪除', singleStage = false, onConfirm }) {
     this._pendingConfirm = onConfirm;
     this.setState({ confirmOpen: true, confirmStage: 1, confirmTitle: title, confirmMessage: message,
-      confirmTypeToConfirm: typeToConfirm, confirmTypedValue: '' });
+      confirmTypeToConfirm: typeToConfirm, confirmTypedValue: '',
+      confirmActionLabel: actionLabel, confirmSingle: singleStage });
   }
   advanceConfirm() {
     if (this.state.confirmTypeToConfirm && this.state.confirmTypedValue !== 'DELETE') return;
@@ -3900,9 +4354,13 @@ class Component extends DCLogic {
   }
 
   // ===== ADMIN =====
+  // The same PIN guards two things: the per-event back office, and the event
+  // list's management controls (add / edit / end / delete an event).
   submitPin() {
-    if (this.state.pinValue === this.state.pin) this.setState({ showPinDialog: false, pinValue: '', pinError: false, screen: 'admin', adminTab: 'customer' });
-    else this.setState({ pinError: true });
+    if (this.state.pinValue !== this.state.pin) { this.setState({ pinError: true }); return; }
+    const done = { showPinDialog: false, pinValue: '', pinError: false };
+    if (this.state.pinPurpose === 'manage') this.setState({ ...done, eventsManageMode: true });
+    else this.setState({ ...done, screen: 'admin', adminTab: 'customer' });
   }
 
   openFieldEditor(mode, target, field) {
@@ -3929,7 +4387,7 @@ class Component extends DCLogic {
       fields = fields.map(f => f.id === editingFieldId ? { ...f, nameEn: feNameEn.trim(), nameZh: feNameZh.trim() || feNameEn.trim(), type: feType,
         required: feRequired, allowOther: feAllowOther, perGroupOther: fePerGroupOther, emptyGroups, options: opts } : f);
     }
-    await this.saveFieldDefs(sk, fields);
+    await this.saveEventDefs(sk, fields);
     this.setState({ [sk]: fields, showFieldEditor: false });
     this.showToastMsg(fieldEditorMode === 'add' ? '欄位已新增' : '欄位已更新');
   }
@@ -3937,7 +4395,7 @@ class Component extends DCLogic {
   async deleteField(target, id) {
     const sk = this.storeKeyFor(target);
     let fields = this.state[sk].filter(f => f.id !== id).sort((a,b) => a.order - b.order).map((f,i) => ({...f, order: i}));
-    await this.saveFieldDefs(sk, fields);
+    await this.saveEventDefs(sk, fields);
     this.setState({ [sk]: fields }); this.showToastMsg('欄位已刪除');
   }
 
@@ -3948,7 +4406,7 @@ class Component extends DCLogic {
     const [moved] = fields.splice(fromIdx, 1);
     fields.splice(toIdx, 0, moved);
     fields = fields.map((f,i) => ({...f, order: i}));
-    await this.saveFieldDefs(sk, fields);
+    await this.saveEventDefs(sk, fields);
     this.setState({ [sk]: fields });
   }
 
@@ -4051,10 +4509,12 @@ class Component extends DCLogic {
 
   async deleteRecord(id) { await this.dbDelete('records', id); this.setState({ records: this.state.records.filter(r => r.id !== id) }); this.showToastMsg('紀錄已刪除'); }
 
+  // Scoped to the open event — other events' records must survive.
   async clearAllRecords() {
-    await this.dbClear('records');
-    this.setState({ records: [] });
-    this.showToastMsg('已清除全部紀錄');
+    const id = this.state.currentEventId;
+    for (const r of this.eventRecords(id)) await this.dbDelete('records', r.id);
+    this.setState({ records: this.state.records.filter(r => r.eventId !== id) });
+    this.showToastMsg('已清除本活動全部紀錄');
   }
 
   async saveSettings() {
@@ -4207,8 +4667,10 @@ class Component extends DCLogic {
 
   renderVals() {
     const { screen, adminTab, records, editingRecordId, firstChoice } = this.state;
+    const { currentEventId, sessionGreeters, sessionDate, eventsManageMode } = this.state;
 
-    const showHome = screen === 'home';
+    const showEvents = screen === 'events';
+    const showEventHome = screen === 'eventHome';
     const showCustomerForm = screen === 'customerForm';
     const showNeedsForm = screen === 'needsForm';
     const showCompanyForm = screen === 'companyForm';
@@ -4219,6 +4681,70 @@ class Component extends DCLogic {
     const showAdminFieldList = showAdmin && (adminTab === 'customer' || adminTab === 'needs' || adminTab === 'company' || adminTab === 'staff');
     const showAdminRecords = showAdmin && adminTab === 'records';
     const showAdminSettings = showAdmin && adminTab === 'settings';
+
+    // ===== Event list =====
+    const curEvent = this.currentEvent();
+    const mkEventCard = (ev) => {
+      const n = this.eventRecords(ev.id).length;
+      const ended = ev.status === 'ended';
+      return {
+        name: ev.name,
+        dateLabel: this.dateRangeLabel(ev),
+        meta: `${ev.staff?.length || 0} 位接待人員 ・ ${n} 筆紀錄`,
+        onOpen: () => this.openEvent(ev.id),
+        onEdit: () => this.openEventEditor('edit', ev),
+        statusLabel: ended ? '重新啟用' : '結束活動',
+        onToggleStatus: () => this.askConfirm({
+          title: ended ? '重新啟用這個活動？' : '結束這個活動？',
+          message: ended
+            ? `「${ev.name}」將回到使用中，可以繼續填單。`
+            : `「${ev.name}」將移到已結束區，兩個表單入口會停用；資料與匯出仍可查看。`,
+          singleStage: true,
+          actionLabel: ended ? '重新啟用' : '結束活動',
+          onConfirm: () => this.setEventStatus(ev.id, ended ? 'active' : 'ended'),
+        }),
+        onDelete: () => this.askConfirm({
+          title: '刪除這個活動？',
+          message: `即將刪除活動「${ev.name}」，連同它的 ${n} 筆紀錄、名片照片與全部欄位設定。請輸入 DELETE 以繼續。`,
+          typeToConfirm: true,
+          onConfirm: () => this.deleteEvent(ev.id),
+        }),
+      };
+    };
+    const activeEvents = this.state.events.filter(e => e.status !== 'ended').map(mkEventCard);
+    const endedEvents = this.state.events.filter(e => e.status === 'ended').map(mkEventCard);
+
+    // ===== Event page (pick who is filling in, and on which day) =====
+    const evChip = (label, sub, on) => ({
+      labelEn: label, labelZh: sub, checked: on,
+      bgColor: on ? '#E8F1FC' : '#FFFFFF',
+      borderColor: on ? '#0055B8' : '#D1D5DB',
+      textColor: on ? '#0055B8' : '#334155',
+      spanStyle: this.spanStyleFor(label, sub),
+    });
+    const eventStaffItems = (curEvent?.staff || []).map(s => ({
+      ...evChip(s.en, s.zh && s.zh !== s.en ? s.zh : '', sessionGreeters.includes(s.en)),
+      onClick: () => this.toggleSessionGreeter(s.en),
+    }));
+    const dates = this.eventDates(curEvent);
+    // Beyond the chip cap the range is too long to lay out as buttons; a plain
+    // date input takes over so an unusually long event still works.
+    const eventDateMode = dates.length > 0;
+    const eventDateItems = dates.map(d => ({
+      ...evChip(d.slice(5).replace('-', '/'), d, sessionDate === d),
+      onClick: () => this.setState({ sessionDate: d }),
+    }));
+    const eventEnded = curEvent?.status === 'ended';
+    const canStart = this.canStartFlow();
+    const staffNames = (curEvent?.staff || [])
+      .filter(s => sessionGreeters.includes(s.en))
+      .map(s => s.zh || s.en);
+    const hasSession = sessionGreeters.length > 0 && !!sessionDate;
+    const sessionBanner = hasSession
+      ? `填單人員：${staffNames.join('、')}　｜　填單日期：${sessionDate}`
+      : '';
+    const entryHint = eventEnded ? '此活動已結束，無法填寫新表單'
+      : (canStart ? '' : '請先選擇填單人員與填單日期');
 
     const mkTab = (id, label) => ({
       label, onClick: () => this.setState({ adminTab: id }),
@@ -4264,7 +4790,12 @@ class Component extends DCLogic {
     }
     const needsFormFields = needsSorted.map(f => this.mapFormField(f, 'needsValues', 'needsErrors', bluePalette));
     const companyFormFields = companySorted.map(f => this.mapFormField(f, 'companyValues', 'companyErrors', bluePalette));
-    const staffFormFields = staffSorted.map(f => this.mapFormField(f, 'staffValues', null, slatePalette));
+    // Reception (Greeter / Visit Date) is answered on the event page, so it is
+    // not repeated here. With nothing else defined the staff page has no reason
+    // to exist — the handoff screen hides its entry (see showStaffEntry).
+    const staffSelfServe = staffSorted.filter(f => !f.source);
+    const staffFormFields = staffSelfServe.map(f => this.mapFormField(f, 'staffValues', null, slatePalette));
+    const showStaffEntry = staffFormFields.length > 0;
 
     // Staff page customer summary + card photo
     const currentRec = records.find(r => r.id === this.state.currentRecordId);
@@ -4283,8 +4814,12 @@ class Component extends DCLogic {
     const listFields = showAdminFieldList ? this.sortedFields(this.storeKeyFor(listTarget)) : [];
     const adminFields = listFields.map(f => ({
       nameZh: f.nameZh || f.nameEn, nameEn: f.nameEn, type: this.typeLabel(f.type),
-      required: f.required, isCore: f.isCore||false, allowOther: f.allowOther||false, canDelete: !f.isCore,
-      hasOptions: f.type === 'select' || f.type === 'checkbox-group' || f.type === 'radio-group',
+      required: f.required, isCore: f.isCore||false, allowOther: f.allowOther||false,
+      // Reception fields are configured on the event, not here — no edit, no
+      // delete, and their options come from the event's staff roster.
+      fromEvent: f.source === 'event', canEdit: f.source !== 'event',
+      canDelete: !f.isCore && f.source !== 'event',
+      hasOptions: !f.source && (f.type === 'select' || f.type === 'checkbox-group' || f.type === 'radio-group'),
       optionsSummary: (f.options||[]).map(o => o.zh || o.en).join('、') || '（無）',
       onEdit: () => this.openFieldEditor('edit', listTarget, f),
       onDelete: () => this.askConfirm({
@@ -4294,9 +4829,10 @@ class Component extends DCLogic {
       }),
     }));
 
-    // Records
-    const recordCount = records.length;
-    const photoCount = records.filter(r => r.cardPhoto).length;
+    // Records — always scoped to the event that is open.
+    const eventRecords = this.eventRecords(currentEventId);
+    const recordCount = eventRecords.length;
+    const photoCount = eventRecords.filter(r => r.cardPhoto).length;
     const recordStats = `已蒐集 ${recordCount} 筆紀錄，其中 ${photoCount} 筆含名片照片`;
     const recordCols = this.recordListFields();
     // # / 時間 / 操作 get fixed widths; the field columns are left unsized so
@@ -4314,7 +4850,7 @@ class Component extends DCLogic {
       if (e.f.type === 'rating') { const s = this.ratingStars(v); if (s) return s; }
       return v ?? '';
     };
-    const recordRows = records.map((r,i) => {
+    const recordRows = eventRecords.map((r,i) => {
       const cells = [
         { text: String(i+1), style: '' },
         { text: new Date(r.timestamp).toLocaleString(), style: TIME_COL },
@@ -4350,18 +4886,63 @@ class Component extends DCLogic {
       onRemove: () => { const opts = [...this.state.feOptions]; opts.splice(i,1); this.setState({feOptions: opts}); },
     }));
 
+    // Event editor
+    const { showEventEditor, eventEditorMode, evName, evStart, evEnd, evError } = this.state;
+    const evStaffRows = this.state.evStaff.map((s, i) => ({
+      en: s.en, zh: s.zh,
+      onEnChange: (e) => { const a = [...this.state.evStaff]; a[i] = { ...a[i], en: e.target.value }; this.setState({ evStaff: a, evError: '' }); },
+      onZhChange: (e) => { const a = [...this.state.evStaff]; a[i] = { ...a[i], zh: e.target.value }; this.setState({ evStaff: a, evError: '' }); },
+      onRemove: () => { const a = [...this.state.evStaff]; a.splice(i, 1); this.setState({ evStaff: a }); },
+    }));
+    // A new event either starts from the built-in defaults or deep-copies
+    // another event's fields — handy when the machine catalog has been
+    // customized and the next show should carry it forward.
+    const evSourceOptions = [
+      { value: 'default', label: '內建預設欄位' },
+      ...this.state.events.map(e => ({ value: e.id, label: '複製自：' + e.name })),
+    ];
+
     const { confirmOpen, confirmStage, confirmTitle, confirmMessage, confirmTypeToConfirm, confirmTypedValue,
       showPinDialog, pinValue, pinError } = this.state;
 
     return {
-      showHome, showCustomerForm, showNeedsForm, showCompanyForm, showHandoff, showStaffNotes, showAdmin,
+      showEvents, showEventHome, showCustomerForm, showNeedsForm, showCompanyForm, showHandoff, showStaffNotes, showAdmin,
       showPinDialog, pinValue, pinError,
-      onOpenPinDialog: () => this.setState({ showPinDialog: true, pinValue: '', pinError: false }),
       onClosePinDialog: () => this.setState({ showPinDialog: false, pinValue: '', pinError: false }),
       onPinInput: (e) => this.setState({ pinValue: e.target.value.replace(/\D/g,'').slice(0,4), pinError: false }),
       onPinKeyDown: (e) => { if (e.key === 'Enter') this.submitPin(); },
       onSubmitPin: () => this.submitPin(),
-      // Home
+      // Event list
+      activeEvents, endedEvents,
+      hasActiveEvents: activeEvents.length > 0, hasEndedEvents: endedEvents.length > 0,
+      manageMode: eventsManageMode, manageLocked: !eventsManageMode,
+      onUnlockManage: () => this.setState({ showPinDialog: true, pinPurpose: 'manage', pinValue: '', pinError: false }),
+      onLockManage: () => this.setState({ eventsManageMode: false }),
+      onAddEvent: () => this.openEventEditor('add', null),
+      // Event editor
+      showEventEditor, evName, evStart, evEnd, evStaffRows, evSourceOptions, evError,
+      evSource: this.state.evSource,
+      showEvSource: eventEditorMode === 'add',
+      eventEditorTitle: eventEditorMode === 'add' ? '新增活動' : '編輯活動',
+      onEvNameChange: (e) => this.setState({ evName: e.target.value, evError: '' }),
+      onEvStartChange: (e) => this.setState({ evStart: e.target.value, evError: '' }),
+      onEvEndChange: (e) => this.setState({ evEnd: e.target.value, evError: '' }),
+      onEvSourceChange: (e) => this.setState({ evSource: e.target.value }),
+      onAddStaffRow: () => this.setState({ evStaff: [...this.state.evStaff, { en: '', zh: '' }], evError: '' }),
+      onSaveEvent: () => this.saveEvent(),
+      onCloseEventEditor: () => this.setState({ showEventEditor: false }),
+      // Event page
+      eventTitle: curEvent?.name ?? '', eventDateLabel: this.dateRangeLabel(curEvent),
+      eventStaffItems, eventDateItems, eventDateMode, eventDateNoChips: !eventDateMode,
+      eventDateValue: sessionDate,
+      onEventDateInput: (e) => this.setState({ sessionDate: e.target.value }),
+      canStart, entryDisabled: !canStart, entryHint, showEntryHint: !!entryHint,
+      entryOpacity: canStart ? '1' : '0.45',
+      entryCursor: canStart ? 'pointer' : 'not-allowed',
+      hasSession, sessionBanner,
+      onResetSession: () => this.setState({ sessionGreeters: [], sessionDate: '' }),
+      onBackToEvents: () => this.backToEvents(),
+      onOpenPinDialog: () => this.setState({ showPinDialog: true, pinPurpose: 'admin', pinValue: '', pinError: false }),
       onChooseData: () => this.startFlow('data'),
       onChooseNeeds: () => this.startFlow('needs'),
       // Customer info form
@@ -4389,7 +4970,9 @@ class Component extends DCLogic {
       onCompanySubmit: () => this.submitCompanyForm(),
       onCompanyBack: () => this.setState({ screen: firstChoice === 'data' ? 'customerForm' : 'needsForm' }),
       // Handoff
+      showStaffEntry, showHandoffDone: !showStaffEntry,
       onStaffContinue: () => this.setState({ screen: 'staffNotes', staffValues: {} }),
+      onHandoffDone: () => this.goHome(),
       // Staff page
       staffCustomerName, staffCustomerCompany, staffFormFields,
       showCaptureButtons, showPhotoPreview, cardPhotoPreviewImg,
@@ -4403,8 +4986,8 @@ class Component extends DCLogic {
       onSkipStaffNotes: () => { this.goHome(); },
       // Admin
       adminTabs, showAdminFieldList, showAdminRecords, showAdminSettings,
-      adminListTitle, adminFields,
-      onExitAdmin: () => this.setState({ ...this.flowResetPatch(), screen: 'home' }),
+      adminListTitle, adminFields, adminEventName: curEvent?.name ?? '',
+      onExitAdmin: () => this.setState({ ...this.flowResetPatch(), screen: 'eventHome' }),
       onAddField: () => this.openFieldEditor('add', listTarget),
       // Records
       recordCount, recordStats, hasRecords: recordCount > 0, noRecords: recordCount === 0,
@@ -4414,8 +4997,8 @@ class Component extends DCLogic {
       exportBtnLabel: this.state.exporting ? '匯出中…' : '匯出資料',
       exportBtnOpacity: this.state.exporting ? '0.6' : '1',
       onClearAllData: () => this.askConfirm({
-        title: '清除全部紀錄？',
-        message: `即將刪除全部 ${recordCount} 筆紀錄與所有名片照片。請輸入 DELETE 以繼續。`,
+        title: '清除本活動全部紀錄？',
+        message: `即將刪除活動「${curEvent?.name ?? ''}」的全部 ${recordCount} 筆紀錄與名片照片。其他活動的資料不受影響。請輸入 DELETE 以繼續。`,
         typeToConfirm: true,
         onConfirm: () => this.clearAllRecords(),
       }),
@@ -4441,9 +5024,13 @@ class Component extends DCLogic {
       onCloseFieldEditor: () => this.setState({ showFieldEditor: false }),
       onSaveField: () => this.saveField(),
       // Two-stage delete confirmation
-      confirmOpen, confirmTitle,
+      confirmOpen, confirmTitle, confirmActionLabel: this.state.confirmActionLabel,
       confirmMessage: confirmStage === 1 ? confirmMessage : '此動作無法復原。確定要刪除嗎？',
-      confirmStage1: confirmStage === 1, confirmStage2: confirmStage === 2,
+      // A single-stage confirmation shows the action button straight away; the
+      // two-stage one shows 繼續 first and the action button on stage 2.
+      confirmStage1: confirmStage === 1 && !this.state.confirmSingle,
+      confirmStage2: confirmStage === 2,
+      confirmShowAction: confirmStage === 2 || (confirmStage === 1 && this.state.confirmSingle),
       confirmShowTypeBox: confirmStage === 1 && confirmTypeToConfirm,
       confirmTypedValue,
       confirmNextDisabled: confirmTypeToConfirm && confirmTypedValue !== 'DELETE',
