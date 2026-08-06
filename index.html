@@ -3073,7 +3073,7 @@ class Component extends DCLogic {
       { id: 'phone', nameEn: 'Phone', nameZh: '電話（含國碼）', type: 'tel', required: false, isCore: true, order: 3, allowOther: false, options: [] },
       { id: 'nationality', nameEn: 'Nationality', nameZh: '訪客國籍', type: 'text', required: true, isCore: true, order: 4, allowOther: false, options: [] },
       { id: 'language', nameEn: 'Language', nameZh: '語言', type: 'radio-group', required: false, isCore: true, order: 5, allowOther: true, options: [
-        { en: 'Mandarin', zh: '中文' }, { en: 'English', zh: '英語' }, { en: 'Hindi', zh: '印度語' },
+        { en: 'Mandarin', zh: '華語' }, { en: 'English', zh: '英語' }, { en: 'Hindi', zh: '印地語' },
         { en: 'Arabic', zh: '阿拉伯語' }, { en: 'French', zh: '法語' }, { en: 'Spanish', zh: '西班牙語' },
       ]},
     ];
@@ -3129,11 +3129,11 @@ class Component extends DCLogic {
       ]},
       { id: 'product_type', nameEn: 'Product Type', nameZh: '公司產品(鞋型)', type: 'checkbox-group', required: false, isCore: false, order: 3, allowOther: true, options: [
         { en: 'Athletic Shoes (Injection)', zh: '運動鞋(射出)' }, { en: 'Athletic Shoes (Cementing)', zh: '運動鞋(貼底)' },
-        { en: 'Soles', zh: '鞋底' }, { en: 'Sandals', zh: '脫涼鞋' }, { en: 'Safety Shoes', zh: '安全鞋' },
+        { en: 'Soles', zh: '鞋底' }, { en: 'Sandals', zh: '拖涼鞋' }, { en: 'Safety Shoes', zh: '安全鞋' },
         { en: 'Rain Boots', zh: '雨鞋' }, { en: 'Canvas Shoes', zh: '帆布鞋' },
       ]},
       { id: 'material_type', nameEn: 'Material', nameZh: '公司產品(材質)', type: 'checkbox-group', required: false, isCore: false, order: 4, allowOther: true, options: [
-        { en: 'EVA', zh: 'EVA' }, { en: 'Rubber', zh: 'Rubber' }, { en: 'TPU', zh: 'TPU' }, { en: 'PU', zh: 'PU' },
+        { en: 'EVA', zh: 'EVA' }, { en: 'Rubber', zh: '橡膠' }, { en: 'TPU', zh: 'TPU' }, { en: 'PU', zh: 'PU' },
         { en: 'SEBS', zh: 'SEBS' }, { en: 'TPR', zh: 'TPR' }, { en: 'PVC', zh: 'PVC' },
       ]},
       { id: 'machines_used', nameEn: 'Machines Used', nameZh: '使用機器', type: 'checkbox-group', required: false, isCore: false, order: 5,
@@ -3320,6 +3320,43 @@ class Component extends DCLogic {
       ]);
       await this.saveConfig('migratedTo33', true);
     }
+
+    // --- Option label corrections for databases created before the fix.
+    //     Matched on (field id, option `en`, current `zh`), so a label the admin
+    //     has already retyped is never overwritten and re-running is a no-op —
+    //     no migration flag needed. Only the 中文 side is corrected: `en` is the
+    //     value records actually store, so changing it would orphan answers
+    //     already collected under the old spelling. ---
+    const labelFixes = [
+      { field: 'language', en: 'Mandarin', from: '中文', to: '華語' },
+      { field: 'language', en: 'Hindi', from: '印度語', to: '印地語' },
+      { field: 'product_type', en: 'Sandals', from: '脫涼鞋', to: '拖涼鞋' },
+      { field: 'material_type', en: 'Rubber', from: 'Rubber', to: '橡膠' },
+    ];
+    const applyLabelFixes = (fields) => {
+      let touched = false;
+      const out = fields.map(f => {
+        const fixes = labelFixes.filter(x => x.field === f.id);
+        if (!fixes.length || !Array.isArray(f.options)) return f;
+        let changed = false;
+        const options = f.options.map(o => {
+          const fix = fixes.find(x => x.en === o.en && x.from === o.zh);
+          if (!fix) return o;
+          changed = true;
+          return { ...o, zh: fix.to };
+        });
+        if (!changed) return f;
+        touched = true;
+        return { ...f, options };
+      });
+      return touched ? out : null;
+    };
+    const groups = { customerFields, needsFields, companyFields, staffFields };
+    for (const key of Object.keys(groups)) {
+      const fixed = applyLabelFixes(groups[key]);
+      if (fixed) { groups[key] = fixed; await this.saveFieldDefs(key, fixed); }
+    }
+    ({ customerFields, needsFields, companyFields, staffFields } = groups);
 
     this.setState({
       pin: pinD?.value ?? '0000', deviceName: devD?.value ?? defaultDev,
