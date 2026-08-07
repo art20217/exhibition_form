@@ -2346,7 +2346,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             </sc-for>
           </sc-if>
 
-          <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">v3.5 — Offline Exhibition Form</div>
+          <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">v3.6 — Offline Exhibition Form</div>
         </div>
       </div>
     </div>
@@ -3388,10 +3388,10 @@ class Component extends DCLogic {
   dbClear(store) { return new Promise((res, rej) => { const tx = this.db.transaction(store, 'readwrite'); const r = tx.objectStore(store).clear(); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
 
   async loadAllData() {
-    const [pinD, devD, gdprEnD, gdprZhD, mig35D] = await Promise.all([
+    const [pinD, devD, gdprEnD, gdprZhD, mig35D, mig36D] = await Promise.all([
       this.dbGet('config','pin'), this.dbGet('config','deviceName'),
       this.dbGet('config','gdprEn'), this.dbGet('config','gdprZh'),
-      this.dbGet('config','migratedTo35'),
+      this.dbGet('config','migratedTo35'), this.dbGet('config','migratedTo36'),
     ]);
     let records = await this.dbGetAll('records');
     let events = await this.dbGetAll('events');
@@ -3408,6 +3408,7 @@ class Component extends DCLogic {
     }
 
     if (!mig35D?.value) await this.addV35Options(events);
+    if (!mig36D?.value) await this.resetStaffRosters(events);
 
     this.setState({
       pin: pinD?.value ?? '0000', deviceName: devD?.value ?? defaultDev,
@@ -3472,6 +3473,24 @@ class Component extends DCLogic {
       }
     }
     await this.saveConfig('migratedTo35', true);
+  }
+
+  // --- v3.6: the built-in reception roster was replaced outright, so every
+  //     existing event's list is overwritten rather than topped up the way
+  //     v3.5 tops up option lists. A merge would be wrong here: the old three
+  //     names are gone, not superseded, and merging would leave them in place.
+  //     Flag-gated all the same, so a roster edited *after* this runs is never
+  //     reset on the next load.
+  //     Records are untouched. A record stores the greeter's `en` string
+  //     itself (see saveRecord), not a reference into the event's list, so
+  //     entries filled in under the old roster keep showing their original
+  //     names in Records and in the export. ---
+  async resetStaffRosters(events) {
+    for (const ev of events) {
+      ev.staff = this.getDefaultStaffList();
+      await this.dbPut('events', ev);
+    }
+    await this.saveConfig('migratedTo36', true);
   }
 
   defKey(eventId, group) { return eventId + '::' + group; }
