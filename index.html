@@ -44,7 +44,20 @@
       --fs-body: 1rem;      /* 內文、輸入框、選項英文行 (16px) */
       --fs-sm:   0.875rem;  /* 次要文字 (14px) */
       --fs-xs:   0.75rem;   /* 徽章、步驟膠囊 (12px) */
+      /* Single content width for every admin tab, so the tab bar and all six
+         panels share one left edge instead of each choosing its own. */
+      --admin-w: 900px;
     }
+    /* Browsers plant their own reveal / password-manager icons inside a password
+       field, which eats the width the 4 PIN digits need. One rule per selector
+       on purpose: an unknown pseudo-element invalidates the entire selector
+       list it appears in, so grouping these would mean a browser that lacks
+       ::-ms-reveal also drops the ::-webkit- rules it does support. */
+    #pin-input::-ms-reveal { display: none !important; width: 0; margin: 0; }
+    #pin-input::-ms-clear { display: none !important; width: 0; margin: 0; }
+    #pin-input::-webkit-credentials-auto-fill-button { display: none !important; visibility: hidden; width: 0; margin: 0; }
+    #pin-input::-webkit-strong-password-auto-fill-button { display: none !important; visibility: hidden; width: 0; margin: 0; }
+    #pin-input::-webkit-textfield-decoration-container { display: none !important; }
     body {
       font-family: -apple-system, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
       background: #F5F6F8; color: #1A1A2E;
@@ -2285,7 +2298,10 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
         </sc-if>
       </div>
       <div data-mobile-pad="" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 1.5rem">
-        <div style="max-width: 760px; margin: 0 auto">
+        <!-- Full-height column so the version line below can be pushed to the
+             bottom with margin-top: auto instead of floating up under the last
+             card when there are only one or two events. -->
+        <div style="max-width: 760px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column">
           <sc-if value="{{ manageMode }}">
             <button onclick="{{ onAddEvent }}" data-add-event="" style="width: 100%; height: 52px; margin-bottom: 20px; background: #0055B8; color: #FFF; border: none; border-radius: 12px; font-size: var(--fs-body); font-weight: 600; cursor: pointer" style-hover="background: #004494">＋ 新增活動</button>
           </sc-if>
@@ -2330,7 +2346,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             </sc-for>
           </sc-if>
 
-          <div style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; padding: 28px 0 8px">v3.4 — Offline Exhibition Form</div>
+          <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">v3.5 — Offline Exhibition Form</div>
         </div>
       </div>
     </div>
@@ -2472,7 +2488,10 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
         <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 8px; color: #1A1A2E">管理者登入</div>
         <div style="font-size: 0.875rem; color: #64748B; margin-bottom: 24px">請輸入 4 位數 PIN 碼</div>
         <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 16px">
-          <input id="pin-input" type="password" maxlength="4" inputmode="numeric" pattern="[0-9]*" value="{{ pinValue }}" oninput="{{ onPinInput }}" onkeydown="{{ onPinKeyDown }}" style="width: 160px; height: 56px; text-align: center; font-size: 2rem; letter-spacing: 12px; border: 2px solid #D1D5DB; border-radius: 12px; outline: none; -webkit-text-security: disc">
+          <!-- Elastic width rather than a fixed 160px: letter-spacing adds a
+               trailing gap after the 4th digit, so text-indent puts half of it
+               back on the left to keep the digits optically centred. -->
+          <input id="pin-input" type="password" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="off" value="{{ pinValue }}" oninput="{{ onPinInput }}" onkeydown="{{ onPinKeyDown }}" style="width: 100%; max-width: 220px; height: 56px; padding: 0 8px; text-align: center; font-size: 1.75rem; letter-spacing: 0.5em; text-indent: 0.25em; border: 2px solid #D1D5DB; border-radius: 12px; outline: none; -webkit-text-security: disc">
         </div>
         <sc-if value="{{ pinError }}">
           <div style="color: #DC2626; font-size: 0.875rem; margin-bottom: 12px">PIN 碼錯誤</div>
@@ -2851,7 +2870,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
     </div>
   </sc-if>
 
-  <!-- ===== HANDOFF (thank-you + staff gate) ===== -->
+  <!-- ===== HANDOFF (thank-you, then back to the event page) ===== -->
   <sc-if value="{{ showHandoff }}">
     <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #FFF; animation: fadeIn 0.3s ease; padding: 1.5rem; position: relative">
       <div style="width: 80px; height: 80px; background: #DEF7EC; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px">
@@ -2859,114 +2878,9 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
       </div>
       <div style="font-size: 1.75rem; font-weight: 700; color: #1A1A2E; margin-bottom: 8px; text-align: center">Thank you! 感謝您的填寫！</div>
       <div style="font-size: 1rem; color: #64748B; text-align: center; line-height: 1.7">Please return the tablet to our staff.<br>請將平板交還給工作人員。</div>
-      <sc-if value="{{ showStaffEntry }}">
-        <button onclick="{{ onStaffContinue }}" style="position: absolute; bottom: 28px; right: 28px; height: 44px; padding: 0 20px; background: transparent; color: #94A3B8; border: 1px solid #E2E8F0; border-radius: 10px; font-size: 0.875rem; cursor: pointer; display: flex; align-items: center; gap: 8px" style-hover="background: #F8FAFC; color: #475569">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-          Staff 工作人員 →
-        </button>
-      </sc-if>
-      <sc-if value="{{ showHandoffDone }}">
-        <button onclick="{{ onHandoffDone }}" style="position: absolute; bottom: 28px; right: 28px; height: 44px; padding: 0 20px; background: transparent; color: #94A3B8; border: 1px solid #E2E8F0; border-radius: 10px; font-size: 0.875rem; cursor: pointer; display: flex; align-items: center; gap: 8px" style-hover="background: #F8FAFC; color: #475569">
-          Done 完成，返回 →
-        </button>
-      </sc-if>
-    </div>
-  </sc-if>
-
-  <!-- ===== STAFF NOTES (rating + notes + business card photo) ===== -->
-  <sc-if value="{{ showStaffNotes }}">
-    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.3s ease">
-      <div data-page-header="" style="background: #334155; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0">
-        <div style="display: flex; align-items: center; gap: 12px; min-width: 0">
-          <svg style="flex-shrink: 0" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-          <span data-page-title="" style="display: flex; flex-direction: column; min-width: 0">
-            <span style="color: #FFF; font-size: var(--fs-page); font-weight: 600; line-height: 1.25">Staff Notes</span>
-            <span style="color: rgba(255,255,255,0.8); font-size: var(--fs-sm); line-height: 1.3">業務備註</span>
-          </span>
-        </div>
-      </div>
-      <div data-mobile-pad="" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 1.5rem">
-        <div style="max-width: 640px; margin: 0 auto">
-          <div style="background: #F0F6FF; border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; border: 1px solid #BFDBFE">
-            <div style="font-size: var(--fs-xs); font-weight: 600; color: #0055B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px">Customer</div>
-            <div style="font-size: var(--fs-body); font-weight: 600; color: #1A1A2E">{{ staffCustomerName }}</div>
-            <div style="font-size: var(--fs-sm); color: #475569; margin-top: 2px">{{ staffCustomerCompany }}</div>
-          </div>
-          <sc-for list="{{ staffFormFields }}" as="field">
-            <div style="margin-bottom: 1.25rem">
-              <label style="display: block; margin-bottom: 8px">
-                <span style="display: block; font-size: var(--fs-h2); font-weight: 700; line-height: 1.25; color: #1A1A2E">{{ field.label }}</span>
-                <sc-if value="{{ field.labelZh }}"><span style="display: block; font-size: var(--fs-body); font-weight: 400; color: #64748B; line-height: 1.4; margin-top: 2px">{{ field.labelZh }}</span></sc-if>
-              </label>
-              <sc-if value="{{ field.isRating }}">
-                <div style="display: flex; gap: 4px; margin-top: 2px">
-                  <sc-for list="{{ field.starItems }}" as="st">
-                    <button onclick="{{ st.onClick }}" style="width: 48px; height: 48px; border: none; background: transparent; cursor: pointer; font-size: 2rem; line-height: 1; padding: 0; color: {{ st.color }}" style-active="transform: scale(0.9)">{{ st.char }}</button>
-                  </sc-for>
-                </div>
-              </sc-if>
-              <sc-if value="{{ field.isSelect }}">
-                <sc-raw-select value="{{ field.value }}" onchange="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #334155">
-                  <option value="">{{ field.placeholder }}</option>
-                  <sc-for list="{{ field.options }}" as="opt"><option value="{{ opt.value }}">{{ opt.label }}</option></sc-for>
-                </sc-raw-select>
-              </sc-if>
-              <sc-if value="{{ field.isDate }}">
-                <input type="date" value="{{ field.value }}" oninput="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #334155">
-              </sc-if>
-              <sc-if value="{{ field.isCheckboxGroup }}">
-                <sc-for list="{{ field.checkboxGroups }}" as="grp">
-                  <sc-if value="{{ grp.label }}">
-                    <div style="font-size: var(--fs-h3); font-weight: 600; color: #334155; margin: 18px 0 8px">{{ grp.label }}</div>
-                  </sc-if>
-                  <div data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 4px">
-                    <sc-for list="{{ grp.items }}" as="cb">
-                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: var(--fs-body); user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.spanStyle }}" style-hover="border-color: #64748B">
-                        <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #334155; flex-shrink: 0">
-                        <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0; text-align: left; overflow-wrap: anywhere">
-                          <span style="font-size: var(--fs-body); line-height: 1.35">{{ cb.labelEn }}</span>
-                          <sc-if value="{{ cb.labelZh }}"><span style="font-size: var(--fs-sm); line-height: 1.35; opacity: 0.72">{{ cb.labelZh }}</span></sc-if>
-                        </span>
-                      </label>
-                      <sc-if value="{{ cb.checked }}">
-                        <sc-if value="{{ cb.isOther }}">
-                          <input type="text" value="{{ cb.otherValue }}" oninput="{{ cb.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; width: 100%; grid-column: 1 / -1" style-focus="border-color: #334155">
-                        </sc-if>
-                      </sc-if>
-                    </sc-for>
-                  </div>
-                </sc-for>
-              </sc-if>
-              <sc-if value="{{ field.isRadioGroup }}">
-                <div data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 4px">
-                  <sc-for list="{{ field.radioItems }}" as="rd">
-                    <button onclick="{{ rd.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: var(--fs-body); user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 0; overflow-wrap: anywhere; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.spanStyle }}" style-hover="border-color: #64748B">
-                      <span style="font-size: var(--fs-body); line-height: 1.35">{{ rd.labelEn }}</span>
-                      <sc-if value="{{ rd.labelZh }}"><span style="font-size: var(--fs-sm); line-height: 1.35; opacity: 0.72">{{ rd.labelZh }}</span></sc-if>
-                    </button>
-                    <sc-if value="{{ rd.checked }}">
-                      <sc-if value="{{ rd.isOther }}">
-                        <input type="text" value="{{ rd.otherValue }}" oninput="{{ rd.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; width: 100%; grid-column: 1 / -1" style-focus="border-color: #334155">
-                      </sc-if>
-                    </sc-if>
-                  </sc-for>
-                </div>
-              </sc-if>
-              <sc-if value="{{ field.isTextarea }}">
-                <textarea value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" rows="3" style="width: 100%; padding: 12px 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; resize: vertical; line-height: 1.5" style-focus="border-color: #334155"></textarea>
-              </sc-if>
-              <sc-if value="{{ field.isText }}">
-                <input type="text" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none" style-focus="border-color: #334155">
-              </sc-if>
-            </div>
-          </sc-for>
-
-          <div data-form-actions="" style="display: flex; gap: 12px; margin-top: 1.75rem; padding-bottom: 2.5rem">
-            <button onclick="{{ onSkipStaffNotes }}" style="flex: 1; height: 52px; background: #FFF; color: #64748B; border: 2px solid #D1D5DB; border-radius: 12px; font-size: var(--fs-sm); font-weight: 500; cursor: pointer" style-hover="background: #F9FAFB; border-color: #94A3B8">Skip 跳過</button>
-            <button onclick="{{ onSaveStaffNotes }}" style="flex: 2; height: 52px; background: #334155; color: #FFF; border: none; border-radius: 12px; font-size: var(--fs-body); font-weight: 600; cursor: pointer" style-hover="background: #1E293B" style-active="transform: scale(0.98)">Save &amp; Next 儲存並繼續</button>
-          </div>
-        </div>
-      </div>
+      <button onclick="{{ onHandoffDone }}" style="position: absolute; bottom: 28px; right: 28px; height: 44px; padding: 0 20px; background: transparent; color: #94A3B8; border: 1px solid #E2E8F0; border-radius: 10px; font-size: 0.875rem; cursor: pointer; display: flex; align-items: center; gap: 8px" style-hover="background: #F8FAFC; color: #475569">
+        Done 完成，返回 →
+      </button>
     </div>
   </sc-if>
 
@@ -2983,16 +2897,21 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
         </div>
         <button onclick="{{ onExitAdmin }}" style="color: #94A3B8; background: rgba(255,255,255,0.08); border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.875rem; cursor: pointer; font-weight: 500" style-hover="background: rgba(255,255,255,0.15); color: #FFF">← 返回表單</button>
       </div>
-      <div style="background: #FFF; border-bottom: 1px solid #E2E8F0; display: flex; gap: 0; padding: 0 16px; flex-shrink: 0; overflow-x: auto">
-        <sc-for list="{{ adminTabs }}" as="tab">
-          <button onclick="{{ tab.onClick }}" style="padding: 12px 20px; border: none; background: transparent; font-size: 0.875rem; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; color: {{ tab.color }}; border-bottom-color: {{ tab.borderColor }}; white-space: nowrap" style-hover="color: #0055B8">{{ tab.label }}</button>
-        </sc-for>
+      <!-- The tab strip shares the content's 20px gutter and max width, and the
+           buttons carry no side padding, so the first tab's text sits exactly on
+           the content's left edge at every viewport. -->
+      <div data-admin-tabs="" style="background: #FFF; border-bottom: 1px solid #E2E8F0; padding: 0 20px; flex-shrink: 0; overflow-x: auto">
+        <div style="max-width: var(--admin-w); margin: 0 auto; display: flex; gap: 24px">
+          <sc-for list="{{ adminTabs }}" as="tab">
+            <button onclick="{{ tab.onClick }}" style="padding: 12px 0; border: none; background: transparent; font-size: 0.875rem; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; color: {{ tab.color }}; border-bottom-color: {{ tab.borderColor }}; white-space: nowrap" style-hover="color: #0055B8">{{ tab.label }}</button>
+          </sc-for>
+        </div>
       </div>
       <div style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px; background: #F5F6F8">
 
-        <!-- TAB: Customer / Needs / Staff field lists (shared) -->
+        <!-- TAB: Customer / Needs / Company field lists (shared) -->
         <sc-if value="{{ showAdminFieldList }}">
-          <div style="max-width: 800px; margin: 0 auto">
+          <div data-admin-panel="" style="max-width: var(--admin-w); margin: 0 auto">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px">
               <div style="font-size: 1.125rem; font-weight: 700; color: #1A1A2E">{{ adminListTitle }}</div>
               <button onclick="{{ onAddField }}" style="height: 40px; padding: 0 16px; background: #0055B8; color: #FFF; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px" style-hover="background: #004494">＋ 新增欄位</button>
@@ -3027,7 +2946,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
         <!-- TAB: Records -->
         <sc-if value="{{ showAdminRecords }}">
-          <div style="max-width: 100%; margin: 0 auto">
+          <div data-admin-panel="" style="max-width: var(--admin-w); margin: 0 auto">
             <!-- Stats banner -->
             <div style="background: #F0F6FF; border: 1px solid #BFDBFE; border-radius: 10px; padding: 12px 20px; margin-bottom: 16px; font-size: 0.875rem; color: #1E40AF; display: flex; align-items: center; gap: 8px">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
@@ -3099,7 +3018,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
         <!-- TAB: Settings -->
         <sc-if value="{{ showAdminSettings }}">
-          <div style="max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px">
+          <div data-admin-panel="" style="max-width: var(--admin-w); margin: 0 auto; display: flex; flex-direction: column; gap: 20px">
             <div style="background: #F0F6FF; border: 1px solid #BFDBFE; border-radius: 10px; padding: 12px 20px; font-size: 0.875rem; color: #1E40AF">此頁設定適用於所有活動。表單欄位與資料紀錄則各活動獨立。</div>
             <div style="background: #FFF; border-radius: 10px; padding: 20px; border: 1px solid #E2E8F0">
               <div style="font-size: 1rem; font-weight: 700; color: #1A1A2E; margin-bottom: 12px">裝置名稱</div>
@@ -3283,7 +3202,6 @@ class Component extends DCLogic {
     formValues: {}, formErrors: {},      // customer info form
     needsValues: {}, needsErrors: {},    // customer needs form
     companyValues: {}, companyErrors: {},// company profile form
-    staffValues: {},
     gdprChecked: false, gdprError: false, selectedCountryCode: '+886',
     currentRecordId: null, editingRecordId: null,
     records: [],
@@ -3323,9 +3241,11 @@ class Component extends DCLogic {
   }
   getDefaultNeedsFields() {
     return [
-      { id: 'inquiry_type', nameEn: 'Inquiry Type', nameZh: '洽談事由', type: 'checkbox-group', required: false, isCore: true, order: 0, allowOther: false, options: [
+      { id: 'inquiry_type', nameEn: 'Inquiry Type', nameZh: '洽談事由', type: 'checkbox-group', required: false, isCore: true, order: 0, allowOther: true, options: [
         { en: 'Request Quote', zh: '索取報價' }, { en: 'Sample Required', zh: '樣品需求' },
         { en: 'Customization / OEM', zh: '客製化需求' }, { en: 'Become a Distributor', zh: '尋求代理' },
+        { en: 'Machine Information', zh: '機器瞭解' }, { en: 'Market / Industry News', zh: '分享市場或同業訊息' },
+        { en: 'Greeting / Casual Chat', zh: '打招呼聊天' },
       ]},
       { id: 'product_interest', nameEn: 'Product of Interest', nameZh: '感興趣產品', type: 'checkbox-group', required: false, isCore: false, order: 1, allowOther: true, options: [
         { en: '1-Gun 12-Station', zh: '1槍12站', group: 'Gentrex Series' },
@@ -3369,6 +3289,7 @@ class Component extends DCLogic {
       { id: 'company_type', nameEn: 'Company Type', nameZh: '公司型態', type: 'radio-group', required: false, isCore: false, order: 2, allowOther: true, options: [
         { en: 'Brand', zh: '品牌' }, { en: 'Shoe Factory', zh: '鞋廠' }, { en: 'Sole Factory', zh: '鞋底廠' }, { en: 'Mold Factory', zh: '模具廠' },
         { en: 'Shoe Material Supplier', zh: '鞋材商' }, { en: 'Trading Company', zh: '貿易商' }, { en: 'Wholesaler', zh: '批發商' },
+        { en: 'OEM Factory', zh: '代工廠' },
       ]},
       { id: 'product_type', nameEn: 'Product Type', nameZh: '公司產品(鞋型)', type: 'checkbox-group', required: false, isCore: false, order: 3, allowOther: true, options: [
         { en: 'Athletic Shoes (Injection)', zh: '運動鞋(射出)' }, { en: 'Athletic Shoes (Cementing)', zh: '運動鞋(貼底)' },
@@ -3457,9 +3378,10 @@ class Component extends DCLogic {
   dbClear(store) { return new Promise((res, rej) => { const tx = this.db.transaction(store, 'readwrite'); const r = tx.objectStore(store).clear(); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
 
   async loadAllData() {
-    const [pinD, devD, gdprEnD, gdprZhD] = await Promise.all([
+    const [pinD, devD, gdprEnD, gdprZhD, mig35D] = await Promise.all([
       this.dbGet('config','pin'), this.dbGet('config','deviceName'),
       this.dbGet('config','gdprEn'), this.dbGet('config','gdprZh'),
+      this.dbGet('config','migratedTo35'),
     ]);
     let records = await this.dbGetAll('records');
     let events = await this.dbGetAll('events');
@@ -3475,6 +3397,8 @@ class Component extends DCLogic {
       records = seeded.records;
     }
 
+    if (!mig35D?.value) await this.addV35Options(events);
+
     this.setState({
       pin: pinD?.value ?? '0000', deviceName: devD?.value ?? defaultDev,
       gdprEn: gdprEnD?.value ?? this.state.gdprEn, gdprZh: gdprZhD?.value ?? this.state.gdprZh,
@@ -3488,6 +3412,56 @@ class Component extends DCLogic {
   sortEvents(events) {
     return [...events].sort((a,b) => String(b.startDate||'').localeCompare(String(a.startDate||''))
       || String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
+  }
+
+  // --- v3.5: two option lists gained entries, and Inquiry Type gained "Other".
+  //     A brand-new event picks these up straight from the defaults, but every
+  //     event that already exists has to be topped up — and each event owns its
+  //     own copy of the definitions, so the pass walks all of them.
+  //     Matched on `en`, so an option that is already present is never
+  //     duplicated and a 中文 label the admin retyped is never overwritten.
+  //     Still flag-gated rather than shape-checked: "never had this option" and
+  //     "the admin deleted this option" look identical in the data, and only a
+  //     one-shot pass avoids putting a deliberately removed option back on
+  //     every single load. ---
+  V35_OPTION_ADDITIONS = {
+    needsFields: {
+      inquiry_type: {
+        allowOther: true,
+        options: [
+          { en: 'Machine Information', zh: '機器瞭解' },
+          { en: 'Market / Industry News', zh: '分享市場或同業訊息' },
+          { en: 'Greeting / Casual Chat', zh: '打招呼聊天' },
+        ],
+      },
+    },
+    companyFields: {
+      company_type: { options: [{ en: 'OEM Factory', zh: '代工廠' }] },
+    },
+  };
+
+  async addV35Options(events) {
+    for (const ev of events) {
+      for (const [group, byField] of Object.entries(this.V35_OPTION_ADDITIONS)) {
+        const key = this.defKey(ev.id, group);
+        const row = await this.dbGet('fieldDefinitions', key);
+        if (!row?.value) continue;
+        let touched = false;
+        const next = row.value.map(f => {
+          const add = byField[f.id];
+          if (!add) return f;
+          const have = new Set((f.options || []).map(o => o.en));
+          const missing = add.options.filter(o => !have.has(o.en));
+          const wantsOther = add.allowOther === true && !f.allowOther;
+          if (!missing.length && !wantsOther) return f;
+          touched = true;
+          return { ...f, allowOther: add.allowOther ?? f.allowOther,
+            options: [...(f.options || []), ...missing] };
+        });
+        if (touched) await this.saveFieldDefs(key, next);
+      }
+    }
+    await this.saveConfig('migratedTo35', true);
   }
 
   defKey(eventId, group) { return eventId + '::' + group; }
@@ -3995,7 +3969,7 @@ class Component extends DCLogic {
     return {
       firstChoice: null,
       formValues: {}, formErrors: {}, needsValues: {}, needsErrors: {}, companyValues: {}, companyErrors: {},
-      staffValues: {}, gdprChecked: false, gdprError: false,
+      gdprChecked: false, gdprError: false,
       selectedCountryCode: '+886', currentRecordId: null, editingRecordId: null,
       cardPhotoPreviewSrc: null, cardPhotoBase64: null,
     };
@@ -4148,20 +4122,6 @@ class Component extends DCLogic {
     if (!file) return;
     const dataUrl = await this.compressImage(file);
     this.setState({ cardPhotoPreviewSrc: dataUrl, cardPhotoBase64: dataUrl });
-  }
-
-  async saveStaffNotes() {
-    const { currentRecordId, records, staffFields } = this.state;
-    const staffValues = this.applyDateDefaults(staffFields.filter(f => !f.source), this.state.staffValues);
-    // Merge rather than replace: greeter and visit_date were written from the
-    // event page at record creation and are not on this form.
-    const updated = records.map(r => r.id === currentRecordId
-      ? { ...r, staffFields: { ...r.staffFields, ...staffValues } }
-      : r);
-    const rec = updated.find(r => r.id === currentRecordId);
-    if (rec) await this.dbPut('records', rec);
-    this.setState({ ...this.flowResetPatch(), records: updated, screen: 'eventHome' });
-    this.showToastMsg('已儲存');
   }
 
   // ===== EXPORT XLSX+ZIP =====
@@ -4466,8 +4426,8 @@ class Component extends DCLogic {
       rows.forEach(r => { r.style.transform = ''; r.style.transition = ''; });
       row.style.zIndex = ''; row.style.position = ''; row.style.boxShadow = '';
       handle.style.cursor = '';
-      const target = this.state.adminTab; // 'customer' | 'needs' | 'company' | 'staff'
-      if (toIdx !== fromIdx && (target === 'customer' || target === 'needs' || target === 'company' || target === 'staff'))
+      const target = this.state.adminTab; // 'customer' | 'needs' | 'company'
+      if (toIdx !== fromIdx && (target === 'customer' || target === 'needs' || target === 'company'))
         this.reorderField(target, fromIdx, toIdx);
     };
     document.addEventListener('pointermove', onMove);
@@ -4675,10 +4635,9 @@ class Component extends DCLogic {
     const showNeedsForm = screen === 'needsForm';
     const showCompanyForm = screen === 'companyForm';
     const showHandoff = screen === 'handoff';
-    const showStaffNotes = screen === 'staffNotes';
     const showAdmin = screen === 'admin';
 
-    const showAdminFieldList = showAdmin && (adminTab === 'customer' || adminTab === 'needs' || adminTab === 'company' || adminTab === 'staff');
+    const showAdminFieldList = showAdmin && (adminTab === 'customer' || adminTab === 'needs' || adminTab === 'company');
     const showAdminRecords = showAdmin && adminTab === 'records';
     const showAdminSettings = showAdmin && adminTab === 'settings';
 
@@ -4752,7 +4711,7 @@ class Component extends DCLogic {
       borderColor: adminTab === id ? '#0055B8' : 'transparent',
     });
     const adminTabs = [
-      mkTab('customer', '客戶資料欄位'), mkTab('needs', '客戶需求欄位'), mkTab('company', '公司背景欄位'), mkTab('staff', '業務備註欄位'),
+      mkTab('customer', '客戶資料欄位'), mkTab('needs', '客戶需求欄位'), mkTab('company', '公司背景欄位'),
       mkTab('records', '資料紀錄'), mkTab('settings', '系統設定'),
     ];
 
@@ -4774,12 +4733,10 @@ class Component extends DCLogic {
     const showStepChip = !editing;
 
     const bluePalette = { checkedBg: '#F0F6FF', checkedBorder: '#0055B8', checkedText: '#0055B8' };
-    const slatePalette = { checkedBg: '#F1F5F9', checkedBorder: '#334155', checkedText: '#1E293B' };
 
     const custSorted = this.sortedFields('customerFields');
     const needsSorted = this.sortedFields('needsFields');
     const companySorted = this.sortedFields('companyFields');
-    const staffSorted = this.sortedFields('staffFields');
 
     let customerFormFields = custSorted.map(f => this.mapFormField(f, 'formValues', 'formErrors', bluePalette));
     // Editing from Records shows customer + needs + company fields as one combined form.
@@ -4790,17 +4747,7 @@ class Component extends DCLogic {
     }
     const needsFormFields = needsSorted.map(f => this.mapFormField(f, 'needsValues', 'needsErrors', bluePalette));
     const companyFormFields = companySorted.map(f => this.mapFormField(f, 'companyValues', 'companyErrors', bluePalette));
-    // Reception (Greeter / Visit Date) is answered on the event page, so it is
-    // not repeated here. With nothing else defined the staff page has no reason
-    // to exist — the handoff screen hides its entry (see showStaffEntry).
-    const staffSelfServe = staffSorted.filter(f => !f.source);
-    const staffFormFields = staffSelfServe.map(f => this.mapFormField(f, 'staffValues', null, slatePalette));
-    const showStaffEntry = staffFormFields.length > 0;
-
-    // Staff page customer summary + card photo
-    const currentRec = records.find(r => r.id === this.state.currentRecordId);
-    const staffCustomerName = currentRec?.customerFields?.name ?? '—';
-    const staffCustomerCompany = currentRec?.customerFields?.company ?? '';
+    // Business card capture (on the customer form since v3.3)
     const showCaptureButtons = !this.state.cardPhotoPreviewSrc;
     const showPhotoPreview = !!this.state.cardPhotoPreviewSrc;
     const cardPhotoPreviewImg = this.state.cardPhotoPreviewSrc
@@ -4808,7 +4755,7 @@ class Component extends DCLogic {
       : null;
 
     // Admin field lists (shared block across the four group tabs)
-    const listTitles = { customer: '客戶資料欄位', needs: '客戶需求欄位', company: '公司背景資料欄位', staff: '業務備註欄位' };
+    const listTitles = { customer: '客戶資料欄位', needs: '客戶需求欄位', company: '公司背景資料欄位' };
     const adminListTitle = listTitles[adminTab] || '';
     const listTarget = showAdminFieldList ? adminTab : 'customer';
     const listFields = showAdminFieldList ? this.sortedFields(this.storeKeyFor(listTarget)) : [];
@@ -4906,7 +4853,7 @@ class Component extends DCLogic {
       showPinDialog, pinValue, pinError } = this.state;
 
     return {
-      showEvents, showEventHome, showCustomerForm, showNeedsForm, showCompanyForm, showHandoff, showStaffNotes, showAdmin,
+      showEvents, showEventHome, showCustomerForm, showNeedsForm, showCompanyForm, showHandoff, showAdmin,
       showPinDialog, pinValue, pinError,
       onClosePinDialog: () => this.setState({ showPinDialog: false, pinValue: '', pinError: false }),
       onPinInput: (e) => this.setState({ pinValue: e.target.value.replace(/\D/g,'').slice(0,4), pinError: false }),
@@ -4970,11 +4917,8 @@ class Component extends DCLogic {
       onCompanySubmit: () => this.submitCompanyForm(),
       onCompanyBack: () => this.setState({ screen: firstChoice === 'data' ? 'customerForm' : 'needsForm' }),
       // Handoff
-      showStaffEntry, showHandoffDone: !showStaffEntry,
-      onStaffContinue: () => this.setState({ screen: 'staffNotes', staffValues: {} }),
       onHandoffDone: () => this.goHome(),
-      // Staff page
-      staffCustomerName, staffCustomerCompany, staffFormFields,
+      // Business card capture (customer form)
       showCaptureButtons, showPhotoPreview, cardPhotoPreviewImg,
       onCardFileSelected: (e) => this.handleCardFileSelected(e),
       onRemoveCardPhoto: () => this.askConfirm({
@@ -4982,8 +4926,6 @@ class Component extends DCLogic {
         message: '即將移除這張名片照片。若此紀錄先前已存檔，儲存後照片也會一併刪除。',
         onConfirm: () => this.setState({ cardPhotoPreviewSrc: null, cardPhotoBase64: null }),
       }),
-      onSaveStaffNotes: () => this.saveStaffNotes(),
-      onSkipStaffNotes: () => { this.goHome(); },
       // Admin
       adminTabs, showAdminFieldList, showAdminRecords, showAdminSettings,
       adminListTitle, adminFields, adminEventName: curEvent?.name ?? '',
