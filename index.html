@@ -2897,17 +2897,26 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
         </div>
         <button onclick="{{ onExitAdmin }}" style="color: #94A3B8; background: rgba(255,255,255,0.08); border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.875rem; cursor: pointer; font-weight: 500" style-hover="background: rgba(255,255,255,0.15); color: #FFF">← 返回表單</button>
       </div>
-      <!-- The tab strip shares the content's 20px gutter and max width, and the
-           buttons carry no side padding, so the first tab's text sits exactly on
-           the content's left edge at every viewport. -->
-      <div data-admin-tabs="" style="background: #FFF; border-bottom: 1px solid #E2E8F0; padding: 0 20px; flex-shrink: 0; overflow-x: auto">
-        <div style="max-width: var(--admin-w); margin: 0 auto; display: flex; gap: 24px">
-          <sc-for list="{{ adminTabs }}" as="tab">
-            <button onclick="{{ tab.onClick }}" style="padding: 12px 0; border: none; background: transparent; font-size: 0.875rem; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; color: {{ tab.color }}; border-bottom-color: {{ tab.borderColor }}; white-space: nowrap" style-hover="color: #0055B8">{{ tab.label }}</button>
-          </sc-for>
+      <!-- The tab strip lives *inside* the scrolling area, stuck to its top.
+           That is what keeps it aligned with the content: a classic (non-overlay)
+           scrollbar narrows a scroll container's content box, so a tab strip
+           outside it would stay put while the panel shifted — visibly on exactly
+           the tabs whose content is tall enough to scroll. Sharing one scroll
+           container means any scrollbar narrows both by the same amount.
+           scrollbar-gutter then reserves that space on every tab, so switching
+           between a scrolling and a non-scrolling tab doesn't jog the layout.
+           Within that box both are centred on --admin-w, and the tab buttons
+           carry no side padding, so the first tab's text sits exactly on the
+           content's left edge at every viewport. -->
+      <div data-admin-scroll="" style="flex: 1; overflow-y: auto; scrollbar-gutter: stable; -webkit-overflow-scrolling: touch; background: #F5F6F8">
+        <div data-admin-tabs="" style="position: sticky; top: 0; z-index: 5; background: #FFF; border-bottom: 1px solid #E2E8F0; padding: 0 20px; overflow-x: auto">
+          <div style="max-width: var(--admin-w); margin: 0 auto; display: flex; gap: 24px">
+            <sc-for list="{{ adminTabs }}" as="tab">
+              <button onclick="{{ tab.onClick }}" style="padding: 12px 0; border: none; background: transparent; font-size: 0.875rem; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; color: {{ tab.color }}; border-bottom-color: {{ tab.borderColor }}; white-space: nowrap" style-hover="color: #0055B8">{{ tab.label }}</button>
+            </sc-for>
+          </div>
         </div>
-      </div>
-      <div style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px; background: #F5F6F8">
+        <div style="padding: 20px">
 
         <!-- TAB: Customer / Needs / Company field lists (shared) -->
         <sc-if value="{{ showAdminFieldList }}">
@@ -3043,6 +3052,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             </div>
           </div>
         </sc-if>
+        </div>
       </div>
     </div>
   </sc-if>
