@@ -3342,18 +3342,18 @@ class Component extends DCLogic {
   }
   getDefaultStaffFields() {
     return [
-      { id: 'greeter', nameEn: 'Greeter', nameZh: '接待人員', type: 'radio-group', required: false, isCore: true, order: 0, allowOther: true, options: [
-        { en: 'Su Chiu-Chu', zh: '蘇秋菊' }, { en: 'Chang Shih-Ying', zh: '張詩穎' }, { en: 'Chien Yin-Ting', zh: '簡吟庭' },
-      ]},
+      { id: 'greeter', nameEn: 'Greeter', nameZh: '接待人員', type: 'radio-group', required: false, isCore: true, order: 0, allowOther: true, options: this.getDefaultStaffList() },
       { id: 'visit_date', nameEn: 'Visit Date', nameZh: '訪談日期', type: 'date', required: false, isCore: true, order: 1, allowOther: false, options: [] },
     ];
   }
   // Reception staff for a brand-new event, when there is no earlier event to
   // copy from. Same {en, zh} shape the Greeter options have always used, so a
-  // record's stored value keeps its meaning across the v3.4 change.
+  // record's stored value keeps its meaning across the v3.4 change — which is
+  // why getDefaultStaffFields() can seed the legacy Greeter options from here
+  // instead of keeping a second copy of the list.
   getDefaultStaffList() {
     return [
-      { en: 'Su Chiu-Chu', zh: '蘇秋菊' }, { en: 'Chang Shih-Ying', zh: '張詩穎' }, { en: 'Chien Yin-Ting', zh: '簡吟庭' },
+      { en: 'Esme', zh: '陳佩昀' }, { en: 'Crystal', zh: '宋佳蓉' },
     ];
   }
 
@@ -3603,11 +3603,11 @@ class Component extends DCLogic {
     staffFields = staffFields.map(f => {
       if (f.id === 'potential' && f.type !== 'radio-group') {
         staffChanged = true;
-        return { ...f, type: 'radio-group', allowOther: false, options: this.getDefaultStaffFields().find(d => d.id === 'potential').options };
+        return { ...f, type: 'radio-group', allowOther: false, options: this.getDefaultNeedsFields().find(d => d.id === 'potential').options };
       }
       if (f.id === 'product_interest' && (!f.options || f.options.length === 0)) {
         staffChanged = true;
-        return { ...f, allowOther: true, options: this.getDefaultStaffFields().find(d => d.id === 'product_interest').options };
+        return { ...f, allowOther: true, options: this.getDefaultNeedsFields().find(d => d.id === 'product_interest').options };
       }
       if (f.id === 'greeter' && !f.allowOther) {
         staffChanged = true;
