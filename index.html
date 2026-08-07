@@ -52,12 +52,18 @@
        field, which eats the width the 4 PIN digits need. One rule per selector
        on purpose: an unknown pseudo-element invalidates the entire selector
        list it appears in, so grouping these would mean a browser that lacks
-       ::-ms-reveal also drops the ::-webkit- rules it does support. */
+       ::-ms-reveal also drops the ::-webkit- rules it does support.
+       Only ever target the individual decoration *buttons* here. Never
+       ::-webkit-textfield-decoration-container — despite the name it is not a
+       decoration, it is the container WebKit puts the field's inner editor
+       inside, so hiding it takes the editable area with it: the field still
+       takes focus (iOS opens the keyboard) but nothing renders and nothing can
+       be typed. Blink does not implement that pseudo at all, so a headless
+       Chromium test cannot see the damage — which is how it shipped in v3.5. */
     #pin-input::-ms-reveal { display: none !important; width: 0; margin: 0; }
     #pin-input::-ms-clear { display: none !important; width: 0; margin: 0; }
     #pin-input::-webkit-credentials-auto-fill-button { display: none !important; visibility: hidden; width: 0; margin: 0; }
     #pin-input::-webkit-strong-password-auto-fill-button { display: none !important; visibility: hidden; width: 0; margin: 0; }
-    #pin-input::-webkit-textfield-decoration-container { display: none !important; }
     body {
       font-family: -apple-system, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
       background: #F5F6F8; color: #1A1A2E;
@@ -2346,7 +2352,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             </sc-for>
           </sc-if>
 
-          <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">v3.6 — Offline Exhibition Form</div>
+          <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">v3.6.1 — Offline Exhibition Form</div>
         </div>
       </div>
     </div>

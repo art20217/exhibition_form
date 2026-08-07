@@ -12,6 +12,15 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 
 ---
 
+## v3.6.1 更新重點
+
+- **修正手機無法輸入後台 PIN 碼：** 點輸入框後鍵盤會跳出來，但框內完全沒有反應、盲打也進不去。原因是 v3.5 為了擋掉密碼管理圖示而加的一條規則：
+  ```css
+  #pin-input::-webkit-textfield-decoration-container { display: none !important; }
+  ```
+  `-webkit-textfield-decoration-container` **不是圖示**，而是 WebKit 用來包住輸入框 **inner editor**（真正可輸入的區域）的容器，隱藏它等於把可輸入區一起拿掉——欄位仍能取得焦點（所以鍵盤會跳出來），但沒有東西可顯示、也沒有東西可打字。已移除該行；針對兩個 autofill 按鈕的規則保留，那些是真正的裝飾按鈕。
+- **為什麼桌機沒事、測試也沒抓到：** 桌機 Chrome 的密碼欄位沒有裝飾按鈕，而且 **Blink 根本沒有實作這個 pseudo-element**，規則等於空轉；iOS Safari 則會替密碼欄位加上 strong-password／autofill 按鈕，容器因此存在、欄位就壞掉。加上所有測試都用 Playwright 的 `fill()`——它直接指派 `.value` 再派發一次 `input` 事件，**完全不經過 inner editor**，所以就算在會壞的瀏覽器上也照樣通過。測試已全面改為逐鍵輸入（`pressSequentially`），並新增 `e2e-pin-mobile.js`（含一條「不得再出現這個選擇器」的靜態防護，因為 headless Chromium 重現不了 iOS 的實際行為）。
+
 ## v3.6 更新重點
 
 - **預設接待人員換成 Esme（陳佩昀）、Crystal（宋佳蓉）：** 舊的三個姓名全部移除。
