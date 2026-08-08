@@ -4,7 +4,6 @@
 // fields move to their new groups without clobbering customizations, that old
 // values still resolve through the read fallbacks, and that the one-shot flag
 // keeps a second load from re-running the move.
-const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const H = require('./helpers');
@@ -12,14 +11,9 @@ const H = require('./helpers');
 const SHOT_DIR = path.join(__dirname, 'shots-mig-v33');
 fs.mkdirSync(SHOT_DIR, { recursive: true });
 
-const server = http.createServer((req, res) => {
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  if (req.url.startsWith('/seed')) { res.end('<!DOCTYPE html><title>seed</title>'); return; }
-  fs.createReadStream(H.APP_HTML).pipe(res);
-});
 
 (async () => {
-  await new Promise(r => server.listen(8938, r));
+  const server = await H.serve(8938);
   const browser = await H.launchBrowser();
   const page = await (await browser.newContext({ viewport: { width: 1024, height: 900 }, acceptDownloads: true })).newPage();
   let fails = 0;

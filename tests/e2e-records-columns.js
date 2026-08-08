@@ -1,6 +1,5 @@
 // The admin Records list shows only 時間／姓名／公司／接待人員 (plus # and 操作),
 // while the export still carries every field.
-const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const H = require('./helpers');
@@ -8,14 +7,9 @@ const H = require('./helpers');
 const SHOT = path.join(__dirname, 'shots-records');
 fs.mkdirSync(SHOT, { recursive: true });
 
-const server = http.createServer((req, res) => {
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  if (req.url.startsWith('/seed')) { res.end('<!DOCTYPE html><title>seed</title>'); return; }
-  fs.createReadStream(H.APP_HTML).pipe(res);
-});
 
 (async () => {
-  await new Promise(r => server.listen(8947, r));
+  const server = await H.serve(8947);
   const browser = await H.launchBrowser();
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
   const page = await ctx.newPage();

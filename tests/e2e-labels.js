@@ -1,7 +1,6 @@
 // Option-label corrections: a database carrying the old wrong 中文 labels gets
 // them fixed on load, while a label the admin already retyped is left alone,
 // and the stored `en` values (what records key off) are never touched.
-const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const H = require('./helpers');
@@ -9,14 +8,9 @@ const H = require('./helpers');
 const SHOT = path.join(__dirname, 'shots-labels');
 fs.mkdirSync(SHOT, { recursive: true });
 
-const server = http.createServer((req, res) => {
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  if (req.url.startsWith('/seed')) { res.end('<!DOCTYPE html><title>seed</title>'); return; }
-  fs.createReadStream(H.APP_HTML).pipe(res);
-});
 
 (async () => {
-  await new Promise(r => server.listen(8941, r));
+  const server = await H.serve(8941);
   const browser = await H.launchBrowser();
   const page = await (await browser.newContext({ viewport: { width: 1024, height: 900 }, acceptDownloads: true })).newPage();
   let fails = 0;

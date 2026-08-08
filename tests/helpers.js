@@ -24,14 +24,43 @@ function launchBrowser(opts = {}) {
   return chromium.launch({ executablePath: chromiumPath(), args: ['--no-sandbox'], ...opts });
 }
 
+const ROOT = path.join(__dirname, '..');
+const TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.webmanifest': 'application/manifest+json; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.png': 'image/png',
+};
+
 // Serves the app. `/seed` returns a blank page on the same origin, so a suite
 // can open IndexedDB and plant fixtures before the app ever boots.
-// Port 0 asks the OS for a free one — suites used to hardcode ports and had
+//
+// Real files are served from the repo root, and only unknown paths fall back to
+// index.html. That fallback used to be unconditional, which was fine while the
+// app was a single file — but sw.js served as HTML would fail to register, and
+// the manifest and icons would 200 with the wrong bytes. Serving them properly
+// is also what lets the PWA suite exercise the worker at all.
+//
+// Port 0 asks the OS for a free one; suites used to hardcode ports and had
 // started colliding with each other.
 function serve(port = 0) {
   const server = http.createServer((req, res) => {
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    if (req.url.startsWith('/seed')) { res.end('<!DOCTYPE html><title>seed</title>'); return; }
+    if (req.url.startsWith('/seed')) {
+      res.setHeader('Content-Type', TYPES['.html']);
+      res.end('<!DOCTYPE html><title>seed</title>');
+      return;
+    }
+    const rel = decodeURIComponent(req.url.split('?')[0]).replace(/^\/+/, '');
+    const file = path.join(ROOT, rel);
+    // Keep the fallback from being a path-traversal hole.
+    const inRoot = file.startsWith(ROOT + path.sep);
+    if (rel && inRoot && fs.existsSync(file) && fs.statSync(file).isFile()) {
+      res.setHeader('Content-Type', TYPES[path.extname(file)] || 'application/octet-stream');
+      fs.createReadStream(file).pipe(res);
+      return;
+    }
+    res.setHeader('Content-Type', TYPES['.html']);
     fs.createReadStream(APP_HTML).pipe(res);
   });
   return new Promise(r => server.listen(port, () => {

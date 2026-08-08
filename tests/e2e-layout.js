@@ -1,6 +1,5 @@
 // Option chips: English and 中文 on their own lines, and a grid that adapts its
 // column count to the available width instead of a hard-coded chip width.
-const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const H = require('./helpers');
@@ -8,16 +7,11 @@ const H = require('./helpers');
 const SHOT = path.join(__dirname, 'shots-layout');
 fs.mkdirSync(SHOT, { recursive: true });
 
-const server = http.createServer((req, res) => {
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  if (req.url.startsWith('/seed')) { res.end('<!DOCTYPE html><title>seed</title>'); return; }
-  fs.createReadStream(H.APP_HTML).pipe(res);
-});
 
 const HAN = /[㐀-鿿]/;
 
 (async () => {
-  await new Promise(r => server.listen(8943, r));
+  const server = await H.serve(8943);
   const browser = await H.launchBrowser();
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const page = await ctx.newPage();

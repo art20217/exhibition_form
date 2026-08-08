@@ -12,6 +12,21 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 
 ---
 
+## v3.7.0 更新重點 — PWA 離線化（Phase 1 前半段）
+
+- **可安裝為主畫面 App（standalone）：** 加入 `manifest.webmanifest` 與 icon（含 Android 圓形遮罩用的 maskable 版本），圖示沿用活動首頁頁首的日曆符號。iOS 的狀態列刻意維持不透明（`default`）——`black-translucent` 會讓白色狀態列文字疊在 body 的安全區留白上，而那塊是淺色頁面背景，等於看不見。
+- **Service Worker 離線快取：** precache 就是整個站（`index.html` + manifest + icons），因為其他依賴全都內嵌在單一 HTML 裡。首次連網開啟後，完全離線也能正常啟動。
+- **更新採橫幅、絕不自動重整：** 新版本安裝完成後**停在 `waiting` 不接管**（沒有 `skipWaiting()`）。橫幅只存在於活動首頁的區塊裡，**進入表單後它在 DOM 中根本不存在**——不是靠條件隱藏，是結構上不可能出現。客戶填到一半的畫面永遠不會在腳下被重整。
+- **`?sw=off` 緊急停用（`?sw=on` 復原）：** 面對展場中拿不到手、卡在壞快取的平板，這是唯一的救援途徑。停用狀態**持久化**於 `localStorage`——第一版做成一次性的，結果解除註冊後 reload 又立刻註冊回去，若壞的正是 SW 本身等於毫無用處。停用期間活動首頁會標示，避免平板悄悄停在只能連線的狀態。**不會動到 IndexedDB**，紀錄完好。
+- **只接管自己的入口路徑：** SW 不會把 scope 底下所有 navigation 都回答成 app 外殼——這個 app 只有一個入口、沒有前端路由，其他路徑照常走網路。
+
+> **Background Sync 不在此版**。Phase 1 原訂的「偵測到網路後自動同步至後端」有兩重阻塞：後端屬於 Phase 2 尚未存在；而且 **Safari／iOS 從未實作 Background Sync API**，到 iOS 26.5 仍然沒有。展場裝置是 iPad，這條路在該平台不通，日後需改為前景同步（載入時、`visibilitychange` 回前景時、或 `online` 事件）。
+
+### 測試基礎建設
+
+- 16 支端到端測試與 CI **納入版控**（先前只存在於開發用的暫存目錄，曾整批遺失）。詳見下方「測試」一節。
+- 新增 `e2e-pwa.js`（26 條斷言）：離線可用、更新橫幅不自動重整且不出現在表單頁、`?sw=off/on` 往返、紀錄不受影響、`index.html` 與 `sw.js` 的版本字串必須一致（`sw.js` 沒有 build step，這是唯一擋得住忘記 bump 快取版本的機制）。
+
 ## v3.6.1 更新重點
 
 - **修正手機無法輸入後台 PIN 碼：** 點輸入框後鍵盤會跳出來，但框內完全沒有反應、盲打也進不去。原因是 v3.5 為了擋掉密碼管理圖示而加的一條規則：
@@ -239,7 +254,7 @@ export_2026_美國展_YYYYMMDD_HHMMSS.zip
 | 匯出 | 內建 XLSX 生成 + ZIP 打包（ExportLib，inline 於 HTML 中） |
 | 拖曳排序 | Pointer Events 自製實作（相容 iPad Safari 觸控，不依賴 HTML5 Drag & Drop） |
 | 螢幕適配 | 響應式 CSS，`@media (max-width: 768px)` 斷點，支援 `safe-area-inset` 與 `100dvh` |
-| 離線能力 | 完全離線，所有依賴皆已內嵌，不需任何網路連線 |
+| 離線能力 | 完全離線，所有依賴皆已內嵌，不需任何網路連線。v3.7.0 起另有 Service Worker 快取應用外殼，可安裝為主畫面 App |
 | 瀏覽器相容 | iPad Safari 16+、Chrome Android 100+、主流手機瀏覽器 |
 
 ### 修改指南
@@ -327,6 +342,10 @@ npm test -- pin-mobile events          # 只跑名稱含這些字串的套件
 ```
 exhibition_form/
 ├── index.html              # 完整應用程式（單一自包含檔案，約 420KB，原始碼可讀）
+├── sw.js                   # Service Worker（離線快取；版本字串須與 index.html 一致）
+├── manifest.webmanifest    # PWA manifest（standalone）
+├── icons/                  # 主畫面圖示（由 tools/make-icons.js 產生）
+├── tools/make-icons.js     #   圖示產生器，僅在圖案變更時重跑
 ├── tests/                  # 端到端測試（Playwright 驅動 headless Chromium）
 │   ├── helpers.js          #   共用導覽、IndexedDB 讀寫、瀏覽器啟動
 │   ├── run-all.js          #   依序執行全部套件的 runner
@@ -336,7 +355,11 @@ exhibition_form/
 └── README.md               # 本文件
 ```
 
-`index.html` 仍然是**唯一的產品檔案**——沒有 build step，`tests/` 與 `package.json` 只服務開發流程，部署到 GitHub Pages 的東西完全不變。
+仍然**沒有 build step**：這些檔案原樣部署到 GitHub Pages。`tests/`、`tools/` 與 `package.json` 只服務開發流程。
+
+> **發布新版時務必同步 `sw.js` 的 `VERSION` 與 `index.html` 的版本字串。** 兩者不一致代表新的 HTML 會沿用舊的快取名稱，所有平板都會停在舊版且無從察覺。`e2e-pwa.js` 有一條斷言擋這件事。
+>
+> **SW 相關的變更無法用 artifact 預覽驗證**——artifact 跑在沙箱 iframe 且 CSP 嚴格，Service Worker 註冊不會生效。必須在 GitHub Pages 上測。
 
 ---
 

@@ -1,7 +1,6 @@
 // Every floating window must survive a mis-tap on its backdrop and close only
 // via its own control. Includes a regression guard for the lightbox ×, which
 // used to work purely by bubbling to the (now removed) backdrop handler.
-const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const H = require('./helpers');
@@ -13,14 +12,9 @@ const PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
   'base64');
 
-const server = http.createServer((req, res) => {
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  if (req.url.startsWith('/seed')) { res.end('<!DOCTYPE html><title>seed</title>'); return; }
-  fs.createReadStream(H.APP_HTML).pipe(res);
-});
 
 (async () => {
-  await new Promise(r => server.listen(8948, r));
+  const server = await H.serve(8948);
   const browser = await H.launchBrowser();
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
   const errors = [];

@@ -1,7 +1,6 @@
 // v3.3 end-to-end: admin fully in Chinese, two-stage confirmation on every
 // delete, fields moved off the staff page, and business card capture on the
 // customer form (including the "editing must not wipe the photo" regression).
-const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const H = require('./helpers');
@@ -19,15 +18,11 @@ const PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
   'base64');
 
-const server = http.createServer((req, res) => {
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  fs.createReadStream(H.APP_HTML).pipe(res);
-});
 
 const fieldBlock = (page, labelText) => page.locator('label', { hasText: labelText }).locator('xpath=..');
 
 (async () => {
-  await new Promise(r => server.listen(8937, r));
+  const server = await H.serve(8937);
   const browser = await H.launchBrowser();
   const ctx = await browser.newContext({ viewport: { width: 1024, height: 900 } });
   const page = await ctx.newPage();

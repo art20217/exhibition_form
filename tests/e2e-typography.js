@@ -1,6 +1,5 @@
 // Page header must survive narrow screens, and the customer-facing forms must
 // use one type scale: field label = Markdown H2, group heading = H3.
-const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const H = require('./helpers');
@@ -8,13 +7,9 @@ const H = require('./helpers');
 const SHOT = path.join(__dirname, 'shots-typography');
 fs.mkdirSync(SHOT, { recursive: true });
 
-const server = http.createServer((req, res) => {
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  fs.createReadStream(H.APP_HTML).pipe(res);
-});
 
 (async () => {
-  await new Promise(r => server.listen(8946, r));
+  const server = await H.serve(8946);
   const browser = await H.launchBrowser();
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const page = await ctx.newPage();

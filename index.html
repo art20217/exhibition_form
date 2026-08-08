@@ -4,6 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>訪客資料登記表 Exhibition Registration</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0055B8">
+<!-- iOS reads these rather than the manifest for home-screen launches. The
+     status bar is left opaque ("default"): black-translucent would put the
+     status bar text over body's safe-area padding, which paints the light page
+     background — white-on-light-grey, unreadable. -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Exhibitions">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <!--
   Offline Exhibition Registration Form (v3.0)
 
@@ -2303,6 +2313,19 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </button>
         </sc-if>
       </div>
+      <!-- The update banner lives here and nowhere else. This is the event
+           list — the one screen where nobody is part-way through a form, so
+           reloading costs nothing. A new version installs silently and waits;
+           staff choose the moment. -->
+      <sc-if value="{{ swUpdateReady }}">
+        <div data-sw-banner="" style="flex-shrink: 0; background: #EFF6FF; border-bottom: 1px solid #BFDBFE; padding: 12px 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap">
+          <span style="font-size: var(--fs-sm); color: #1E3A8A">有新版本已下載完成，更新只需幾秒。</span>
+          <div style="display: flex; gap: 8px; flex-shrink: 0">
+            <button onclick="{{ onDismissSwUpdate }}" style="height: 36px; padding: 0 14px; background: transparent; color: #64748B; border: 1px solid #CBD5E1; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F8FAFC">稍後</button>
+            <button onclick="{{ onApplySwUpdate }}" data-sw-apply="" style="height: 36px; padding: 0 16px; background: #0055B8; color: #FFF; border: none; border-radius: 8px; font-size: var(--fs-sm); font-weight: 600; cursor: pointer" style-hover="background: #004494">立即更新</button>
+          </div>
+        </div>
+      </sc-if>
       <div data-mobile-pad="" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 1.5rem">
         <!-- Full-height column so the version line below can be pushed to the
              bottom with margin-top: auto instead of floating up under the last
@@ -2352,7 +2375,12 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             </sc-for>
           </sc-if>
 
-          <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">v3.6.1 — Offline Exhibition Form</div>
+          <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">
+            v3.7.0 — Offline Exhibition Form
+            <sc-if value="{{ swDisabled }}">
+              <span data-sw-disabled="" style="display: block; margin-top: 4px; color: #B45309">離線快取已停用，網址加上 ?sw=on 可重新啟用</span>
+            </sc-if>
+          </div>
         </div>
       </div>
     </div>
@@ -3206,6 +3234,7 @@ class Component extends DCLogic {
     // the user leaves the event or presses 重新選擇.
     sessionGreeters: [], sessionDate: '',
     showPinDialog: false, pinValue: '', pinError: false, pinPurpose: 'admin',
+    swUpdateReady: false,
     adminTab: 'customer',
     pin: '0000', deviceName: '',
     gdprEn: 'I consent to the organizer collecting and storing my contact information for the purpose of business follow-up. My data will not be shared with third parties.',
@@ -3368,6 +3397,16 @@ class Component extends DCLogic {
     await this.loadAllData();
     this.setState({ dbReady: true });
     this.bindDragReorder();
+    this.bindSwUpdate();
+  }
+
+  // The registration script (bottom of the file) parks an updated worker and
+  // fires this event; the banner it drives only renders on the event list, so
+  // an update announced mid-form stays invisible until the customer is done.
+  bindSwUpdate() {
+    const show = () => this.setState({ swUpdateReady: true });
+    if (window.__swWaiting) show();
+    window.addEventListener('sw-update-ready', show);
   }
 
   initDB() {
@@ -4894,6 +4933,12 @@ class Component extends DCLogic {
       onPinInput: (e) => this.setState({ pinValue: e.target.value.replace(/\D/g,'').slice(0,4), pinError: false }),
       onPinKeyDown: (e) => { if (e.key === 'Enter') this.submitPin(); },
       onSubmitPin: () => this.submitPin(),
+      // Update banner. Applying reloads the page (via the worker's
+      // controllerchange), which is why it is offered only on the event list.
+      swUpdateReady: this.state.swUpdateReady,
+      swDisabled: !!window.__swDisabled,
+      onApplySwUpdate: () => { if (window.__swApplyUpdate) window.__swApplyUpdate(); },
+      onDismissSwUpdate: () => this.setState({ swUpdateReady: false }),
       // Event list
       activeEvents, endedEvents,
       hasActiveEvents: activeEvents.length > 0, hasEndedEvents: endedEvents.length > 0,
@@ -5027,6 +5072,106 @@ class Component extends DCLogic {
     };
   }
 }
+</script>
+
+<script>
+/* Service worker registration, the ?sw=off escape hatch, and the plumbing that
+   lets the app show an update banner instead of reloading on its own.
+
+   Kept out of the Component on purpose: it has to be able to run even when the
+   app itself is the thing that is broken. ?sw=off is the recovery path for a
+   tablet that is stuck on a bad cached version, so it runs first and does not
+   depend on IndexedDB, the template engine, or anything else booting cleanly. */
+(function () {
+  'use strict';
+  if (!('serviceWorker' in navigator)) return;
+
+  // --- escape hatch -------------------------------------------------------
+  // ?sw=off tears the worker and every cache down; ?sw=on puts it back.
+  // Recovering a device this way needs no cable and no devtools.
+  //
+  // The "off" state is persisted rather than one-shot. Tearing down and then
+  // reloading would just re-register on the way back in — and if the worker
+  // itself is what's broken, that lands the tablet straight back in the state
+  // it was being rescued from. The flag makes the rescue stick until someone
+  // deliberately re-enables it.
+  const DISABLED = 'sw-disabled';
+  const flag = new URLSearchParams(location.search).get('sw');
+
+  if (flag === 'on') {
+    try { localStorage.removeItem(DISABLED); } catch (e) {}
+    location.replace(location.pathname);
+    return;
+  }
+
+  if (flag === 'off') {
+    (async () => {
+      try { localStorage.setItem(DISABLED, '1'); } catch (e) {}
+      try {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+        if (window.caches) {
+          const names = await caches.keys();
+          await Promise.all(names.map((n) => caches.delete(n)));
+        }
+      } catch (e) {
+        console.error('[sw] 解除註冊失敗', e);
+      }
+      // Records live in IndexedDB and are deliberately left untouched.
+      location.replace(location.pathname);
+    })();
+    return;
+  }
+
+  try {
+    if (localStorage.getItem(DISABLED)) {
+      // Surfaced on the event list, so a tablet left in recovery mode does not
+      // quietly stay online-only forever.
+      window.__swDisabled = true;
+      return;
+    }
+  } catch (e) {}
+
+  // --- registration -------------------------------------------------------
+  // A worker that is already `waiting` means an update installed on an earlier
+  // visit and is still parked. Announce either case the same way.
+  const announce = (reg) => {
+    if (!reg.waiting) return;
+    window.__swWaiting = reg.waiting;
+    window.dispatchEvent(new CustomEvent('sw-update-ready'));
+  };
+
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+      announce(reg);
+      reg.addEventListener('updatefound', () => {
+        const installing = reg.installing;
+        if (!installing) return;
+        installing.addEventListener('statechange', () => {
+          // `installed` with an existing controller means this is an update to
+          // a version already running, not the very first install.
+          if (installing.state === 'installed' && navigator.serviceWorker.controller) announce(reg);
+        });
+      });
+    }).catch((e) => console.error('[sw] 註冊失敗', e));
+  });
+
+  // Applying an update is the only thing that reloads the page, and it only
+  // happens after someone presses the banner's button.
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!reloading) return;
+    reloading = false;
+    location.reload();
+  });
+
+  window.__swApplyUpdate = function () {
+    const waiting = window.__swWaiting;
+    if (!waiting) return;
+    reloading = true;
+    waiting.postMessage('SKIP_WAITING');
+  };
+})();
 </script>
 
 </body>
