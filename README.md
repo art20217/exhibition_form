@@ -252,6 +252,24 @@ export_2026_美國展_YYYYMMDD_HHMMSS.zip
 - `state` 的 `customerFields` / `needsFields` / `companyFields` / `staffFields` 永遠是**目前開啟活動**的定義，所以表單、後台、匯出等讀取端不需要知道活動的存在；只有存取 IndexedDB 的那一層（`saveEventDefs` / `loadEventDefs` / `defKey`）需要帶活動前綴。
 - 欄位若標記 `source: 'event'`（接待人員、訪談日期），代表其內容由活動頁供應。v3.5 移除了業務備註頁與該頁籤，這兩個欄位不再有任何編輯介面——但**定義刻意保留**，因為資料紀錄的「接待人員」欄與匯出欄位都靠它們解析。
 
+### 測試
+
+```bash
+npm ci
+npx playwright-core install chromium   # 首次執行才需要
+npm test                               # 16 支套件，約 3.5 分鐘
+npm test -- pin-mobile events          # 只跑名稱含這些字串的套件
+```
+
+每次 push 與 PR 由 `.github/workflows/test.yml` 自動執行；失敗時截圖會上傳為 artifact。
+
+套件依序執行，不能平行——每支各自起 HTTP server 並清空同一個 IndexedDB。涵蓋範圍包含完整填單流程、後台各頁籤、版面尺寸、資料紀錄欄位、匯出內容，以及 **v2 → v3.6 的每一段遷移**（各自植入該版本形狀的資料庫再驗證結果）。
+
+寫測試時有兩個教訓值得記住：
+
+- **不要用 `locator.fill()` 驅動輸入框。** 它直接指派 `.value` 再派發一次 `input` 事件，完全不經過瀏覽器的 inner editor——v3.5 那個「手機打不了 PIN 碼」的 bug 就是這樣躲過整個套件的。一律用 `click()` + `pressSequentially()`。
+- **headless Chromium 不等於使用者的瀏覽器。** Blink 沒有實作某些 WebKit 專屬的 pseudo-element，對它們的誤用在本機完全測不出來。這類情況改為斷言 CSS 規則本身（見 `e2e-pin-mobile.js` 末段的靜態防護）。
+
 ### 已知限制
 
 - **不具備雲端同步。** 多台平板的資料需各自匯出後手動合併。
@@ -298,6 +316,9 @@ export_2026_美國展_YYYYMMDD_HHMMSS.zip
 - 後台的欄位管理與 Settings 頁籤尚未做完整手機適配（Records 頁籤已有卡片式手機排版），如需在手機上管理後台設定需額外處理。
 - 國碼選單目前為硬編碼列表，正式版可改為完整的國際電話國碼資料庫。
 - 考慮加入裝置層級的安全提醒（iPad 引導式取用模式設定指引）。
+- `renderVals()` 已達 367 行，是自有程式碼裡最長的方法，且每新增一個畫面就再長一截。建議依畫面拆成數個 `renderXxxVals()`。（其餘 63 個方法中有 56 個在 50 行以內，整體並不需要大改。）
+- 遷移鏈已累積 4 個 `migratedToXX` 旗標，`migrateLegacyFieldDefs()` 271 行，且**每一版都必然再長一段**。建議改為表格驅動：一個依序執行的遷移步驟清單，每步各自帶旗標與說明。
+- `state` 有 182 個扁平欄位。目前尚未造成實際困擾，可在上面兩項之後再視情況分組。
 
 ---
 
@@ -305,9 +326,17 @@ export_2026_美國展_YYYYMMDD_HHMMSS.zip
 
 ```
 exhibition_form/
-├── index.html    # 完整應用程式（單一自包含檔案，約 420KB，原始碼可讀）
-└── README.md     # 本文件
+├── index.html              # 完整應用程式（單一自包含檔案，約 420KB，原始碼可讀）
+├── tests/                  # 端到端測試（Playwright 驅動 headless Chromium）
+│   ├── helpers.js          #   共用導覽、IndexedDB 讀寫、瀏覽器啟動
+│   ├── run-all.js          #   依序執行全部套件的 runner
+│   └── e2e-*.js            #   16 支套件
+├── .github/workflows/      # CI：每次 push 與 PR 跑完整測試
+├── package.json
+└── README.md               # 本文件
 ```
+
+`index.html` 仍然是**唯一的產品檔案**——沒有 build step，`tests/` 與 `package.json` 只服務開發流程，部署到 GitHub Pages 的東西完全不變。
 
 ---
 

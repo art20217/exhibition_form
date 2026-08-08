@@ -1,0 +1,41 @@
+name: tests
+
+# The app ships as a single HTML file straight from master to GitHub Pages, so
+# master breaking means the exhibition tablets get a broken app. Every push and
+# PR runs the full end-to-end suite against a real headless Chromium.
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      # playwright-core ships the installer, so there is no second Playwright
+      # package to keep in version lockstep with it.
+      - name: Install Chromium
+        run: npx playwright-core install --with-deps chromium
+
+      - run: npm test
+
+      # Suites screenshot as they go; on a failure those are usually the
+      # quickest way to see what the page actually looked like.
+      - name: Upload screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: tests/shots-*/
+          retention-days: 7
+          if-no-files-found: ignore
