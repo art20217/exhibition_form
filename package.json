@@ -1,0 +1,12 @@
+{
+  "name": "exhibition-form",
+  "version": "3.8.0",
+  "private": true,
+  "description": "離線展覽會談紀錄表 — 單一 HTML 檔案，測試以 Playwright 驅動 headless Chromium",
+  "scripts": {
+    "test": "node tests/run-all.js"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.62.1"
+  }
+}

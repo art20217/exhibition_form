@@ -1,4 +1,4 @@
-# 訪客資料登記表 — Offline Prototype
+# 會談紀錄表 — Offline Prototype
 
 展覽客戶資料蒐集表單，單一 HTML 檔案，完全離線運作，零伺服器依賴。
 
@@ -11,6 +11,46 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 直接在平板或手機瀏覽器開啟即可使用，不需安裝任何應用程式。
 
 ---
+
+## v3.8.0 更新重點
+
+- **App 更名為「會談紀錄表」**（`<title>`、PWA manifest、README）。主畫面圖示下的短名維持 `Exhibitions`。
+- **新增「客戶資料紀錄」瀏覽頁：** 從活動內頁進入、需輸入 PIN。這是一個**獨立畫面，不是後台資料紀錄的捷徑**——接待人員可以搜尋（姓名／公司／接待人員）與編輯，但**沒有刪除、沒有匯出、沒有清除全部**。編輯完回到瀏覽頁而非後台，所以沒人會落在破壞性操作旁邊一步之遙。
+  > 它與後台共用同一組 PIN，因此上述限制是**流程上的區隔而非權限上的**：拿到 PIN 的人一樣能自己進「表單管理」刪除或匯出。要真正分權需要第二組 PIN。
+- **新增「快速填單」入口：** 只填客戶資料與客戶需求，**跳過公司背景**，步驟顯示 1 / 2、2 / 2。紀錄照常寫入，`companyFields` 留空，日後可從瀏覽頁或後台補齊。原本的兩個入口不變，仍是三步驟。
+- **訪客國籍改為可搜尋的國家選單：** 60 個貿易往來國家，中英雙語，輸入即時過濾（打「德」或「Germ」都找得到德國）。**清單外的國名照樣可以直接輸入並存檔**，所以既有紀錄裡的自由文字值（如 `TW`）不會失效。儲存的是英文國名，與其他選項欄位一致。
+- **齒輪按鈕加上文字標籤：** 活動列表為「活動管理」、活動內頁為「表單管理」。窄螢幕下只留圖示，避免擠壓活動名稱。
+- **已結束的活動只在「活動管理」中顯示：** 未解鎖時整個「已結束」區塊不存在，日常使用不會被舊活動擋路。
+- **預設填單人員改為實際團隊 8 人：** Charlene 蘇秋菊、Will 黃柏儒、Steve 陳誌翔、Nadia 鄭淑卿、Eric 顏耀中、Alen 黃世仰、Wing 張詩穎、Rick 張瑞育。由 `migratedTo38` 旗標一次性覆蓋所有既有活動（同 v3.6 的作法，後台自訂過的名單也會被覆蓋）。
+- **活動編輯的日期欄位改為一行一格：** 並排時日期輸入框的原生選擇器有最小寬度，50% 的欄位容納不下，平板上會撐出 modal。
+
+### 開發者注意：dc-runtime 沒有 pointer 事件
+
+模板中寫 `onpointerdown` **不會生效**。`EVENT_MAP` 沒有這個項目，fallback 產生的是 `onPointerdown`（大小寫錯誤），React 直接忽略——處理器不會執行，也不會報錯。國籍選單的選項一度就是這樣靜靜地失效。可用的事件請參考 `EVENT_MAP`。
+
+## v3.7.0 更新重點 — PWA 離線化（Phase 1 前半段）
+
+- **可安裝為主畫面 App（standalone）：** 加入 `manifest.webmanifest` 與 icon（含 Android 圓形遮罩用的 maskable 版本），圖示沿用活動首頁頁首的日曆符號。iOS 的狀態列刻意維持不透明（`default`）——`black-translucent` 會讓白色狀態列文字疊在 body 的安全區留白上，而那塊是淺色頁面背景，等於看不見。
+- **Service Worker 離線快取：** precache 就是整個站（`index.html` + manifest + icons），因為其他依賴全都內嵌在單一 HTML 裡。首次連網開啟後，完全離線也能正常啟動。
+- **更新採橫幅、絕不自動重整：** 新版本安裝完成後**停在 `waiting` 不接管**（沒有 `skipWaiting()`）。橫幅只存在於活動首頁的區塊裡，**進入表單後它在 DOM 中根本不存在**——不是靠條件隱藏，是結構上不可能出現。客戶填到一半的畫面永遠不會在腳下被重整。
+- **`?sw=off` 緊急停用（`?sw=on` 復原）：** 面對展場中拿不到手、卡在壞快取的平板，這是唯一的救援途徑。停用狀態**持久化**於 `localStorage`——第一版做成一次性的，結果解除註冊後 reload 又立刻註冊回去，若壞的正是 SW 本身等於毫無用處。停用期間活動首頁會標示，避免平板悄悄停在只能連線的狀態。**不會動到 IndexedDB**，紀錄完好。
+- **只接管自己的入口路徑：** SW 不會把 scope 底下所有 navigation 都回答成 app 外殼——這個 app 只有一個入口、沒有前端路由，其他路徑照常走網路。
+
+> **Background Sync 不在此版**。Phase 1 原訂的「偵測到網路後自動同步至後端」有兩重阻塞：後端屬於 Phase 2 尚未存在；而且 **Safari／iOS 從未實作 Background Sync API**，到 iOS 26.5 仍然沒有。展場裝置是 iPad，這條路在該平台不通，日後需改為前景同步（載入時、`visibilitychange` 回前景時、或 `online` 事件）。
+
+### 測試基礎建設
+
+- 16 支端到端測試與 CI **納入版控**（先前只存在於開發用的暫存目錄，曾整批遺失）。詳見下方「測試」一節。
+- 新增 `e2e-pwa.js`（26 條斷言）：離線可用、更新橫幅不自動重整且不出現在表單頁、`?sw=off/on` 往返、紀錄不受影響、`index.html` 與 `sw.js` 的版本字串必須一致（`sw.js` 沒有 build step，這是唯一擋得住忘記 bump 快取版本的機制）。
+
+## v3.6.1 更新重點
+
+- **修正手機無法輸入後台 PIN 碼：** 點輸入框後鍵盤會跳出來，但框內完全沒有反應、盲打也進不去。原因是 v3.5 為了擋掉密碼管理圖示而加的一條規則：
+  ```css
+  #pin-input::-webkit-textfield-decoration-container { display: none !important; }
+  ```
+  `-webkit-textfield-decoration-container` **不是圖示**，而是 WebKit 用來包住輸入框 **inner editor**（真正可輸入的區域）的容器，隱藏它等於把可輸入區一起拿掉——欄位仍能取得焦點（所以鍵盤會跳出來），但沒有東西可顯示、也沒有東西可打字。已移除該行；針對兩個 autofill 按鈕的規則保留，那些是真正的裝飾按鈕。
+- **為什麼桌機沒事、測試也沒抓到：** 桌機 Chrome 的密碼欄位沒有裝飾按鈕，而且 **Blink 根本沒有實作這個 pseudo-element**，規則等於空轉；iOS Safari 則會替密碼欄位加上 strong-password／autofill 按鈕，容器因此存在、欄位就壞掉。加上所有測試都用 Playwright 的 `fill()`——它直接指派 `.value` 再派發一次 `input` 事件，**完全不經過 inner editor**，所以就算在會壞的瀏覽器上也照樣通過。測試已全面改為逐鍵輸入（`pressSequentially`），並新增 `e2e-pin-mobile.js`（含一條「不得再出現這個選擇器」的靜態防護，因為 headless Chromium 重現不了 iOS 的實際行為）。
 
 ## v3.6 更新重點
 
@@ -84,7 +124,7 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 - **可讀單檔重構：** 原始碼不再以 gzip+base64 打包，`index.html` 直接可讀可改。
 - **真正離線：** React 已內嵌（先前版本會在執行時從 unpkg CDN 載入 React，首次開啟需要網路）。
 
-### 資料相容性（v2 → v3 → v3.1 → v3.2 → v3.3 → v3.4 → v3.5 → v3.6 逐步自動遷移）
+### 資料相容性（v2 → v3 → v3.1 → v3.2 → v3.3 → v3.4 → v3.5 → v3.6 → v3.8 逐步自動遷移）
 
 舊版資料庫會在開啟時自動遷移，已蒐集的紀錄不受影響：
 
@@ -104,6 +144,7 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 - **v3.5：** 洽談事由新增三個選項並開啟「其他」、公司型態新增代工廠。新建立的活動選「內建預設」時直接帶到；**既有的每一個活動則由 `migratedTo35` 旗標控制、一次性補上**。補的方式是以選項的 `en` 比對：已經有的不重複加、後台改過的中文標籤不覆蓋，只把缺的附加到選項末端。用旗標而非形狀比對，是因為「從未有過這個選項」與「管理者刻意刪掉它」在資料上分不出來，只有一次性的補寫才不會把刪掉的選項每次開啟都加回來。
 - **v3.6：** 每個活動的接待人員名單由 `migratedTo36` 旗標控制、一次性**無條件覆蓋**為新的預設兩位（Esme／Crystal）。與 v3.5 的補寫相反，這裡不做合併也不比對是否被自訂過——舊的三個姓名是要移除而非被補充，合併只會把它們留下。**因此後台自訂過的名單也會被覆蓋**；遷移之後才改的名單則受旗標保護，不會在下次開啟時被打回預設。既有紀錄不受影響：紀錄存的是接待人員的英文字串本身，不是指向活動名單的參照。
   - 連帶影響：pre-v3.4 的資料庫升上來時，v3.4 會先把舊 `greeter` 選項（含自訂姓名）帶進第一個活動的名單，v3.6 隨即在同一次載入中覆蓋掉，**這條路徑上的自訂姓名不會保留**。
+- **v3.8：** 由 `migratedTo38` 旗標控制、一次性執行兩件事。**一、** 每個活動的接待人員名冊覆蓋為實際團隊 8 人（同 v3.6，不比對是否被自訂過）。**二、** 訪客國籍由自由文字升級為 60 國可搜尋選單——**只在該欄位仍是 `text` 型別時才動**，也就是沒有人在後台改造過它；後台自訂的中文標籤保留。**既有紀錄完全不受影響**：`nationality` 一直存的就是純字串，而選單接受清單外的值，所以舊版填的 `Germany` 或 `TW` 依然有效、照常顯示與匯出。
 
 ---
 
@@ -230,7 +271,7 @@ export_2026_美國展_YYYYMMDD_HHMMSS.zip
 | 匯出 | 內建 XLSX 生成 + ZIP 打包（ExportLib，inline 於 HTML 中） |
 | 拖曳排序 | Pointer Events 自製實作（相容 iPad Safari 觸控，不依賴 HTML5 Drag & Drop） |
 | 螢幕適配 | 響應式 CSS，`@media (max-width: 768px)` 斷點，支援 `safe-area-inset` 與 `100dvh` |
-| 離線能力 | 完全離線，所有依賴皆已內嵌，不需任何網路連線 |
+| 離線能力 | 完全離線，所有依賴皆已內嵌，不需任何網路連線。v3.7.0 起另有 Service Worker 快取應用外殼，可安裝為主畫面 App |
 | 瀏覽器相容 | iPad Safari 16+、Chrome Android 100+、主流手機瀏覽器 |
 
 ### 修改指南
@@ -242,6 +283,24 @@ export_2026_美國展_YYYYMMDD_HHMMSS.zip
 - 選項的 `en` 是**紀錄實際儲存的值**，`zh` 只用於顯示。要改 `en` 就必須同步改寫已蒐集紀錄中的值（見 `loadAllData` 中的 `VALUE_RENAMES`），否則舊答案會對不上選項；只改中文標籤則用 `labelFixes`，以「原值」比對，後台已自訂過的標籤不會被覆蓋。
 - `state` 的 `customerFields` / `needsFields` / `companyFields` / `staffFields` 永遠是**目前開啟活動**的定義，所以表單、後台、匯出等讀取端不需要知道活動的存在；只有存取 IndexedDB 的那一層（`saveEventDefs` / `loadEventDefs` / `defKey`）需要帶活動前綴。
 - 欄位若標記 `source: 'event'`（接待人員、訪談日期），代表其內容由活動頁供應。v3.5 移除了業務備註頁與該頁籤，這兩個欄位不再有任何編輯介面——但**定義刻意保留**，因為資料紀錄的「接待人員」欄與匯出欄位都靠它們解析。
+
+### 測試
+
+```bash
+npm ci
+npx playwright-core install chromium   # 首次執行才需要
+npm test                               # 16 支套件，約 3.5 分鐘
+npm test -- pin-mobile events          # 只跑名稱含這些字串的套件
+```
+
+每次 push 與 PR 由 `.github/workflows/test.yml` 自動執行；失敗時截圖會上傳為 artifact。
+
+套件依序執行，不能平行——每支各自起 HTTP server 並清空同一個 IndexedDB。涵蓋範圍包含完整填單流程、後台各頁籤、版面尺寸、資料紀錄欄位、匯出內容，以及 **v2 → v3.6 的每一段遷移**（各自植入該版本形狀的資料庫再驗證結果）。
+
+寫測試時有兩個教訓值得記住：
+
+- **不要用 `locator.fill()` 驅動輸入框。** 它直接指派 `.value` 再派發一次 `input` 事件，完全不經過瀏覽器的 inner editor——v3.5 那個「手機打不了 PIN 碼」的 bug 就是這樣躲過整個套件的。一律用 `click()` + `pressSequentially()`。
+- **headless Chromium 不等於使用者的瀏覽器。** Blink 沒有實作某些 WebKit 專屬的 pseudo-element，對它們的誤用在本機完全測不出來。這類情況改為斷言 CSS 規則本身（見 `e2e-pin-mobile.js` 末段的靜態防護）。
 
 ### 已知限制
 
@@ -289,6 +348,9 @@ export_2026_美國展_YYYYMMDD_HHMMSS.zip
 - 後台的欄位管理與 Settings 頁籤尚未做完整手機適配（Records 頁籤已有卡片式手機排版），如需在手機上管理後台設定需額外處理。
 - 國碼選單目前為硬編碼列表，正式版可改為完整的國際電話國碼資料庫。
 - 考慮加入裝置層級的安全提醒（iPad 引導式取用模式設定指引）。
+- `renderVals()` 已達 367 行，是自有程式碼裡最長的方法，且每新增一個畫面就再長一截。建議依畫面拆成數個 `renderXxxVals()`。（其餘 63 個方法中有 56 個在 50 行以內，整體並不需要大改。）
+- 遷移鏈已累積 4 個 `migratedToXX` 旗標，`migrateLegacyFieldDefs()` 271 行，且**每一版都必然再長一段**。建議改為表格驅動：一個依序執行的遷移步驟清單，每步各自帶旗標與說明。
+- `state` 有 182 個扁平欄位。目前尚未造成實際困擾，可在上面兩項之後再視情況分組。
 
 ---
 
@@ -296,9 +358,25 @@ export_2026_美國展_YYYYMMDD_HHMMSS.zip
 
 ```
 exhibition_form/
-├── index.html    # 完整應用程式（單一自包含檔案，約 420KB，原始碼可讀）
-└── README.md     # 本文件
+├── index.html              # 完整應用程式（單一自包含檔案，約 420KB，原始碼可讀）
+├── sw.js                   # Service Worker（離線快取；版本字串須與 index.html 一致）
+├── manifest.webmanifest    # PWA manifest（standalone）
+├── icons/                  # 主畫面圖示（由 tools/make-icons.js 產生）
+├── tools/make-icons.js     #   圖示產生器，僅在圖案變更時重跑
+├── tests/                  # 端到端測試（Playwright 驅動 headless Chromium）
+│   ├── helpers.js          #   共用導覽、IndexedDB 讀寫、瀏覽器啟動
+│   ├── run-all.js          #   依序執行全部套件的 runner
+│   └── e2e-*.js            #   16 支套件
+├── .github/workflows/      # CI：每次 push 與 PR 跑完整測試
+├── package.json
+└── README.md               # 本文件
 ```
+
+仍然**沒有 build step**：這些檔案原樣部署到 GitHub Pages。`tests/`、`tools/` 與 `package.json` 只服務開發流程。
+
+> **發布新版時務必同步 `sw.js` 的 `VERSION` 與 `index.html` 的版本字串。** 兩者不一致代表新的 HTML 會沿用舊的快取名稱，所有平板都會停在舊版且無從察覺。`e2e-pwa.js` 有一條斷言擋這件事。
+>
+> **SW 相關的變更無法用 artifact 預覽驗證**——artifact 跑在沙箱 iframe 且 CSP 嚴格，Service Worker 註冊不會生效。必須在 GitHub Pages 上測。
 
 ---
 

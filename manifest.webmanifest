@@ -1,0 +1,18 @@
+{
+  "name": "會談紀錄表 Exhibition Registration",
+  "short_name": "Exhibitions",
+  "description": "展覽現場客戶資料蒐集表單，完全離線運作。",
+  "lang": "zh-Hant",
+  "dir": "ltr",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F5F6F8",
+  "theme_color": "#0055B8",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

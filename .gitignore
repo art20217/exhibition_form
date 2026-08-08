@@ -1,0 +1,6 @@
+node_modules
+
+# Produced by test runs, not sources: screenshots each suite takes as it goes
+# (CI uploads these on failure) and the export ZIP the export test downloads.
+tests/shots-*/
+tests/*.zip
