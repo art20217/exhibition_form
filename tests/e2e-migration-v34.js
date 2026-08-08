@@ -106,8 +106,8 @@ const seedV1 = (page, build) => page.evaluate((b) => new Promise((res, rej) => {
   // load and overwrites every event's roster unconditionally — so for a DB
   // arriving from pre-v3.4 the derived list never survives to be observed.
   // Asserting the real end state rather than the intermediate one.
-  assert(JSON.stringify(ev.staff.map(s => s.zh)) === JSON.stringify(['陳佩昀', '宋佳蓉']),
-    'v3.6 覆蓋後名單為新的預設兩位：' + ev.staff.map(s => s.zh).join('、'));
+  assert(ev.staff.length === 8 && ev.staff[0].zh === '蘇秋菊',
+    'v3.6／v3.8 覆蓋後名單為目前的預設團隊：' + ev.staff.map(s => s.zh).join('、'));
 
   const defs = await H.readAll(page, 'fieldDefinitions');
   const keys = defs.map(d => d.key).sort();

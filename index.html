@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>訪客資料登記表 Exhibition Registration</title>
+<title>會談紀錄表 Exhibition Registration</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0055B8">
 <!-- iOS reads these rather than the manifest for home-screen launches. The
@@ -97,6 +97,9 @@
       [data-form-actions] > button, [data-form-actions] > label { flex: unset !important; width: 100% !important; min-height: 52px !important; }
       [data-page-header] { padding: 0.75rem 1rem !important; gap: 8px !important; }
       [data-page-title] > span:first-child { font-size: var(--fs-body) !important; }
+      /* The gear's text label is the first thing to go when the header runs out
+         of room — the icon alone still reads, a squeezed event title does not. */
+      [data-gear-label] { display: none; }
     }
     @media (max-width: 768px) {
       select {
@@ -2308,8 +2311,9 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           <button onclick="{{ onLockManage }}" style="color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.15); border: none; padding: 8px 14px; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25); color: #FFF">🔓 管理中（點此鎖定）</button>
         </sc-if>
         <sc-if value="{{ manageLocked }}">
-          <button onclick="{{ onUnlockManage }}" style="width: 44px; height: 44px; border: none; background: rgba(255,255,255,0.12); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 8px; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25)">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <button onclick="{{ onUnlockManage }}" data-gear-events="" style="height: 44px; padding: 0 14px; border: none; background: rgba(255,255,255,0.12); cursor: pointer; display: flex; align-items: center; gap: 8px; border-radius: 8px; flex-shrink: 0; color: #FFF; font-size: var(--fs-sm); white-space: nowrap" style-hover="background: rgba(255,255,255,0.25)">
+            <svg style="flex-shrink: 0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <span data-gear-label="">活動管理</span>
           </button>
         </sc-if>
       </div>
@@ -2356,7 +2360,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <sc-if value="{{ hasEndedEvents }}">
-            <div style="font-size: var(--fs-h3); font-weight: 700; color: #64748B; margin: 26px 0 10px">已結束</div>
+            <div data-ended-heading="" style="font-size: var(--fs-h3); font-weight: 700; color: #64748B; margin: 26px 0 10px">已結束</div>
             <sc-for list="{{ endedEvents }}" as="ev">
               <div data-event-card="" style="background: #FFF; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 12px; overflow: hidden; opacity: 0.75">
                 <button onclick="{{ ev.onOpen }}" style="width: 100%; text-align: left; background: transparent; border: none; padding: 18px 20px; cursor: pointer; display: block" style-hover="background: #F8FAFC">
@@ -2376,7 +2380,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">
-            v3.7.0 — Offline Exhibition Form
+            v3.8.0 — Offline Exhibition Form
             <sc-if value="{{ swDisabled }}">
               <span data-sw-disabled="" style="display: block; margin-top: 4px; color: #B45309">離線快取已停用，網址加上 ?sw=on 可重新啟用</span>
             </sc-if>
@@ -2397,8 +2401,9 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             <span style="color: rgba(255,255,255,0.8); font-size: var(--fs-sm); line-height: 1.3">{{ eventDateLabel }}</span>
           </span>
         </div>
-        <button onclick="{{ onOpenPinDialog }}" style="width: 44px; height: 44px; border: none; background: rgba(255,255,255,0.12); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 8px; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25)">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <button onclick="{{ onOpenPinDialog }}" data-gear-admin="" style="height: 44px; padding: 0 14px; border: none; background: rgba(255,255,255,0.12); cursor: pointer; display: flex; align-items: center; gap: 8px; border-radius: 8px; flex-shrink: 0; color: #FFF; font-size: var(--fs-sm); white-space: nowrap" style-hover="background: rgba(255,255,255,0.25)">
+          <svg style="flex-shrink: 0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <span data-gear-label="">表單管理</span>
         </button>
       </div>
       <div data-mobile-pad="" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 1.5rem">
@@ -2446,7 +2451,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             <div data-entry-hint="" style="background: #FFF7ED; border: 1px solid #FED7AA; color: #C2410C; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; font-size: var(--fs-sm)">{{ entryHint }}</div>
           </sc-if>
 
-          <div data-home-btns="" style="display: flex; gap: 16px; padding-bottom: 2.5rem">
+          <div data-home-btns="" style="display: flex; gap: 16px; margin-bottom: 16px">
             <button onclick="{{ onChooseData }}" disabled="{{ entryDisabled }}" data-entry-customer="" style="flex: 1; height: 128px; border: 2px solid #D1D5DB; background: #FFF; border-radius: 14px; cursor: {{ entryCursor }}; opacity: {{ entryOpacity }}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s" style-hover="border-color: #0055B8; background: #F0F6FF" style-active="transform: scale(0.97)">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0055B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
               <span style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E">Customer Info</span>
@@ -2457,7 +2462,78 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               <span style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E">Customer Needs</span>
               <span style="font-size: var(--fs-sm); color: #64748B">客戶需求填寫</span>
             </button>
+            <button onclick="{{ onChooseQuick }}" disabled="{{ entryDisabled }}" data-entry-quick="" style="flex: 1; height: 128px; border: 2px solid #D1D5DB; background: #FFF; border-radius: 14px; cursor: {{ entryCursor }}; opacity: {{ entryOpacity }}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s" style-hover="border-color: #0055B8; background: #F0F6FF" style-active="transform: scale(0.97)">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0055B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              <span style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E">Quick Entry</span>
+              <span style="font-size: var(--fs-sm); color: #64748B">快速填單</span>
+              <span style="font-size: var(--fs-xs); color: #94A3B8">不含公司背景</span>
+            </button>
           </div>
+
+          <!-- Looking things up is a different kind of task from filling a form
+               in, so it sits apart from the three entry tiles above. -->
+          <div style="padding-bottom: 2.5rem">
+            <button onclick="{{ onOpenBrowse }}" data-open-browse="" style="width: 100%; height: 56px; border: 1px solid #CBD5E1; background: #FFF; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.15s" style-hover="border-color: #0055B8; background: #F8FAFC">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <span style="font-size: var(--fs-body); font-weight: 600; color: #475569">客戶資料紀錄</span>
+              <span style="font-size: var(--fs-sm); color: #94A3B8">查詢與編輯</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===== RECORD BROWSER =====
+       Reception's read-and-fix view of this event's records. Deliberately has
+       no delete, no "clear all" and no export: those live in 表單管理. It is a
+       separate screen from the admin records tab rather than a link into it,
+       so nobody lands one tap away from the destructive controls. -->
+  <sc-if value="{{ showBrowse }}">
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.3s ease">
+      <div data-page-header="" style="background: #0055B8; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0">
+        <div style="display: flex; align-items: center; gap: 12px; min-width: 0">
+          <button onclick="{{ onExitBrowse }}" style="color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.15); border: none; padding: 8px 12px; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25); color: #FFF">← 返回</button>
+          <span data-page-title="" style="display: flex; flex-direction: column; min-width: 0">
+            <span style="color: #FFF; font-size: var(--fs-page); font-weight: 600; line-height: 1.25">客戶資料紀錄</span>
+            <span style="color: rgba(255,255,255,0.8); font-size: var(--fs-sm); line-height: 1.3">{{ eventTitle }}</span>
+          </span>
+        </div>
+      </div>
+      <div data-mobile-pad="" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 1.5rem">
+        <div style="max-width: 900px; margin: 0 auto">
+
+          <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px">
+            <input data-browse-search="" type="search" value="{{ browseQuery }}" oninput="{{ onBrowseQuery }}" placeholder="搜尋姓名、公司或接待人員" style="flex: 1; min-width: 0; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none" style-focus="border-color: #0055B8">
+            <sc-if value="{{ hasBrowseQuery }}">
+              <button onclick="{{ onClearBrowseQuery }}" style="height: 48px; padding: 0 16px; background: #FFF; color: #64748B; border: 1px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap" style-hover="background: #F8FAFC">清除</button>
+            </sc-if>
+          </div>
+          <div data-browse-count="" style="font-size: var(--fs-sm); color: #64748B; margin-bottom: 16px">{{ browseCountLabel }}</div>
+
+          <sc-if value="{{ browseEmpty }}">
+            <div style="text-align: center; color: #94A3B8; font-size: var(--fs-body); padding: 48px 0">{{ browseEmptyLabel }}</div>
+          </sc-if>
+
+          <sc-for list="{{ browseRows }}" as="row">
+            <div data-browse-row="" style="background: #FFF; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 12px; overflow: hidden">
+              <button onclick="{{ row.onEdit }}" style="width: 100%; text-align: left; background: transparent; border: none; padding: 16px 18px; cursor: pointer; display: block" style-hover="background: #F8FAFC">
+                <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap">
+                  <span style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E; line-height: 1.3">{{ row.title }}</span>
+                  <span style="font-size: var(--fs-xs); color: #94A3B8; white-space: nowrap">#{{ row.num }} ・ {{ row.time }}</span>
+                </div>
+                <sc-if value="{{ row.subtitle }}">
+                  <div style="font-size: var(--fs-sm); color: #0055B8; margin-top: 2px">{{ row.subtitle }}</div>
+                </sc-if>
+                <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px 18px">
+                  <sc-for list="{{ row.fields }}" as="fld">
+                    <span style="font-size: var(--fs-sm); color: #64748B">{{ fld.label }}：{{ fld.value }}</span>
+                  </sc-for>
+                </div>
+                <div style="margin-top: 10px; font-size: var(--fs-sm); color: #0055B8; font-weight: 600">點此編輯 →</div>
+              </button>
+            </div>
+          </sc-for>
         </div>
       </div>
     </div>
@@ -2473,15 +2549,16 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">活動名稱</label>
             <input type="text" value="{{ evName }}" oninput="{{ onEvNameChange }}" placeholder="例如 2026 美國展" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
           </div>
-          <div data-mobile-stack="" style="display: flex; gap: 12px; margin-bottom: 14px">
-            <div style="flex: 1">
-              <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">開始日期</label>
-              <input type="date" value="{{ evStart }}" oninput="{{ onEvStartChange }}" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
-            </div>
-            <div style="flex: 1">
-              <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">結束日期</label>
-              <input type="date" value="{{ evEnd }}" oninput="{{ onEvEndChange }}" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
-            </div>
+          <!-- One field per row. Side by side, a date input's native picker
+               button gives it a min-width the 50% column cannot honour, so on a
+               tablet the two of them overflowed the modal. -->
+          <div style="margin-bottom: 14px">
+            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">開始日期</label>
+            <input type="date" value="{{ evStart }}" oninput="{{ onEvStartChange }}" style="width: 100%; min-width: 0; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
+          </div>
+          <div style="margin-bottom: 14px">
+            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">結束日期</label>
+            <input type="date" value="{{ evEnd }}" oninput="{{ onEvEndChange }}" style="width: 100%; min-width: 0; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
           </div>
           <sc-if value="{{ showEvSource }}">
             <div style="margin-bottom: 14px">
@@ -2581,6 +2658,21 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   <option value="">{{ field.placeholder }}</option>
                   <sc-for list="{{ field.options }}" as="opt"><option value="{{ opt.value }}">{{ opt.label }}</option></sc-for>
                 </sc-raw-select>
+              </sc-if>
+              <sc-if value="{{ field.isSearchSelect }}">
+                <div data-combo="" style="position: relative">
+                  <input type="text" value="{{ field.comboValue }}" oninput="{{ field.onComboInput }}" onfocus="{{ field.onComboFocus }}" onblur="{{ field.onComboBlur }}" placeholder="{{ field.comboPlaceholder }}" autocomplete="off" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
+                  <sc-if value="{{ field.comboOpen }}">
+                    <div data-combo-list="" style="position: absolute; z-index: 20; left: 0; right: 0; top: 52px; max-height: 260px; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #FFF; border: 1px solid #D1D5DB; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12)">
+                      <sc-for list="{{ field.comboMatches }}" as="opt">
+                        <button type="button" data-combo-opt="" onclick="{{ opt.onPick }}" style="display: block; width: 100%; text-align: left; padding: 12px 14px; border: none; background: transparent; font-size: var(--fs-body); color: #1A1A2E; cursor: pointer" style-hover="background: #F0F6FF">{{ opt.label }}</button>
+                      </sc-for>
+                      <sc-if value="{{ field.comboNoMatch }}">
+                        <div style="padding: 12px 14px; font-size: var(--fs-sm); color: #94A3B8">清單中沒有相符的國家，直接輸入即可</div>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+                </div>
               </sc-if>
               <sc-if value="{{ field.isDate }}">
                 <input type="date" value="{{ field.value }}" oninput="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
@@ -2732,6 +2824,21 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   <sc-for list="{{ field.options }}" as="opt"><option value="{{ opt.value }}">{{ opt.label }}</option></sc-for>
                 </sc-raw-select>
               </sc-if>
+              <sc-if value="{{ field.isSearchSelect }}">
+                <div data-combo="" style="position: relative">
+                  <input type="text" value="{{ field.comboValue }}" oninput="{{ field.onComboInput }}" onfocus="{{ field.onComboFocus }}" onblur="{{ field.onComboBlur }}" placeholder="{{ field.comboPlaceholder }}" autocomplete="off" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
+                  <sc-if value="{{ field.comboOpen }}">
+                    <div data-combo-list="" style="position: absolute; z-index: 20; left: 0; right: 0; top: 52px; max-height: 260px; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #FFF; border: 1px solid #D1D5DB; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12)">
+                      <sc-for list="{{ field.comboMatches }}" as="opt">
+                        <button type="button" data-combo-opt="" onclick="{{ opt.onPick }}" style="display: block; width: 100%; text-align: left; padding: 12px 14px; border: none; background: transparent; font-size: var(--fs-body); color: #1A1A2E; cursor: pointer" style-hover="background: #F0F6FF">{{ opt.label }}</button>
+                      </sc-for>
+                      <sc-if value="{{ field.comboNoMatch }}">
+                        <div style="padding: 12px 14px; font-size: var(--fs-sm); color: #94A3B8">清單中沒有相符的國家，直接輸入即可</div>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
               <sc-if value="{{ field.isDate }}">
                 <input type="date" value="{{ field.value }}" oninput="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
               </sc-if>
@@ -2839,6 +2946,21 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   <option value="">{{ field.placeholder }}</option>
                   <sc-for list="{{ field.options }}" as="opt"><option value="{{ opt.value }}">{{ opt.label }}</option></sc-for>
                 </sc-raw-select>
+              </sc-if>
+              <sc-if value="{{ field.isSearchSelect }}">
+                <div data-combo="" style="position: relative">
+                  <input type="text" value="{{ field.comboValue }}" oninput="{{ field.onComboInput }}" onfocus="{{ field.onComboFocus }}" onblur="{{ field.onComboBlur }}" placeholder="{{ field.comboPlaceholder }}" autocomplete="off" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
+                  <sc-if value="{{ field.comboOpen }}">
+                    <div data-combo-list="" style="position: absolute; z-index: 20; left: 0; right: 0; top: 52px; max-height: 260px; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #FFF; border: 1px solid #D1D5DB; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12)">
+                      <sc-for list="{{ field.comboMatches }}" as="opt">
+                        <button type="button" data-combo-opt="" onclick="{{ opt.onPick }}" style="display: block; width: 100%; text-align: left; padding: 12px 14px; border: none; background: transparent; font-size: var(--fs-body); color: #1A1A2E; cursor: pointer" style-hover="background: #F0F6FF">{{ opt.label }}</button>
+                      </sc-for>
+                      <sc-if value="{{ field.comboNoMatch }}">
+                        <div style="padding: 12px 14px; font-size: var(--fs-sm); color: #94A3B8">清單中沒有相符的國家，直接輸入即可</div>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+                </div>
               </sc-if>
               <sc-if value="{{ field.isDate }}">
                 <input type="date" value="{{ field.value }}" oninput="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
@@ -3235,6 +3357,15 @@ class Component extends DCLogic {
     sessionGreeters: [], sessionDate: '',
     showPinDialog: false, pinValue: '', pinError: false, pinPurpose: 'admin',
     swUpdateReady: false,
+    // Record browser (reception's read-and-fix view, distinct from 表單管理).
+    browseQuery: '',
+    // Searchable-select state, keyed "<store>.<fieldId>" so only one list is
+    // open at a time.
+    comboOpenId: null, comboQuery: '',
+    // Where editing a record returns to. Editing can be started from the admin
+    // records tab or from the browse screen, and it must land back where it
+    // came from.
+    recordReturnTo: 'admin',
     adminTab: 'customer',
     pin: '0000', deviceName: '',
     gdprEn: 'I consent to the organizer collecting and storing my contact information for the purpose of business follow-up. My data will not be shared with third parties.',
@@ -3244,6 +3375,7 @@ class Component extends DCLogic {
     // whichever is picked, Company Profile always slots in as step 2, and the
     // other of customer/needs is always step 3.
     firstChoice: null,           // 'data' | 'needs'
+    quickMode: false,            // skips Company Profile: customer -> needs only
     formValues: {}, formErrors: {},      // customer info form
     needsValues: {}, needsErrors: {},    // customer needs form
     companyValues: {}, companyErrors: {},// company profile form
@@ -3277,7 +3409,11 @@ class Component extends DCLogic {
       { id: 'company', nameEn: 'Company', nameZh: '公司', type: 'text', required: true, isCore: true, order: 1, allowOther: false, options: [] },
       { id: 'email', nameEn: 'Email', nameZh: '電子信箱', type: 'email', required: true, isCore: true, order: 2, allowOther: false, options: [] },
       { id: 'phone', nameEn: 'Phone', nameZh: '電話（含國碼）', type: 'tel', required: false, isCore: true, order: 3, allowOther: false, options: [] },
-      { id: 'nationality', nameEn: 'Nationality', nameZh: '訪客國籍', type: 'text', required: true, isCore: true, order: 4, allowOther: false, options: [] },
+      // Searchable rather than a plain <select>: 60 options is too many to
+      // scroll on a tablet. A typed value that matches nothing is kept as-is,
+      // so countries outside the list still work — and the free text that
+      // earlier versions stored here stays valid.
+      { id: 'nationality', nameEn: 'Nationality', nameZh: '訪客國籍', type: 'select', searchable: true, required: true, isCore: true, order: 4, allowOther: false, options: this.COUNTRIES },
       { id: 'language', nameEn: 'Language', nameZh: '語言', type: 'radio-group', required: false, isCore: true, order: 5, allowOther: true, options: [
         { en: 'Mandarin', zh: '華語' }, { en: 'English', zh: '英語' }, { en: 'Hindi', zh: '印地語' },
         { en: 'Arabic', zh: '阿拉伯語' }, { en: 'French', zh: '法語' }, { en: 'Spanish', zh: '西班牙語' },
@@ -3388,7 +3524,10 @@ class Component extends DCLogic {
   // instead of keeping a second copy of the list.
   getDefaultStaffList() {
     return [
-      { en: 'Esme', zh: '陳佩昀' }, { en: 'Crystal', zh: '宋佳蓉' },
+      { en: 'Charlene', zh: '蘇秋菊' }, { en: 'Will', zh: '黃柏儒' },
+      { en: 'Steve', zh: '陳誌翔' }, { en: 'Nadia', zh: '鄭淑卿' },
+      { en: 'Eric', zh: '顏耀中' }, { en: 'Alen', zh: '黃世仰' },
+      { en: 'Wing', zh: '張詩穎' }, { en: 'Rick', zh: '張瑞育' },
     ];
   }
 
@@ -3433,10 +3572,11 @@ class Component extends DCLogic {
   dbClear(store) { return new Promise((res, rej) => { const tx = this.db.transaction(store, 'readwrite'); const r = tx.objectStore(store).clear(); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
 
   async loadAllData() {
-    const [pinD, devD, gdprEnD, gdprZhD, mig35D, mig36D] = await Promise.all([
+    const [pinD, devD, gdprEnD, gdprZhD, mig35D, mig36D, mig38D] = await Promise.all([
       this.dbGet('config','pin'), this.dbGet('config','deviceName'),
       this.dbGet('config','gdprEn'), this.dbGet('config','gdprZh'),
       this.dbGet('config','migratedTo35'), this.dbGet('config','migratedTo36'),
+      this.dbGet('config','migratedTo38'),
     ]);
     let records = await this.dbGetAll('records');
     let events = await this.dbGetAll('events');
@@ -3453,7 +3593,11 @@ class Component extends DCLogic {
     }
 
     if (!mig35D?.value) await this.addV35Options(events);
-    if (!mig36D?.value) await this.resetStaffRosters(events);
+    // v3.6 and v3.8 both replace every roster outright. On a database that has
+    // seen neither, the v3.6 pass is redundant work with the same end state —
+    // harmless, and cheaper than special-casing the order.
+    if (!mig36D?.value) await this.resetStaffRosters(events, 'migratedTo36');
+    if (!mig38D?.value) await this.migrateTo38(events);
 
     this.setState({
       pin: pinD?.value ?? '0000', deviceName: devD?.value ?? defaultDev,
@@ -3530,12 +3674,44 @@ class Component extends DCLogic {
   //     itself (see saveRecord), not a reference into the event's list, so
   //     entries filled in under the old roster keep showing their original
   //     names in Records and in the export. ---
-  async resetStaffRosters(events) {
+  // --- v3.8: the placeholder roster gives way to the real reception team, and
+  //     訪客國籍 stops being free text. Both are per-event data, so neither
+  //     follows from changing the defaults — an existing event keeps whatever
+  //     was written into it until something rewrites it. One flag covers both.
+  //
+  //     The nationality upgrade only touches a field still typed `text`, i.e.
+  //     one nobody has reworked in the back office. Records are untouched:
+  //     `nationality` has always stored a plain string, and the combobox
+  //     accepts values outside its list, so 'Germany' or 'TW' typed under an
+  //     earlier version stays valid and still displays. ---
+  async migrateTo38(events) {
+    for (const ev of events) {
+      ev.staff = this.getDefaultStaffList();
+      await this.dbPut('events', ev);
+
+      const key = this.defKey(ev.id, 'customerFields');
+      const row = await this.dbGet('fieldDefinitions', key);
+      if (!row?.value) continue;
+      let touched = false;
+      const next = row.value.map(f => {
+        if (f.id !== 'nationality' || f.type !== 'text') return f;
+        touched = true;
+        return { ...f, type: 'select', searchable: true, options: this.COUNTRIES };
+      });
+      if (touched) await this.saveFieldDefs(key, next);
+    }
+    await this.saveConfig('migratedTo38', true);
+  }
+
+  // Shared by every roster replacement. `flag` is what makes each one run once:
+  // v3.6 swapped in a two-name list, v3.8 replaced it with the real team, and a
+  // future change gets its own flag rather than re-running an old one.
+  async resetStaffRosters(events, flag) {
     for (const ev of events) {
       ev.staff = this.getDefaultStaffList();
       await this.dbPut('events', ev);
     }
-    await this.saveConfig('migratedTo36', true);
+    await this.saveConfig(flag, true);
   }
 
   defKey(eventId, group) { return eventId + '::' + group; }
@@ -4039,9 +4215,13 @@ class Component extends DCLogic {
   // always step 3:
   //   firstChoice==='data'  -> customerForm(1) -> companyForm(2) -> needsForm(3)
   //   firstChoice==='needs' -> needsForm(1) -> companyForm(2) -> customerForm(3)
+  //
+  // quickMode drops Company Profile entirely, for visitors whose background is
+  // not worth recording:
+  //   quickMode             -> customerForm(1) -> needsForm(2)
   flowResetPatch() {
     return {
-      firstChoice: null,
+      firstChoice: null, quickMode: false,
       formValues: {}, formErrors: {}, needsValues: {}, needsErrors: {}, companyValues: {}, companyErrors: {},
       gdprChecked: false, gdprError: false,
       selectedCountryCode: '+886', currentRecordId: null, editingRecordId: null,
@@ -4054,9 +4234,10 @@ class Component extends DCLogic {
     const ev = this.currentEvent();
     return !!ev && ev.status !== 'ended' && this.state.sessionGreeters.length > 0 && !!this.state.sessionDate;
   }
-  startFlow(choice) {
+  startFlow(choice, quickMode = false) {
     if (!this.canStartFlow()) { this.showToastMsg('請先選擇填單人員與填單日期'); return; }
-    this.setState({ ...this.flowResetPatch(), firstChoice: choice, screen: choice === 'data' ? 'customerForm' : 'needsForm' });
+    this.setState({ ...this.flowResetPatch(), firstChoice: choice, quickMode,
+      screen: choice === 'data' ? 'customerForm' : 'needsForm' });
   }
   goHome() { this.setState({ ...this.flowResetPatch(), screen: 'eventHome' }); }
 
@@ -4109,7 +4290,7 @@ class Component extends DCLogic {
 
   async submitCustomerForm() {
     if (this.state.editingRecordId) { await this.saveEditedRecord(); return; }
-    const { customerFields, gdprChecked, firstChoice } = this.state;
+    const { customerFields, gdprChecked, firstChoice, quickMode } = this.state;
     const formValues = this.applyDateDefaults(customerFields, this.state.formValues);
     const errors = this.validateGroup(customerFields, formValues);
     if (!gdprChecked || Object.keys(errors).length > 0) {
@@ -4122,16 +4303,20 @@ class Component extends DCLogic {
     // a flow is in progress (editRecord preloads it), hence a plain assignment.
     const patch = await this.upsertFlowRecord({ customerFields: vals, gdprConsent: true,
       cardPhoto: this.state.cardPhotoBase64 ?? null });
-    this.setState({ ...patch, formValues, formErrors: {}, screen: firstChoice === 'data' ? 'companyForm' : 'handoff' });
+    // quickMode skips Company Profile, so customer hands straight to needs.
+    const next = quickMode ? 'needsForm' : (firstChoice === 'data' ? 'companyForm' : 'handoff');
+    this.setState({ ...patch, formValues, formErrors: {}, screen: next });
   }
 
   async submitNeedsForm() {
-    const { needsFields, firstChoice } = this.state;
+    const { needsFields, firstChoice, quickMode } = this.state;
     const needsValues = this.applyDateDefaults(needsFields, this.state.needsValues);
     const errors = this.validateGroup(needsFields, needsValues);
     if (Object.keys(errors).length > 0) { this.setState({ needsValues, needsErrors: errors }); return; }
     const patch = await this.upsertFlowRecord({ needsFields: { ...needsValues } });
-    this.setState({ ...patch, needsValues, needsErrors: {}, screen: firstChoice === 'needs' ? 'companyForm' : 'handoff' });
+    // In quickMode needs is the last step whichever way round the flow went.
+    const next = quickMode ? 'handoff' : (firstChoice === 'needs' ? 'companyForm' : 'handoff');
+    this.setState({ ...patch, needsValues, needsErrors: {}, screen: next });
   }
 
   async submitCompanyForm() {
@@ -4162,7 +4347,7 @@ class Component extends DCLogic {
       : r);
     const rec = updated.find(r => r.id === editingRecordId);
     if (rec) await this.dbPut('records', rec);
-    this.setState({ ...this.flowResetPatch(), records: updated, screen: 'admin', adminTab: 'records' });
+    this.setState({ ...this.flowResetPatch(), records: updated, ...this.afterRecordEditPatch() });
     this.showToastMsg('紀錄已更新');
   }
 
@@ -4206,6 +4391,33 @@ class Component extends DCLogic {
   // Columns shown in the admin Records list — deliberately a short, scannable
   // subset. The complete data still goes out in the export, which builds its own
   // column list from allFieldGroups(). Add or remove entries here to change it.
+  // The 60 countries this business actually trades with, bilingual. Generated
+  // from Intl.DisplayNames (see the v3.8 notes in README) rather than typed by
+  // hand, then frozen here — the app is offline, so it cannot look them up.
+  // `en` is the stored value, matching every other option list in the app.
+  COUNTRIES = [
+    { en: 'Taiwan', zh: '台灣' }, { en: 'China', zh: '中國' }, { en: 'Hong Kong SAR China', zh: '中國香港特別行政區' },
+    { en: 'Japan', zh: '日本' }, { en: 'South Korea', zh: '南韓' }, { en: 'Vietnam', zh: '越南' },
+    { en: 'Thailand', zh: '泰國' }, { en: 'Indonesia', zh: '印尼' }, { en: 'Malaysia', zh: '馬來西亞' },
+    { en: 'Singapore', zh: '新加坡' }, { en: 'Philippines', zh: '菲律賓' }, { en: 'India', zh: '印度' },
+    { en: 'Bangladesh', zh: '孟加拉' }, { en: 'Pakistan', zh: '巴基斯坦' }, { en: 'Sri Lanka', zh: '斯里蘭卡' },
+    { en: 'Cambodia', zh: '柬埔寨' }, { en: 'Myanmar (Burma)', zh: '緬甸' }, { en: 'Nepal', zh: '尼泊爾' },
+    { en: 'Türkiye', zh: '土耳其' }, { en: 'United Arab Emirates', zh: '阿拉伯聯合大公國' }, { en: 'Saudi Arabia', zh: '沙烏地阿拉伯' },
+    { en: 'Israel', zh: '以色列' }, { en: 'Iran', zh: '伊朗' }, { en: 'Germany', zh: '德國' },
+    { en: 'Italy', zh: '義大利' }, { en: 'Spain', zh: '西班牙' }, { en: 'Portugal', zh: '葡萄牙' },
+    { en: 'France', zh: '法國' }, { en: 'Netherlands', zh: '荷蘭' }, { en: 'Belgium', zh: '比利時' },
+    { en: 'United Kingdom', zh: '英國' }, { en: 'Poland', zh: '波蘭' }, { en: 'Romania', zh: '羅馬尼亞' },
+    { en: 'Czechia', zh: '捷克' }, { en: 'Hungary', zh: '匈牙利' }, { en: 'Bulgaria', zh: '保加利亞' },
+    { en: 'Greece', zh: '希臘' }, { en: 'Austria', zh: '奧地利' }, { en: 'Switzerland', zh: '瑞士' },
+    { en: 'Sweden', zh: '瑞典' }, { en: 'Denmark', zh: '丹麥' }, { en: 'Ukraine', zh: '烏克蘭' },
+    { en: 'Russia', zh: '俄羅斯' }, { en: 'United States', zh: '美國' }, { en: 'Canada', zh: '加拿大' },
+    { en: 'Mexico', zh: '墨西哥' }, { en: 'Brazil', zh: '巴西' }, { en: 'Argentina', zh: '阿根廷' },
+    { en: 'Colombia', zh: '哥倫比亞' }, { en: 'Peru', zh: '秘魯' }, { en: 'Chile', zh: '智利' },
+    { en: 'Ecuador', zh: '厄瓜多' }, { en: 'Egypt', zh: '埃及' }, { en: 'Morocco', zh: '摩洛哥' },
+    { en: 'Tunisia', zh: '突尼西亞' }, { en: 'South Africa', zh: '南非' }, { en: 'Nigeria', zh: '奈及利亞' },
+    { en: 'Ethiopia', zh: '衣索比亞' }, { en: 'Australia', zh: '澳洲' }, { en: 'New Zealand', zh: '紐西蘭' },
+  ];
+
   RECORD_LIST_FIELDS = [
     { id: 'name', group: 'customer' },
     { id: 'company', group: 'customer' },
@@ -4394,6 +4606,11 @@ class Component extends DCLogic {
     if (this.state.pinValue !== this.state.pin) { this.setState({ pinError: true }); return; }
     const done = { showPinDialog: false, pinValue: '', pinError: false };
     if (this.state.pinPurpose === 'manage') this.setState({ ...done, eventsManageMode: true });
+    // The browse screen shares this PIN, so anyone who can reach it can also
+    // reach 表單管理 and delete or export from there. Its own restrictions are
+    // about keeping those actions out of the way during a show, not about
+    // privilege — a real separation would need a second PIN.
+    else if (this.state.pinPurpose === 'browse') this.setState({ ...done, screen: 'browse', browseQuery: '' });
     else this.setState({ ...done, screen: 'admin', adminTab: 'customer' });
   }
 
@@ -4524,7 +4741,17 @@ class Component extends DCLogic {
     return out;
   }
 
-  editRecord(id) {
+  // Both finishing and cancelling an edit come back through here, so the two
+  // paths cannot drift apart.
+  afterRecordEditPatch() {
+    return this.state.recordReturnTo === 'browse'
+      ? { screen: 'browse' }
+      : { screen: 'admin', adminTab: 'records' };
+  }
+
+  // `returnTo` is where finishing or cancelling the edit lands: 'admin' for the
+  // 表單管理 records tab, 'browse' for reception's record browser.
+  editRecord(id, returnTo = 'admin') {
     const rec = this.state.records.find(x => x.id === id);
     if (!rec) return;
     const vals = this.editValuesFor(rec, this.state.customerFields, 'customer');
@@ -4538,7 +4765,8 @@ class Component extends DCLogic {
       // The business card lives on the customer form as of v3.3, so preload the
       // saved photo — otherwise re-submitting an edited record would wipe it.
       cardPhotoPreviewSrc: rec.cardPhoto ?? null, cardPhotoBase64: rec.cardPhoto ?? null,
-      gdprChecked: true, gdprError: false, selectedCountryCode: cc, editingRecordId: id });
+      gdprChecked: true, gdprError: false, selectedCountryCode: cc, editingRecordId: id,
+      recordReturnTo: returnTo });
   }
 
   async deleteRecord(id) { await this.dbDelete('records', id); this.setState({ records: this.state.records.filter(r => r.id !== id) }); this.showToastMsg('紀錄已刪除'); }
@@ -4602,7 +4830,10 @@ class Component extends DCLogic {
     const isText = f.type === 'text' || f.type === 'email';
     const isTel = f.type === 'tel';
     const isTextarea = f.type === 'textarea';
-    const isSelect = f.type === 'select';
+    // A searchable select is a combobox, not a <select>: too many options to
+    // scroll, and it must still accept a value that is not on the list.
+    const isSearchSelect = f.type === 'select' && !!f.searchable;
+    const isSelect = f.type === 'select' && !isSearchSelect;
     const isCheckboxGroup = f.type === 'checkbox-group';
     const isRadioGroup = f.type === 'radio-group';
     const isRating = f.type === 'rating';
@@ -4690,8 +4921,61 @@ class Component extends DCLogic {
       onClick: () => setValue(n === ratingValue ? '' : n),
     })) : [];
 
+    // Combobox plumbing. The input shows the typed query while open and the
+    // committed value while closed; whatever is in the box on blur becomes the
+    // value, which is what lets an off-list country through.
+    const comboKey = store + '.' + f.id;
+    const comboOpen = isSearchSelect && this.state.comboOpenId === comboKey;
+    const comboQuery = comboOpen ? this.state.comboQuery : '';
+    const q = comboQuery.trim().toLowerCase();
+    const comboMatches = !isSearchSelect ? [] : (f.options || [])
+      .filter(o => !q || o.en.toLowerCase().includes(q) || (o.zh || '').toLowerCase().includes(q))
+      .slice(0, 60)
+      .map(o => ({
+        label: biOptLabel(o),
+        selected: o.en === value,
+        onPick: () => {
+          // Beat the blur commit scheduled below.
+          clearTimeout(this._comboBlurTimer);
+          setValue(o.en);
+          this.setState({ comboOpenId: null, comboQuery: '' });
+        },
+      }));
+
     return { label, labelZh, required: f.required, isText, isTel, isTextarea, isSelect, isCheckboxGroup, isRadioGroup, isRating, isDate,
       inputType, placeholder, value, options, checkboxGroups, radioItems, starItems,
+      isSearchSelect, comboOpen, comboMatches,
+      comboNoMatch: isSearchSelect && comboOpen && comboMatches.length === 0,
+      comboValue: comboOpen ? comboQuery : value,
+      comboPlaceholder: '搜尋或直接輸入國家名稱',
+      onComboFocus: isSearchSelect ? () => this.setState({ comboOpenId: comboKey, comboQuery: value }) : undefined,
+      // Every keystroke commits the value, not just blur. Otherwise typing a
+      // country and immediately hitting 下一步 submits an empty field — the
+      // deferred blur below would not have run yet.
+      onComboInput: isSearchSelect ? (e) => {
+        setValue(e.target.value);
+        this.setState({ comboOpenId: comboKey, comboQuery: e.target.value });
+      } : undefined,
+      // Blur only closes the list and normalises — the value is already
+      // committed by onComboInput above. Closing is deferred because blur fires
+      // before the click that picked an option, and unmounting the list first
+      // would swallow that click.
+      //
+      // (Handling pointerdown on the option instead would avoid the race, but
+      // dc-runtime's EVENT_MAP has no pointer-event entry and its fallback
+      // produces `onPointerdown`, which React ignores — the handler never ran.)
+      onComboBlur: isSearchSelect ? (e) => {
+        const typed = e.target.value.trim();
+        clearTimeout(this._comboBlurTimer);
+        this._comboBlurTimer = setTimeout(() => {
+          // An exact match in either language snaps to the canonical stored
+          // value; anything else stays verbatim so off-list countries work.
+          const hit = (f.options || []).find(o =>
+            o.en.toLowerCase() === typed.toLowerCase() || (o.zh || '') === typed);
+          if (hit) setValue(hit.en);
+          this.setState({ comboOpenId: null, comboQuery: '' });
+        }, 150);
+      } : undefined,
       countryCode: isTel ? this.state.selectedCountryCode : undefined,
       onCountryCodeChange: isTel ? (e) => this.setState({ selectedCountryCode: e.target.value }) : undefined,
       error: !!errors[f.id], errorMsg: errors[f.id] || '',
@@ -4710,6 +4994,7 @@ class Component extends DCLogic {
     const showCompanyForm = screen === 'companyForm';
     const showHandoff = screen === 'handoff';
     const showAdmin = screen === 'admin';
+    const showBrowse = screen === 'browse';
 
     const showAdminFieldList = showAdmin && (adminTab === 'customer' || adminTab === 'needs' || adminTab === 'company');
     const showAdminRecords = showAdmin && adminTab === 'records';
@@ -4797,10 +5082,14 @@ class Component extends DCLogic {
     const customerFormTitle = editing ? 'Edit Record' : 'Customer Info';
     const customerFormTitleZh = editing ? '編輯資料' : '客戶資料';
     const customerBackLabel = editing ? 'Cancel 取消' : '← Back 返回';
-    const customerSubmitLabel = editing ? 'Save 儲存' : (firstChoice === 'needs' ? 'Finish 完成' : 'Next 下一步 →');
-    const customerStepLabel = firstChoice === 'data' ? '1 / 3' : '3 / 3';
-    const needsSubmitLabel = firstChoice === 'data' ? 'Finish 完成' : 'Next 下一步 →';
-    const needsStepLabel = firstChoice === 'needs' ? '1 / 3' : '3 / 3';
+    // quickMode is two steps and always customer → needs, so its labels do not
+    // go through the firstChoice reasoning above.
+    const quick = this.state.quickMode;
+    const customerSubmitLabel = editing ? 'Save 儲存'
+      : (quick ? 'Next 下一步 →' : (firstChoice === 'needs' ? 'Finish 完成' : 'Next 下一步 →'));
+    const customerStepLabel = quick ? '1 / 2' : (firstChoice === 'data' ? '1 / 3' : '3 / 3');
+    const needsSubmitLabel = quick ? 'Finish 完成' : (firstChoice === 'data' ? 'Finish 完成' : 'Next 下一步 →');
+    const needsStepLabel = quick ? '2 / 2' : (firstChoice === 'needs' ? '1 / 3' : '3 / 3');
     const needsBackLabel = '← Back 返回';
     const companySubmitLabel = 'Next 下一步 →';
     const companyStepLabel = '2 / 3';
@@ -4894,6 +5183,29 @@ class Component extends DCLogic {
         }) };
     });
 
+    // Record browser: the same records, minus every destructive or bulk action.
+    // Reception needs to find a visitor they already logged and fix a typo; the
+    // list is short-lived and searched by name, company or who received them.
+    const browseQuery = this.state.browseQuery.trim().toLowerCase();
+    const browseAll = eventRecords.map((r, i) => {
+      const fields = recordCols.map(e => ({
+        label: e.f.nameZh || e.f.nameEn,
+        value: displayVal(e, r),
+      }));
+      return {
+        num: String(i + 1),
+        time: new Date(r.timestamp).toLocaleString(),
+        title: r.customerFields?.name || '(未填姓名)',
+        subtitle: r.customerFields?.company || '',
+        fields,
+        haystack: fields.map(f => f.value).join(' ').toLowerCase(),
+        onEdit: () => this.editRecord(r.id, 'browse'),
+      };
+    });
+    const browseRows = browseQuery
+      ? browseAll.filter(row => row.haystack.includes(browseQuery))
+      : browseAll;
+
     // Field editor
     const { showFieldEditor, fieldEditorMode, feNameEn, feNameZh, feType, feRequired, feAllowOther, fePerGroupOther, feEmptyGroups, feOptions: feOpts } = this.state;
     const feShowOptions = feType === 'select' || feType === 'checkbox-group' || feType === 'radio-group';
@@ -4941,7 +5253,11 @@ class Component extends DCLogic {
       onDismissSwUpdate: () => this.setState({ swUpdateReady: false }),
       // Event list
       activeEvents, endedEvents,
-      hasActiveEvents: activeEvents.length > 0, hasEndedEvents: endedEvents.length > 0,
+      hasActiveEvents: activeEvents.length > 0,
+      // Ended events are management material, not something staff should wade
+      // past on the way to today's event, so the whole section only exists once
+      // 活動管理 is unlocked.
+      hasEndedEvents: endedEvents.length > 0 && this.state.eventsManageMode,
       manageMode: eventsManageMode, manageLocked: !eventsManageMode,
       onUnlockManage: () => this.setState({ showPinDialog: true, pinPurpose: 'manage', pinValue: '', pinError: false }),
       onLockManage: () => this.setState({ eventsManageMode: false }),
@@ -4972,6 +5288,20 @@ class Component extends DCLogic {
       onOpenPinDialog: () => this.setState({ showPinDialog: true, pinPurpose: 'admin', pinValue: '', pinError: false }),
       onChooseData: () => this.startFlow('data'),
       onChooseNeeds: () => this.startFlow('needs'),
+      onChooseQuick: () => this.startFlow('data', true),
+      onOpenBrowse: () => this.setState({ showPinDialog: true, pinPurpose: 'browse', pinValue: '', pinError: false }),
+      // Record browser
+      showBrowse, browseRows,
+      browseQuery: this.state.browseQuery,
+      browseCountLabel: browseQuery
+        ? `符合 ${browseRows.length} 筆（共 ${browseAll.length} 筆）`
+        : `共 ${browseAll.length} 筆`,
+      browseEmpty: browseRows.length === 0,
+      browseEmptyLabel: browseAll.length === 0 ? '這個活動還沒有任何紀錄' : '沒有符合的紀錄',
+      onBrowseQuery: (e) => this.setState({ browseQuery: e.target.value }),
+      onClearBrowseQuery: () => this.setState({ browseQuery: '' }),
+      hasBrowseQuery: !!browseQuery,
+      onExitBrowse: () => this.setState({ screen: 'eventHome', browseQuery: '' }),
       // Customer info form
       customerFormTitle, customerFormTitleZh, customerBackLabel, customerSubmitLabel, customerStepLabel, showStepChip,
       customerFormFields, countryCodes: this.getCountryCodes(),
@@ -4980,7 +5310,7 @@ class Component extends DCLogic {
       onGdprToggle: () => this.setState({ gdprChecked: !this.state.gdprChecked, gdprError: false }),
       onCustomerSubmit: () => this.submitCustomerForm(),
       onCustomerBack: () => {
-        if (editingRecordId) { this.setState({ ...this.flowResetPatch(), screen: 'admin', adminTab: 'records' }); }
+        if (editingRecordId) { this.setState({ ...this.flowResetPatch(), ...this.afterRecordEditPatch() }); }
         else if (firstChoice === 'needs') { this.setState({ screen: 'companyForm' }); }
         else { this.goHome(); }
       },
@@ -4988,7 +5318,9 @@ class Component extends DCLogic {
       needsFormFields, needsSubmitLabel, needsStepLabel, needsBackLabel,
       onNeedsSubmit: () => this.submitNeedsForm(),
       onNeedsBack: () => {
-        if (firstChoice === 'data') { this.setState({ screen: 'companyForm' }); }
+        // quickMode has no company step to go back through.
+        if (this.state.quickMode) { this.setState({ screen: 'customerForm' }); }
+        else if (firstChoice === 'data') { this.setState({ screen: 'companyForm' }); }
         else { this.goHome(); }
       },
       // Company Profile form (always step 2; back goes to whichever of

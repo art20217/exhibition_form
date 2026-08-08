@@ -12,7 +12,12 @@ const H = require('./helpers');
 const SHOT = path.join(__dirname, 'shots-mig-v36');
 fs.mkdirSync(SHOT, { recursive: true });
 const BASE = 'http://localhost:8959';
-const NEW_ROSTER = [{ en: 'Esme', zh: '陳佩昀' }, { en: 'Crystal', zh: '宋佳蓉' }];
+// v3.6 introduced the overwrite; v3.8 runs straight after it with the real
+// team, so the end state a seeded database lands on is v3.8's roster.
+const NEW_ROSTER = [{ en: 'Charlene', zh: '蘇秋菊' }, { en: 'Will', zh: '黃柏儒' },
+     { en: 'Steve', zh: '陳誌翔' }, { en: 'Nadia', zh: '鄭淑卿' },
+     { en: 'Eric', zh: '顏耀中' }, { en: 'Alen', zh: '黃世仰' },
+     { en: 'Wing', zh: '張詩穎' }, { en: 'Rick', zh: '張瑞育' }];
 
 (async () => {
   const server = await H.serve(8959);
@@ -86,24 +91,29 @@ const NEW_ROSTER = [{ en: 'Esme', zh: '陳佩昀' }, { en: 'Crystal', zh: '宋�
   // 1. both rosters replaced, customized one included
   let evs = await byId();
   assert(JSON.stringify(evs['ev-old'].staff) === JSON.stringify(NEW_ROSTER),
-    '舊內建名單被換成 Esme／Crystal：' + JSON.stringify(evs['ev-old'].staff));
+    '舊內建名單被換成目前的預設團隊：' + JSON.stringify(evs['ev-old'].staff.map(s => s.zh)));
   assert(JSON.stringify(evs['ev-custom'].staff) === JSON.stringify(NEW_ROSTER),
     '後台自訂過的名單也一併覆蓋（這是刻意選的行為）：' + JSON.stringify(evs['ev-custom'].staff));
   assert(errors.length === 0, '載入沒有 JS 例外：' + errors.join(' | '));
 
   // 2. the card count follows, and the picker offers the new names
   const listText = await page.locator('body').innerText();
-  assert(listText.includes('2 位接待人員'), '卡片人數改為 2：' + listText.split('\n').slice(0, 6).join(' | '));
+  assert(listText.includes('8 位接待人員'), '卡片人數改為 8：' + listText.split('\n').slice(0, 6).join(' | '));
   // Cards sort newest startDate first, so the 2027 event leads — address the
   // one that actually owns the seeded record by name.
   await page.locator('[data-event-card]').filter({ hasText: '2026 美國展' })
     .locator('button').first().click();
   await page.waitForTimeout(500);
   const picker = await page.locator('[data-staff-picker]').innerText();
-  assert(picker.includes('Esme') && picker.includes('陳佩昀')
-    && picker.includes('Crystal') && picker.includes('宋佳蓉'),
+  assert(picker.includes('Charlene') && picker.includes('蘇秋菊')
+    && picker.includes('Rick') && picker.includes('張瑞育'),
     '活動頁的人員選單顯示新名單：' + picker.replace(/\n/g, ' | '));
-  assert(!picker.includes('蘇秋菊'), '舊名字不再出現在選單');
+  // 蘇秋菊 and 張詩穎 appear in both the seeded roster and today's, under
+  // different English names — so they prove nothing. 簡吟庭 was dropped
+  // outright, and 蘇秋菊's old English name changed, which do.
+  assert(!picker.includes('簡吟庭') && !picker.includes('Chien Yin-Ting'),
+    '被移除的舊人員不再出現在選單');
+  assert(!picker.includes('Su Chiu-Chu'), '舊的英文名已換成新名冊的版本');
   await page.screenshot({ path: path.join(SHOT, '02_staff_picker.png'), fullPage: true });
 
   // 3. the old record keeps the names it was saved with

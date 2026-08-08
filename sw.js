@@ -1,4 +1,4 @@
-// Service worker for 訪客資料登記表.
+// Service worker for 會談紀錄表.
 //
 // The app is one self-contained index.html plus a manifest and icons, so the
 // precache list is the whole site. Everything else the app needs — React, the
@@ -20,7 +20,7 @@
 
 // Bump on every release. It is the cache identity: a new value means a new
 // cache, and activate() deletes every other one.
-const VERSION = 'v3.7.0';
+const VERSION = 'v3.8.0';
 const CACHE = 'exhibition-form-' + VERSION;
 
 const PRECACHE = [

@@ -35,9 +35,14 @@ fs.mkdirSync(SHOT, { recursive: true });
     const title = bar.querySelector('[data-page-title]');
     const spans = title ? [...title.children] : [];
     const chip = [...bar.querySelectorAll('span')].find(el => /^\d+\s*\/\s*\d+$/.test(el.textContent.trim()));
-    // Only text buttons can wrap; an icon-only button (the admin gear) has no
-    // text to measure against a line height, so skip past it.
-    const btn = [...bar.querySelectorAll('button')].find(b => b.textContent.trim()) || null;
+    // Only free-flowing text buttons can wrap. The gear buttons gained a text
+    // label in v3.8, so "has text" no longer identifies them — but they are a
+    // fixed-height icon+label pill (and the label is display:none on narrow
+    // screens, where textContent still reports it), so measuring their height
+    // against a line height means nothing. Skip them by name.
+    const btn = [...bar.querySelectorAll('button')]
+      .filter(b => !b.hasAttribute('data-gear-events') && !b.hasAttribute('data-gear-admin'))
+      .find(b => b.textContent.trim()) || null;
     const oneLine = (el) => {
       if (!el) return true;
       const cs = getComputedStyle(el);

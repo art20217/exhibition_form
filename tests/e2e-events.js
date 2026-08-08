@@ -28,8 +28,11 @@ const BASE = 'http://localhost:8952';
   assert((await page.locator('[data-event-card]').count()) === 1, '全新安裝自動建立一個活動（不會被 PIN 鎖在門外）');
   const seededStaff = (await H.readAll(page, 'events'))[0].staff;
   assert(JSON.stringify(seededStaff) === JSON.stringify(
-    [{ en: 'Esme', zh: '陳佩昀' }, { en: 'Crystal', zh: '宋佳蓉' }]),
-    '全新安裝的預設接待人員只有 Esme／Crystal：' + JSON.stringify(seededStaff));
+    [{ en: 'Charlene', zh: '蘇秋菊' }, { en: 'Will', zh: '黃柏儒' },
+     { en: 'Steve', zh: '陳誌翔' }, { en: 'Nadia', zh: '鄭淑卿' },
+     { en: 'Eric', zh: '顏耀中' }, { en: 'Alen', zh: '黃世仰' },
+     { en: 'Wing', zh: '張詩穎' }, { en: 'Rick', zh: '張瑞育' }]),
+    '全新安裝的預設名冊為實際團隊 8 人：' + JSON.stringify(seededStaff.map(s => s.zh)));
 
   // ---- 2. management controls are PIN-gated ----
   assert((await page.locator('[data-add-event]').count()) === 0, '未解鎖時沒有「＋ 新增活動」');
@@ -60,7 +63,7 @@ const BASE = 'http://localhost:8952';
   const listText = await page.locator('body').innerText();
   assert(listText.includes('2026 美國展') && listText.includes('2026-08-05 → 2026-08-06'),
     '活動改名與日期區間已生效：' + listText.split('\n').slice(0, 8).join(' | '));
-  assert(listText.includes('3 位接待人員'), '新增人員後卡片數字同步');
+  assert(listText.includes('9 位接待人員'), '新增人員後卡片數字同步（8 + 1）');
 
   await page.getByRole('button', { name: '編輯' }).first().click();
   await page.waitForTimeout(400);
@@ -68,7 +71,7 @@ const BASE = 'http://localhost:8952';
   await page.waitForTimeout(150);
   await page.getByRole('button', { name: '儲存活動' }).click();
   await page.waitForTimeout(600);
-  assert((await page.locator('body').innerText()).includes('2 位接待人員'), '接待人員刪減後卡片數字同步');
+  assert((await page.locator('body').innerText()).includes('8 位接待人員'), '接待人員刪減後卡片數字同步（回到 8）');
 
   // ---- 4. the fill-in gate ----
   await page.locator('[data-event-card] button').first().click();
