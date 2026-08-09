@@ -37,6 +37,7 @@ const UNPICKED = ['Sample Required', 'Become a Distributor'];
   await H.enterEvent(page);
 
   // ---- 1. the fill-in flow still shows every option ----
+  await H.pickCustomerStatus(page);
   await page.locator('[data-entry-needs]').click();
   await page.waitForTimeout(600);
   let body = await page.locator('body').innerText();

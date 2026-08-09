@@ -92,6 +92,7 @@ const PNG = Buffer.from(
   // ---------- 4. photo lightbox — the × must work on its own ----------
   await page.getByRole('button', { name: '← 返回表單' }).click();
   await page.waitForTimeout(400);
+  await H.pickCustomerStatus(page);
   await page.locator('[data-entry-customer]').click();
   await page.waitForTimeout(400);
   await page.locator('input[placeholder^="Enter Name"]').fill('照片測試');

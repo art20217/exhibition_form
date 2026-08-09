@@ -75,6 +75,7 @@ fs.mkdirSync(SHOT, { recursive: true });
   await H.enterEvent(page);
 
   // Customer form shows the corrected language labels
+  await H.pickCustomerStatus(page);
   await page.locator('[data-entry-customer]').click();
   await page.waitForTimeout(500);
   await page.screenshot({ path: path.join(SHOT, '01_language.png'), fullPage: true });

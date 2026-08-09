@@ -152,6 +152,7 @@ const seedV1 = (page, build) => page.evaluate((b) => new Promise((res, rej) => {
   await page.waitForTimeout(600);
   assert(!(await page.locator('[data-entry-customer]').isDisabled()),
     '從後台返回活動頁時，先前選好的填單人員與日期仍在');
+  await H.pickCustomerStatus(page);
   await page.locator('[data-entry-customer]').click();
   await page.waitForTimeout(500);
   await H.runFlow(page, { name: '新客戶', company: '新公司' });

@@ -66,6 +66,7 @@ const HAN = /[㐀-鿿]/;
     await page.goto('http://localhost:8943/');
     await page.waitForTimeout(1200);
     await H.enterEvent(page);
+    await H.pickCustomerStatus(page);
     await page.locator('[data-entry-needs]').click();
     await page.waitForTimeout(500);
   };
