@@ -2380,7 +2380,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">
-            v3.8.0 — Offline Exhibition Form
+            v3.9.0 — Offline Exhibition Form
             <sc-if value="{{ swDisabled }}">
               <span data-sw-disabled="" style="display: block; margin-top: 4px; color: #B45309">離線快取已停用，網址加上 ?sw=on 可重新啟用</span>
             </sc-if>
@@ -2479,6 +2479,119 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               <span style="font-size: var(--fs-sm); color: #94A3B8">查詢與編輯</span>
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===== SINGLE-FIELD OPTION EDITOR (edit mode) =====
+       Opened from a summary row. Renders one field with the identical input
+       markup the forms use, so a checkbox group behaves the same here as on the
+       fill-in pages. Inputs write straight to the live store; 取消 restores the
+       snapshot taken when the modal opened. -->
+  <sc-if value="{{ showValueEditor }}">
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s ease; padding: 20px">
+      <div data-value-editor="" style="background: #FFF; border-radius: 16px; width: 640px; max-width: 100%; max-height: 90vh; display: flex; flex-direction: column">
+        <div style="padding: 20px 24px 12px; border-bottom: 1px solid #F1F5F9; flex-shrink: 0">
+          <div style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E">{{ valueEditorTitle }}</div>
+          <sc-if value="{{ valueEditorTitleZh }}">
+            <div style="font-size: var(--fs-sm); color: #64748B; margin-top: 2px">{{ valueEditorTitleZh }}</div>
+          </sc-if>
+        </div>
+        <div style="padding: 18px 24px; overflow-y: auto; -webkit-overflow-scrolling: touch; flex: 1">
+          <sc-for list="{{ valueEditorFields }}" as="field">
+            <div>
+          <sc-if value="{{ field.isText }}">
+            <input type="{{ field.inputType }}" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
+          </sc-if>
+          <sc-if value="{{ field.isTel }}">
+            <div data-mobile-stack="" style="display: flex; gap: 8px">
+              <sc-raw-select value="{{ field.countryCode }}" onchange="{{ field.onCountryCodeChange }}" style="width: 140px; height: 48px; padding: 0 8px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
+                <sc-for list="{{ countryCodes }}" as="cc">
+                  <option value="{{ cc.value }}">{{ cc.label }}</option>
+                </sc-for>
+              </sc-raw-select>
+              <input type="tel" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="flex: 1; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
+            </div>
+          </sc-if>
+          <sc-if value="{{ field.isTextarea }}">
+            <textarea value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" rows="3" style="width: 100%; padding: 12px 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; resize: vertical; transition: border-color 0.15s; line-height: 1.5" style-focus="border-color: #0055B8"></textarea>
+          </sc-if>
+          <sc-if value="{{ field.isSelect }}">
+            <sc-raw-select value="{{ field.value }}" onchange="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
+              <option value="">{{ field.placeholder }}</option>
+              <sc-for list="{{ field.options }}" as="opt"><option value="{{ opt.value }}">{{ opt.label }}</option></sc-for>
+            </sc-raw-select>
+          </sc-if>
+          <sc-if value="{{ field.isSearchSelect }}">
+            <div data-combo="" style="position: relative">
+              <input type="text" value="{{ field.comboValue }}" oninput="{{ field.onComboInput }}" onfocus="{{ field.onComboFocus }}" onblur="{{ field.onComboBlur }}" placeholder="{{ field.comboPlaceholder }}" autocomplete="off" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
+              <sc-if value="{{ field.comboOpen }}">
+                <div data-combo-list="" style="position: absolute; z-index: 20; left: 0; right: 0; top: 52px; max-height: 260px; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #FFF; border: 1px solid #D1D5DB; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12)">
+                  <sc-for list="{{ field.comboMatches }}" as="opt">
+                    <button type="button" data-combo-opt="" onclick="{{ opt.onPick }}" style="display: block; width: 100%; text-align: left; padding: 12px 14px; border: none; background: transparent; font-size: var(--fs-body); color: #1A1A2E; cursor: pointer" style-hover="background: #F0F6FF">{{ opt.label }}</button>
+                  </sc-for>
+                  <sc-if value="{{ field.comboNoMatch }}">
+                    <div style="padding: 12px 14px; font-size: var(--fs-sm); color: #94A3B8">清單中沒有相符的國家，直接輸入即可</div>
+                  </sc-if>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+          <sc-if value="{{ field.isDate }}">
+            <input type="date" value="{{ field.value }}" oninput="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
+          </sc-if>
+          <sc-if value="{{ field.isCheckboxGroup }}">
+            <sc-for list="{{ field.checkboxGroups }}" as="grp">
+              <sc-if value="{{ grp.label }}">
+                <div style="font-size: var(--fs-h3); font-weight: 600; color: #334155; margin: 18px 0 8px">{{ grp.label }}</div>
+              </sc-if>
+              <div data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 4px">
+                <sc-for list="{{ grp.items }}" as="cb">
+                  <label style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: var(--fs-body); user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.spanStyle }}" style-hover="border-color: #93B4E0">
+                    <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #0055B8; flex-shrink: 0">
+                    <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0; text-align: left; overflow-wrap: anywhere">
+                      <span style="font-size: var(--fs-body); line-height: 1.35">{{ cb.labelEn }}</span>
+                      <sc-if value="{{ cb.labelZh }}"><span style="font-size: var(--fs-sm); line-height: 1.35; opacity: 0.72">{{ cb.labelZh }}</span></sc-if>
+                    </span>
+                  </label>
+                  <sc-if value="{{ cb.checked }}">
+                    <sc-if value="{{ cb.isOther }}">
+                      <input type="text" value="{{ cb.otherValue }}" oninput="{{ cb.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; width: 100%; grid-column: 1 / -1" style-focus="border-color: #0055B8">
+                    </sc-if>
+                  </sc-if>
+                </sc-for>
+              </div>
+            </sc-for>
+          </sc-if>
+          <sc-if value="{{ field.isRadioGroup }}">
+            <div data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 4px">
+              <sc-for list="{{ field.radioItems }}" as="rd">
+                <button onclick="{{ rd.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: var(--fs-body); user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 0; overflow-wrap: anywhere; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.spanStyle }}" style-hover="border-color: #93B4E0">
+                  <span style="font-size: var(--fs-body); line-height: 1.35">{{ rd.labelEn }}</span>
+                  <sc-if value="{{ rd.labelZh }}"><span style="font-size: var(--fs-sm); line-height: 1.35; opacity: 0.72">{{ rd.labelZh }}</span></sc-if>
+                </button>
+                <sc-if value="{{ rd.checked }}">
+                  <sc-if value="{{ rd.isOther }}">
+                    <input type="text" value="{{ rd.otherValue }}" oninput="{{ rd.onOtherInput }}" placeholder="Please specify 請填寫" style="height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; width: 100%; grid-column: 1 / -1" style-focus="border-color: #0055B8">
+                  </sc-if>
+                </sc-if>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ field.isRating }}">
+            <div style="display: flex; gap: 4px; margin-top: 2px">
+              <sc-for list="{{ field.starItems }}" as="st">
+                <button onclick="{{ st.onClick }}" style="width: 48px; height: 48px; border: none; background: transparent; cursor: pointer; font-size: 2rem; line-height: 1; padding: 0; color: {{ st.color }}" style-active="transform: scale(0.9)">{{ st.char }}</button>
+              </sc-for>
+            </div>
+          </sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <div style="padding: 14px 24px 20px; display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid #F1F5F9; flex-shrink: 0">
+          <button onclick="{{ onCloseValueEditor }}" data-ve-cancel="" style="height: 44px; padding: 0 20px; border: 1px solid #D1D5DB; background: #FFF; border-radius: 8px; font-size: var(--fs-sm); color: #64748B; cursor: pointer" style-hover="background: #F9FAFB">取消</button>
+          <button onclick="{{ onDoneValueEditor }}" data-ve-done="" style="height: 44px; padding: 0 24px; border: none; background: #0055B8; border-radius: 8px; font-size: var(--fs-sm); color: #FFF; cursor: pointer; font-weight: 600" style-hover="background: #004494">完成</button>
         </div>
       </div>
     </div>
@@ -2637,6 +2750,18 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                 <span style="display: block; font-size: var(--fs-h2); font-weight: 700; line-height: 1.25; color: #1A1A2E">{{ field.label }}<sc-if value="{{ field.required }}"><span style="color: #DC2626; margin-left: 4px">*</span></sc-if></span>
                 <sc-if value="{{ field.labelZh }}"><span style="display: block; font-size: var(--fs-body); font-weight: 400; color: #64748B; line-height: 1.4; margin-top: 2px">{{ field.labelZh }}</span></sc-if>
               </label>
+              <sc-if value="{{ field.showSummary }}">
+                <div data-summary-row="" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 2px solid #E2E8F0; border-radius: 10px; background: #F8FAFC">
+                  <sc-if value="{{ field.summaryText }}">
+                    <span data-summary-value="" style="flex: 1; min-width: 0; font-size: var(--fs-body); color: #1A1A2E; overflow-wrap: anywhere">{{ field.summaryText }}</span>
+                  </sc-if>
+                  <sc-if value="{{ field.summaryEmpty }}">
+                    <span data-summary-empty="" style="flex: 1; min-width: 0; font-size: var(--fs-body); color: #94A3B8">未填</span>
+                  </sc-if>
+                  <button onclick="{{ field.onOpenValueEditor }}" data-edit-field="" style="flex-shrink: 0; height: 40px; padding: 0 16px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); font-weight: 600; cursor: pointer" style-hover="background: #F0F6FF">編輯</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ field.showInline }}">
               <sc-if value="{{ field.isText }}">
                 <input type="{{ field.inputType }}" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
               </sc-if>
@@ -2721,6 +2846,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                     <button onclick="{{ st.onClick }}" style="width: 48px; height: 48px; border: none; background: transparent; cursor: pointer; font-size: 2rem; line-height: 1; padding: 0; color: {{ st.color }}" style-active="transform: scale(0.9)">{{ st.char }}</button>
                   </sc-for>
                 </div>
+              </sc-if>
               </sc-if>
               <sc-if value="{{ field.error }}">
                 <div style="color: #DC2626; font-size: var(--fs-sm); margin-top: 4px; display: flex; align-items: center; gap: 4px">
@@ -3362,6 +3488,9 @@ class Component extends DCLogic {
     // Searchable-select state, keyed "<store>.<fieldId>" so only one list is
     // open at a time.
     comboOpenId: null, comboQuery: '',
+    // Single-field option editor opened from an edit-mode summary row.
+    valueEditorStore: null, valueEditorErrStore: null, valueEditorFieldId: null,
+    valueEditorSnapshot: null,
     // Where editing a record returns to. Editing can be started from the admin
     // records tab or from the browse screen, and it must land back where it
     // came from.
@@ -4476,6 +4605,14 @@ class Component extends DCLogic {
       for (const c of containers) { if (c?.[key] !== undefined) return c[key]; }
       return undefined;
     };
+    return this.expandOtherMarkers(raw, f, lookup);
+  }
+
+  // Turns the stored Other markers into readable text. Split out of
+  // resolveFieldValue() so the same rules serve both a saved record and the
+  // in-flight formValues/needsValues/companyValues that the edit screen's
+  // summary rows read from — two copies of this would drift.
+  expandOtherMarkers(raw, f, lookup) {
     const otherPrefix = this.OTHER_VALUE + ':';
     const sub = (v) => {
       if (v === this.OTHER_VALUE) return 'Other: ' + (lookup(f.id + '__otherText') || '');
@@ -4741,6 +4878,28 @@ class Component extends DCLogic {
     return out;
   }
 
+  // --- single-field option editor (edit mode only) ---
+  // Inputs write straight into the live store, as everywhere else in the app.
+  // Cancel therefore needs a snapshot — and it snapshots the *whole* store
+  // object, not just this field: an Other choice also writes `<id>__otherText`
+  // and, for per-group Other, `<id>__otherText__<group>`. Restoring one key
+  // would leave those behind.
+  openValueEditor(store, errStore, fieldId) {
+    this.setState({
+      valueEditorStore: store, valueEditorErrStore: errStore, valueEditorFieldId: fieldId,
+      valueEditorSnapshot: { ...this.state[store] },
+    });
+  }
+  closeValueEditor(restore) {
+    const store = this.state.valueEditorStore;
+    const patch = { valueEditorStore: null, valueEditorErrStore: null,
+      valueEditorFieldId: null, valueEditorSnapshot: null,
+      // A list left open would otherwise reopen behind the next modal.
+      comboOpenId: null, comboQuery: '' };
+    if (restore && store) patch[store] = this.state.valueEditorSnapshot;
+    this.setState(patch);
+  }
+
   // Both finishing and cancelling an edit come back through here, so the two
   // paths cannot drift apart.
   afterRecordEditPatch() {
@@ -4942,9 +5101,28 @@ class Component extends DCLogic {
         },
       }));
 
+    // --- edit mode: collapse option fields to their chosen values ---
+    // Editing a record puts all three field groups on one page. With the
+    // built-in fields that is ~130 option buttons, so fixing a phone number
+    // means scrolling past every machine brand and industry. Option fields
+    // therefore render as "current value + 編輯" and open a modal; text, date
+    // and rating stay inline, since they have no options to hide and a typo
+    // should not cost two extra taps.
+    const isOptionField = isSelect || isSearchSelect || isCheckboxGroup || isRadioGroup;
+    const showSummary = !!this.state.editingRecordId && isOptionField;
+    const summaryText = showSummary ? (() => {
+      const raw = values[f.id];
+      if (raw == null || raw === '' || (Array.isArray(raw) && raw.length === 0)) return '';
+      const shown = this.expandOtherMarkers(raw, f, (key) => values[key]);
+      return Array.isArray(shown) ? shown.join('、') : String(shown);
+    })() : '';
+
     return { label, labelZh, required: f.required, isText, isTel, isTextarea, isSelect, isCheckboxGroup, isRadioGroup, isRating, isDate,
       inputType, placeholder, value, options, checkboxGroups, radioItems, starItems,
       isSearchSelect, comboOpen, comboMatches,
+      showSummary, showInline: !showSummary,
+      summaryText, summaryEmpty: showSummary && !summaryText,
+      onOpenValueEditor: () => this.openValueEditor(store, errStore, f.id),
       comboNoMatch: isSearchSelect && comboOpen && comboMatches.length === 0,
       comboValue: comboOpen ? comboQuery : value,
       comboPlaceholder: '搜尋或直接輸入國家名稱',
@@ -5108,6 +5286,19 @@ class Component extends DCLogic {
         .concat(needsSorted.map(f => this.mapFormField(f, 'needsValues', 'needsErrors', bluePalette)))
         .concat(companySorted.map(f => this.mapFormField(f, 'companyValues', 'companyErrors', bluePalette)));
     }
+    // The modal renders exactly one field, mapped the same way as any other so
+    // its inputs behave identically. Built from the definition rather than
+    // plucked out of customerFormFields, because that list carries the summary
+    // form of the field, not the editable one.
+    const veStore = this.state.valueEditorStore;
+    const veField = veStore
+      ? [...custSorted, ...needsSorted, ...companySorted].find(f => f.id === this.state.valueEditorFieldId)
+      : null;
+    const valueEditorFields = veField
+      ? [{ ...this.mapFormField(veField, veStore, this.state.valueEditorErrStore, bluePalette),
+           showSummary: false, showInline: true }]
+      : [];
+
     const needsFormFields = needsSorted.map(f => this.mapFormField(f, 'needsValues', 'needsErrors', bluePalette));
     const companyFormFields = companySorted.map(f => this.mapFormField(f, 'companyValues', 'companyErrors', bluePalette));
     // Business card capture (on the customer form since v3.3)
@@ -5305,6 +5496,13 @@ class Component extends DCLogic {
       // Customer info form
       customerFormTitle, customerFormTitleZh, customerBackLabel, customerSubmitLabel, customerStepLabel, showStepChip,
       customerFormFields, countryCodes: this.getCountryCodes(),
+      // Single-field option editor
+      showValueEditor: valueEditorFields.length > 0,
+      valueEditorFields,
+      valueEditorTitle: veField ? veField.nameEn : '',
+      valueEditorTitleZh: veField ? (veField.nameZh || '') : '',
+      onCloseValueEditor: () => this.closeValueEditor(true),
+      onDoneValueEditor: () => this.closeValueEditor(false),
       gdprTextEn: this.state.gdprEn, gdprTextZh: this.state.gdprZh,
       gdprChecked: this.state.gdprChecked, gdprError: this.state.gdprError,
       onGdprToggle: () => this.setState({ gdprChecked: !this.state.gdprChecked, gdprError: false }),
