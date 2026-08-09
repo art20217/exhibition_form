@@ -73,7 +73,8 @@ const ROSTER_ZH = ['蘇秋菊', '黃柏儒', '陳誌翔', '鄭淑卿', '顏耀�
   await page.waitForTimeout(700);
 
   // ---- 4. event-home gear label + the three entries ----
-  await page.locator('[data-event-card] button').first().click();
+  await H.lockManage(page);
+  await page.locator('[data-ev-enter]').first().click();
   await page.waitForTimeout(600);
   assert((await page.locator('[data-gear-admin]').innerText()).includes('表單管理'),
     '活動內頁的齒輪標示「表單管理」');
@@ -111,6 +112,20 @@ const ROSTER_ZH = ['蘇秋菊', '黃柏儒', '陳誌翔', '鄭淑卿', '顏耀�
   await page.locator('[data-combo-opt]').first().click();
   await page.waitForTimeout(250);
   await page.screenshot({ path: path.join(SHOT, '02_combo.png'), fullPage: true });
+
+  // v3.11: once picked, the closed box names the country in both languages —
+  // the option list is gone by then, so this is the only place the Chinese can
+  // show. Focusing must hand back the bare stored value, or the blur matcher
+  // would see "Germany 德國", find no option, and store that string verbatim.
+  assert((await combo.inputValue()) === 'Germany 德國',
+    '選定後輸入框中英並陳：' + (await combo.inputValue()));
+  await combo.click();
+  await page.waitForTimeout(200);
+  assert((await combo.inputValue()) === 'Germany',
+    '重新聚焦時回到可編輯的英文值：' + (await combo.inputValue()));
+  await page.locator('input[placeholder^="Enter Name"]').first().click();  // blur
+  await page.waitForTimeout(400);
+  assert((await combo.inputValue()) === 'Germany 德國', '離開後又變回中英並陳');
 
   await page.locator('input[type="checkbox"]').last().check();
   await page.getByRole('button', { name: /Next 下一步/ }).click();

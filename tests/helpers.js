@@ -80,7 +80,7 @@ const wipeDB = (page) => page.evaluate(() => new Promise((res, rej) => {
 // Company Profile is part of the flow. Defaults to 'New' — the three-step flow
 // every suite written before v3.10 expects.
 async function enterEvent(page, { staffIndex = 0, customerStatus = 'New' } = {}) {
-  await page.locator('[data-event-card] button').first().click();
+  await page.locator('[data-ev-enter]').first().click();
   await page.waitForTimeout(500);
   await page.locator('[data-staff-picker] button').nth(staffIndex).click();
   await page.waitForTimeout(150);
@@ -115,7 +115,14 @@ async function openAdmin(page, tab) {
   if (tab) { await page.getByRole('button', { name: tab }).click(); await page.waitForTimeout(500); }
 }
 
-// Unlocks the event-list management controls (add / edit / end / delete).
+// Locks the event list back up. Manage mode makes the cards inert (v3.11), so a
+// suite that unlocked to add an event has to lock again before entering one.
+async function lockManage(page) {
+  const btn = page.getByRole('button', { name: /管理中/ });
+  if (await btn.count()) { await btn.click(); await page.waitForTimeout(300); }
+}
+
+// Unlocks the event-list management controls (add / edit / records / end / delete).
 async function unlockManage(page) {
   await page.locator('button:has(svg circle)').first().click();
   await page.locator('#pin-input').click();
@@ -181,4 +188,4 @@ const writeDefs = (page, group, fields) => page.evaluate(([g, v]) => new Promise
 }), [group, fields]);
 
 module.exports = { APP_HTML, launchBrowser, serve, wipeDB, enterEvent, pickCustomerStatus, gotoEvent, openAdmin,
-  unlockManage, runFlow, readAll, readDefs, writeDefs };
+  unlockManage, lockManage, runFlow, readAll, readDefs, writeDefs };

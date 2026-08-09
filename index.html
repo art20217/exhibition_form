@@ -2343,16 +2343,28 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             <div style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E; margin: 0 0 10px">使用中</div>
             <sc-for list="{{ activeEvents }}" as="ev">
               <div data-event-card="" style="background: #FFF; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 12px; overflow: hidden">
-                <button onclick="{{ ev.onOpen }}" style="width: 100%; text-align: left; background: transparent; border: none; padding: 18px 20px; cursor: pointer; display: block" style-hover="background: #F0F6FF">
-                  <div style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E; line-height: 1.3">{{ ev.name }}</div>
-                  <div style="font-size: var(--fs-sm); color: #0055B8; margin-top: 4px">{{ ev.dateLabel }}</div>
-                  <div style="font-size: var(--fs-sm); color: #94A3B8; margin-top: 2px">{{ ev.meta }}</div>
-                </button>
+                <!-- Only a locked list navigates on tap. In manage mode the same
+                     block is inert text: the screen is for editing / ending /
+                     deleting events, and a card that silently opened the form
+                     was an unlabelled entrance nobody asked for. -->
+                <sc-if value="{{ manageLocked }}">
+                  <button onclick="{{ ev.onOpen }}" data-ev-enter="" style="width: 100%; text-align: left; background: transparent; border: none; padding: 18px 20px; cursor: pointer; display: block" style-hover="background: #F0F6FF">
+                    <div style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E; line-height: 1.3">{{ ev.name }}</div>
+                    <div style="font-size: var(--fs-sm); color: #0055B8; margin-top: 4px">{{ ev.dateLabel }}</div>
+                    <div style="font-size: var(--fs-sm); color: #94A3B8; margin-top: 2px">{{ ev.meta }}</div>
+                  </button>
+                </sc-if>
                 <sc-if value="{{ manageMode }}">
+                  <div data-ev-static="" style="padding: 18px 20px; cursor: default">
+                    <div style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E; line-height: 1.3">{{ ev.name }}</div>
+                    <div style="font-size: var(--fs-sm); color: #0055B8; margin-top: 4px">{{ ev.dateLabel }}</div>
+                    <div style="font-size: var(--fs-sm); color: #94A3B8; margin-top: 2px">{{ ev.meta }}</div>
+                  </div>
                   <div style="display: flex; gap: 8px; padding: 0 20px 14px; flex-wrap: wrap">
-                    <button onclick="{{ ev.onEdit }}" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F0F6FF">編輯</button>
-                    <button onclick="{{ ev.onToggleStatus }}" style="height: 36px; padding: 0 14px; background: #FFF; color: #475569; border: 1px solid #D1D5DB; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F8FAFC">{{ ev.statusLabel }}</button>
-                    <button onclick="{{ ev.onDelete }}" style="height: 36px; padding: 0 14px; background: #FFF; color: #DC2626; border: 1px solid #FCA5A5; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #FEF2F2">刪除</button>
+                    <button onclick="{{ ev.onEdit }}" data-ev-edit="" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F0F6FF">編輯</button>
+                    <button onclick="{{ ev.onRecords }}" data-ev-records="" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F0F6FF">查看紀錄</button>
+                    <button onclick="{{ ev.onToggleStatus }}" data-ev-status="" style="height: 36px; padding: 0 14px; background: #FFF; color: #475569; border: 1px solid #D1D5DB; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F8FAFC">{{ ev.statusLabel }}</button>
+                    <button onclick="{{ ev.onDelete }}" data-ev-delete="" style="height: 36px; padding: 0 14px; background: #FFF; color: #DC2626; border: 1px solid #FCA5A5; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #FEF2F2">刪除</button>
                   </div>
                 </sc-if>
               </div>
@@ -2363,16 +2375,24 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             <div data-ended-heading="" style="font-size: var(--fs-h3); font-weight: 700; color: #64748B; margin: 26px 0 10px">已結束</div>
             <sc-for list="{{ endedEvents }}" as="ev">
               <div data-event-card="" style="background: #FFF; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 12px; overflow: hidden; opacity: 0.75">
-                <button onclick="{{ ev.onOpen }}" style="width: 100%; text-align: left; background: transparent; border: none; padding: 18px 20px; cursor: pointer; display: block" style-hover="background: #F8FAFC">
-                  <div style="font-size: var(--fs-h3); font-weight: 700; color: #475569; line-height: 1.3">{{ ev.name }}</div>
-                  <div style="font-size: var(--fs-sm); color: #64748B; margin-top: 4px">{{ ev.dateLabel }}</div>
-                  <div style="font-size: var(--fs-sm); color: #94A3B8; margin-top: 2px">{{ ev.meta }}</div>
-                </button>
+                <sc-if value="{{ manageLocked }}">
+                  <button onclick="{{ ev.onOpen }}" data-ev-enter="" style="width: 100%; text-align: left; background: transparent; border: none; padding: 18px 20px; cursor: pointer; display: block" style-hover="background: #F8FAFC">
+                    <div style="font-size: var(--fs-h3); font-weight: 700; color: #475569; line-height: 1.3">{{ ev.name }}</div>
+                    <div style="font-size: var(--fs-sm); color: #64748B; margin-top: 4px">{{ ev.dateLabel }}</div>
+                    <div style="font-size: var(--fs-sm); color: #94A3B8; margin-top: 2px">{{ ev.meta }}</div>
+                  </button>
+                </sc-if>
                 <sc-if value="{{ manageMode }}">
+                  <div data-ev-static="" style="padding: 18px 20px; cursor: default">
+                    <div style="font-size: var(--fs-h3); font-weight: 700; color: #475569; line-height: 1.3">{{ ev.name }}</div>
+                    <div style="font-size: var(--fs-sm); color: #64748B; margin-top: 4px">{{ ev.dateLabel }}</div>
+                    <div style="font-size: var(--fs-sm); color: #94A3B8; margin-top: 2px">{{ ev.meta }}</div>
+                  </div>
                   <div style="display: flex; gap: 8px; padding: 0 20px 14px; flex-wrap: wrap">
-                    <button onclick="{{ ev.onEdit }}" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F0F6FF">編輯</button>
-                    <button onclick="{{ ev.onToggleStatus }}" style="height: 36px; padding: 0 14px; background: #FFF; color: #475569; border: 1px solid #D1D5DB; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F8FAFC">{{ ev.statusLabel }}</button>
-                    <button onclick="{{ ev.onDelete }}" style="height: 36px; padding: 0 14px; background: #FFF; color: #DC2626; border: 1px solid #FCA5A5; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #FEF2F2">刪除</button>
+                    <button onclick="{{ ev.onEdit }}" data-ev-edit="" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F0F6FF">編輯</button>
+                    <button onclick="{{ ev.onRecords }}" data-ev-records="" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F0F6FF">查看紀錄</button>
+                    <button onclick="{{ ev.onToggleStatus }}" data-ev-status="" style="height: 36px; padding: 0 14px; background: #FFF; color: #475569; border: 1px solid #D1D5DB; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F8FAFC">{{ ev.statusLabel }}</button>
+                    <button onclick="{{ ev.onDelete }}" data-ev-delete="" style="height: 36px; padding: 0 14px; background: #FFF; color: #DC2626; border: 1px solid #FCA5A5; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #FEF2F2">刪除</button>
                   </div>
                 </sc-if>
               </div>
@@ -2380,7 +2400,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">
-            v3.10.0 — Offline Exhibition Form
+            v3.11.0 — Offline Exhibition Form
             <sc-if value="{{ swDisabled }}">
               <span data-sw-disabled="" style="display: block; margin-top: 4px; color: #B45309">離線快取已停用，網址加上 ?sw=on 可重新啟用</span>
             </sc-if>
@@ -2754,6 +2774,17 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
       </div>
       <div data-mobile-pad="" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 1.5rem">
         <div style="max-width: 640px; margin: 0 auto">
+          <!-- Edit mode only. 訪談日期 comes from the event page and has no
+               other way in, so a wrong date used to be permanent. -->
+          <sc-if value="{{ showEditVisitDate }}">
+            <div style="margin-bottom: 1.25rem">
+              <label style="display: block; margin-bottom: 8px">
+                <span style="display: block; font-size: var(--fs-h2); font-weight: 700; line-height: 1.25; color: #1A1A2E">Visit Date</span>
+                <span style="display: block; font-size: var(--fs-body); font-weight: 400; color: #64748B; line-height: 1.4; margin-top: 2px">訪談日期</span>
+              </label>
+              <input type="date" data-edit-visit-date="" value="{{ editVisitDate }}" oninput="{{ onEditVisitDate }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none" style-focus="border-color: #0055B8">
+            </div>
+          </sc-if>
           <sc-for list="{{ customerFormFields }}" as="field">
             <div style="margin-bottom: 1.25rem">
               <label style="display: block; margin-bottom: 8px">
@@ -3499,6 +3530,10 @@ class Component extends DCLogic {
     swUpdateReady: false,
     // Record browser (reception's read-and-fix view, distinct from 表單管理).
     browseQuery: '',
+    // Set when 查看紀錄 opened an event from the management list. Returning to
+    // the list has to put manage mode back, or an ended event — visible only in
+    // manage mode — would vanish on the way back.
+    managedEventReturn: false,
     // Searchable-select state, keyed "<store>.<fieldId>" so only one list is
     // open at a time.
     comboOpenId: null, comboQuery: '',
@@ -3509,6 +3544,11 @@ class Component extends DCLogic {
     // records tab or from the browse screen, and it must land back where it
     // came from.
     recordReturnTo: 'admin',
+    // The one staff field an edit may change. 接待人員 and 新舊客戶 record what
+    // was chosen on the event page at the time and stay read-only; the date is
+    // here because it had no correction path at all — a v3.10 timezone bug
+    // could write it a day early and nothing in the app could fix it.
+    editVisitDate: '',
     adminTab: 'customer',
     pin: '0000', deviceName: '',
     gdprEn: 'I consent to the organizer collecting and storing my contact information for the purpose of business follow-up. My data will not be shared with third parties.',
@@ -4224,7 +4264,16 @@ class Component extends DCLogic {
   };
   typeLabel(t) { return this.FIELD_TYPE_LABELS[t] || t; }
 
-  todayStr() { return new Date().toISOString().slice(0, 10); }
+  // A calendar day, taken from the *local* clock. toISOString() converts to UTC
+  // first, so east of UTC it rolls back to the previous day — an event starting
+  // 09/23 offered 09/22 as its first date chip, and that value went straight
+  // into the record. Never build a YYYY-MM-DD out of toISOString().
+  ymd(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+      + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  todayStr() { return this.ymd(new Date()); }
 
   // Any blank `date`-type field gets committed to today's date at submit time
   // (mapFormField already shows today as a live display default; this makes
@@ -4276,7 +4325,7 @@ class Component extends DCLogic {
     const d = new Date(ev.startDate + 'T00:00:00');
     const end = new Date(ev.endDate + 'T00:00:00');
     while (d <= end && out.length <= this.EVENT_DATE_CAP) {
-      out.push(d.toISOString().slice(0, 10));
+      out.push(this.ymd(d));
       d.setDate(d.getDate() + 1);
     }
     return out.length > this.EVENT_DATE_CAP ? [] : out;
@@ -4291,13 +4340,25 @@ class Component extends DCLogic {
     const inRange = ev && today >= ev.startDate && today <= ev.endDate;
     this.setState({ ...defs, ...this.flowResetPatch(), currentEventId: id, screen: 'eventHome',
       sessionGreeters: [], sessionDate: inRange ? today : '', sessionCustomerStatus: '',
-      eventsManageMode: false });
+      eventsManageMode: false, managedEventReturn: false });
+  }
+
+  // 查看紀錄 on a managed event card. Ending an event promises its data and
+  // export stay reachable, but ended events are only listed while manage mode
+  // is unlocked and their cards no longer navigate — so this is the one way in.
+  // It lands on 表單管理's records tab rather than the reception browser
+  // because that is the tab with 匯出 on it. No second PIN: manage mode already
+  // asked for the same one (all three areas share it, see README).
+  async openEventRecords(id) {
+    await this.openEvent(id);
+    this.setState({ screen: 'admin', adminTab: 'records', managedEventReturn: true });
   }
 
   backToEvents() {
     this.setState({ ...this.flowResetPatch(), screen: 'events', currentEventId: null,
       customerFields: [], needsFields: [], companyFields: [], staffFields: [],
-      sessionGreeters: [], sessionDate: '', sessionCustomerStatus: '', eventsManageMode: false });
+      sessionGreeters: [], sessionDate: '', sessionCustomerStatus: '',
+      eventsManageMode: this.state.managedEventReturn, managedEventReturn: false });
   }
 
   openEventEditor(mode, ev) {
@@ -4527,8 +4588,12 @@ class Component extends DCLogic {
       return;
     }
     const vals = this.withPhoneCC(formValues);
+    // A blank box leaves the stored date alone rather than wiping it — clearing
+    // the field is never the intent, and the record has no other date.
+    const visitDate = this.state.editVisitDate;
     const updated = records.map(r => r.id === editingRecordId
       ? { ...r, customerFields: vals, needsFields: { ...needsValues }, companyFields: { ...companyValues },
+          staffFields: { ...r.staffFields, visit_date: visitDate || r.staffFields?.visit_date },
           cardPhoto: this.state.cardPhotoBase64 ?? null }
       : r);
     const rec = updated.find(r => r.id === editingRecordId);
@@ -4982,6 +5047,7 @@ class Component extends DCLogic {
       // saved photo — otherwise re-submitting an edited record would wipe it.
       cardPhotoPreviewSrc: rec.cardPhoto ?? null, cardPhotoBase64: rec.cardPhoto ?? null,
       gdprChecked: true, gdprError: false, selectedCountryCode: cc, editingRecordId: id,
+      editVisitDate: rec.staffFields?.visit_date || '',
       recordReturnTo: returnTo });
   }
 
@@ -5141,6 +5207,10 @@ class Component extends DCLogic {
     // committed value while closed; whatever is in the box on blur becomes the
     // value, which is what lets an off-list country through.
     const comboKey = store + '.' + f.id;
+    // An off-list country typed by hand has no option to pair with, so it shows
+    // exactly as typed.
+    const comboHit = !isSearchSelect ? null : (f.options || []).find(o => o.en === value);
+    const comboDisplay = comboHit ? biOptLabel(comboHit) : value;
     const comboOpen = isSearchSelect && this.state.comboOpenId === comboKey;
     const comboQuery = comboOpen ? this.state.comboQuery : '';
     const q = comboQuery.trim().toLowerCase();
@@ -5171,7 +5241,15 @@ class Component extends DCLogic {
       const raw = values[f.id];
       if (raw == null || raw === '' || (Array.isArray(raw) && raw.length === 0)) return '';
       const shown = this.expandOtherMarkers(raw, f, (key) => values[key]);
-      return Array.isArray(shown) ? shown.join('、') : String(shown);
+      // The searchable select (國籍) hides its option list once closed, so the
+      // summary is the only place the Chinese name can appear. Chip-based
+      // fields already show both languages inside their editor.
+      const bi = (v) => {
+        if (!isSearchSelect) return v;
+        const o = (f.options || []).find(x => x.en === v);
+        return o ? biOptLabel(o) : v;
+      };
+      return Array.isArray(shown) ? shown.map(bi).join('、') : String(bi(shown));
     })() : '';
 
     return { label, labelZh, required: f.required, isText, isTel, isTextarea, isSelect, isCheckboxGroup, isRadioGroup, isRating, isDate,
@@ -5181,7 +5259,11 @@ class Component extends DCLogic {
       summaryText, summaryEmpty: showSummary && !summaryText,
       onOpenValueEditor: () => this.openValueEditor(store, errStore, f.id),
       comboNoMatch: isSearchSelect && comboOpen && comboMatches.length === 0,
-      comboValue: comboOpen ? comboQuery : value,
+      // Closed, the box shows "Taiwan 台灣"; focused, it falls back to the bare
+      // stored value so typing and the blur matcher below keep working on the
+      // canonical text. The Chinese is display only — `en` remains what the
+      // record stores and what the export carries.
+      comboValue: comboOpen ? comboQuery : comboDisplay,
       comboPlaceholder: '搜尋或直接輸入國家名稱',
       onComboFocus: isSearchSelect ? () => this.setState({ comboOpenId: comboKey, comboQuery: value }) : undefined,
       // Every keystroke commits the value, not just blur. Otherwise typing a
@@ -5206,7 +5288,8 @@ class Component extends DCLogic {
           // An exact match in either language snaps to the canonical stored
           // value; anything else stays verbatim so off-list countries work.
           const hit = (f.options || []).find(o =>
-            o.en.toLowerCase() === typed.toLowerCase() || (o.zh || '') === typed);
+            o.en.toLowerCase() === typed.toLowerCase() || (o.zh || '') === typed
+            || biOptLabel(o).toLowerCase() === typed.toLowerCase());
           if (hit) setValue(hit.en);
           this.setState({ comboOpenId: null, comboQuery: '' });
         }, 150);
@@ -5247,6 +5330,7 @@ class Component extends DCLogic {
         meta: `${ev.staff?.length || 0} 位接待人員 ・ ${n} 筆紀錄`,
         onOpen: () => this.openEvent(ev.id),
         onEdit: () => this.openEventEditor('edit', ev),
+        onRecords: () => this.openEventRecords(ev.id),
         statusLabel: ended ? '重新啟用' : '結束活動',
         onToggleStatus: () => this.askConfirm({
           title: ended ? '重新啟用這個活動？' : '結束這個活動？',
@@ -5567,6 +5651,9 @@ class Component extends DCLogic {
       // Customer info form
       customerFormTitle, customerFormTitleZh, customerBackLabel, customerSubmitLabel, customerStepLabel, showStepChip,
       customerFormFields, countryCodes: this.getCountryCodes(),
+      showEditVisitDate: editing,
+      editVisitDate: this.state.editVisitDate,
+      onEditVisitDate: (e) => this.setState({ editVisitDate: e.target.value }),
       // Single-field option editor
       showValueEditor: valueEditorFields.length > 0,
       valueEditorFields,
