@@ -72,6 +72,8 @@ const mkEvent = (id, name) => ({ id, name, startDate: '2026-08-01', endDate: '20
   await page.waitForTimeout(1600);
   await H.enterEvent(page);
 
+  await H.pickCustomerStatus(page);
+
   await page.locator('[data-entry-needs]').click();
   await page.waitForTimeout(600);
   await page.screenshot({ path: path.join(SHOT, '01_needs.png'), fullPage: true });
@@ -204,6 +206,7 @@ const mkEvent = (id, name) => ({ id, name, startDate: '2026-08-01', endDate: '20
   if (await dchips.count()) await dchips.first().click();
   else await page.locator('input[type="date"]').first().fill('2026-08-10');
   await page.waitForTimeout(300);
+  await H.pickCustomerStatus(page);
   await page.locator('[data-entry-needs]').click();
   await page.waitForTimeout(600);
   const aForm = (await page.locator('body').innerText()).replace(/\s+/g, ' ');

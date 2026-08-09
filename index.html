@@ -2380,7 +2380,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">
-            v3.9.0 — Offline Exhibition Form
+            v3.10.0 — Offline Exhibition Form
             <sc-if value="{{ swDisabled }}">
               <span data-sw-disabled="" style="display: block; margin-top: 4px; color: #B45309">離線快取已停用，網址加上 ?sw=on 可重新啟用</span>
             </sc-if>
@@ -2447,6 +2447,22 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             </sc-if>
           </div>
 
+          <div style="margin-bottom: 1.75rem">
+            <div style="font-size: var(--fs-h2); font-weight: 700; color: #1A1A2E; line-height: 1.25">Company Profile</div>
+            <div style="font-size: var(--fs-body); color: #64748B; line-height: 1.4; margin: 2px 0 2px">客戶公司背景</div>
+            <!-- The heading alone does not say what the choice changes, and
+                 picking wrong silently drops a whole form. Spell it out. -->
+            <div style="font-size: var(--fs-sm); color: #94A3B8; line-height: 1.4; margin-bottom: 10px">新客戶需填寫公司背景，舊客戶略過</div>
+            <div data-status-picker="" data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px">
+              <sc-for list="{{ customerStatusItems }}" as="cs">
+                <button onclick="{{ cs.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 0; background: {{ cs.bgColor }}; border-color: {{ cs.borderColor }}; color: {{ cs.textColor }}" style-hover="border-color: #93B4E0">
+                  <span style="font-size: var(--fs-body); font-weight: 600; line-height: 1.35">{{ cs.labelEn }}</span>
+                  <span style="font-size: var(--fs-sm); line-height: 1.35; opacity: 0.72">{{ cs.labelZh }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+
           <sc-if value="{{ showEntryHint }}">
             <div data-entry-hint="" style="background: #FFF7ED; border: 1px solid #FED7AA; color: #C2410C; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; font-size: var(--fs-sm)">{{ entryHint }}</div>
           </sc-if>
@@ -2454,19 +2470,13 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           <div data-home-btns="" style="display: flex; gap: 16px; margin-bottom: 16px">
             <button onclick="{{ onChooseData }}" disabled="{{ entryDisabled }}" data-entry-customer="" style="flex: 1; height: 128px; border: 2px solid #D1D5DB; background: #FFF; border-radius: 14px; cursor: {{ entryCursor }}; opacity: {{ entryOpacity }}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s" style-hover="border-color: #0055B8; background: #F0F6FF" style-active="transform: scale(0.97)">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0055B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-              <span style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E">Customer Info</span>
-              <span style="font-size: var(--fs-sm); color: #64748B">客戶資料填寫</span>
+              <span style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E">Customer Info First</span>
+              <span style="font-size: var(--fs-sm); color: #64748B">從客戶資料開始</span>
             </button>
             <button onclick="{{ onChooseNeeds }}" disabled="{{ entryDisabled }}" data-entry-needs="" style="flex: 1; height: 128px; border: 2px solid #D1D5DB; background: #FFF; border-radius: 14px; cursor: {{ entryCursor }}; opacity: {{ entryOpacity }}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s" style-hover="border-color: #0055B8; background: #F0F6FF" style-active="transform: scale(0.97)">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0055B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-              <span style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E">Customer Needs</span>
-              <span style="font-size: var(--fs-sm); color: #64748B">客戶需求填寫</span>
-            </button>
-            <button onclick="{{ onChooseQuick }}" disabled="{{ entryDisabled }}" data-entry-quick="" style="flex: 1; height: 128px; border: 2px solid #D1D5DB; background: #FFF; border-radius: 14px; cursor: {{ entryCursor }}; opacity: {{ entryOpacity }}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s" style-hover="border-color: #0055B8; background: #F0F6FF" style-active="transform: scale(0.97)">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0055B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-              <span style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E">Quick Entry</span>
-              <span style="font-size: var(--fs-sm); color: #64748B">快速填單</span>
-              <span style="font-size: var(--fs-xs); color: #94A3B8">不含公司背景</span>
+              <span style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E">Customer Needs First</span>
+              <span style="font-size: var(--fs-sm); color: #64748B">從客戶需求開始</span>
             </button>
           </div>
 
@@ -3481,6 +3491,10 @@ class Component extends DCLogic {
     // before either form can be opened, then carried into every record until
     // the user leaves the event or presses 重新選擇.
     sessionGreeters: [], sessionDate: '',
+    // '' | 'New' | 'Existing'. Unlike the staff and date above this is NOT
+    // sticky: the next visitor may be the other kind, and a stale choice would
+    // silently drop (or demand) the Company Profile step. goHome() clears it.
+    sessionCustomerStatus: '',
     showPinDialog: false, pinValue: '', pinError: false, pinPurpose: 'admin',
     swUpdateReady: false,
     // Record browser (reception's read-and-fix view, distinct from 表單管理).
@@ -3644,6 +3658,12 @@ class Component extends DCLogic {
     return [
       { id: 'greeter', nameEn: 'Greeter', nameZh: '接待人員', type: 'radio-group', required: false, isCore: true, order: 0, allowOther: true, options: this.getDefaultStaffList() },
       { id: 'visit_date', nameEn: 'Visit Date', nameZh: '訪談日期', type: 'date', required: false, isCore: true, order: 1, allowOther: false, options: [] },
+      // Chosen on the event page alongside the staff and date, so it carries
+      // source: 'event' like they do — that is what puts it in the export and
+      // marks it read-only in the back office.
+      { id: 'customer_status', nameEn: 'Customer Status', nameZh: '新舊客戶', type: 'radio-group', source: 'event', required: false, isCore: true, order: 2, allowOther: false, options: [
+        { en: 'New', zh: '新客戶' }, { en: 'Existing', zh: '舊客戶' },
+      ]},
     ];
   }
   // Reception staff for a brand-new event, when there is no earlier event to
@@ -3701,11 +3721,11 @@ class Component extends DCLogic {
   dbClear(store) { return new Promise((res, rej) => { const tx = this.db.transaction(store, 'readwrite'); const r = tx.objectStore(store).clear(); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
 
   async loadAllData() {
-    const [pinD, devD, gdprEnD, gdprZhD, mig35D, mig36D, mig38D] = await Promise.all([
+    const [pinD, devD, gdprEnD, gdprZhD, mig35D, mig36D, mig38D, mig310D] = await Promise.all([
       this.dbGet('config','pin'), this.dbGet('config','deviceName'),
       this.dbGet('config','gdprEn'), this.dbGet('config','gdprZh'),
       this.dbGet('config','migratedTo35'), this.dbGet('config','migratedTo36'),
-      this.dbGet('config','migratedTo38'),
+      this.dbGet('config','migratedTo38'), this.dbGet('config','migratedTo310'),
     ]);
     let records = await this.dbGetAll('records');
     let events = await this.dbGetAll('events');
@@ -3727,6 +3747,7 @@ class Component extends DCLogic {
     // harmless, and cheaper than special-casing the order.
     if (!mig36D?.value) await this.resetStaffRosters(events, 'migratedTo36');
     if (!mig38D?.value) await this.migrateTo38(events);
+    if (!mig310D?.value) await this.migrateTo310(events);
 
     this.setState({
       pin: pinD?.value ?? '0000', deviceName: devD?.value ?? defaultDev,
@@ -3830,6 +3851,29 @@ class Component extends DCLogic {
       if (touched) await this.saveFieldDefs(key, next);
     }
     await this.saveConfig('migratedTo38', true);
+  }
+
+  // --- v3.10: 新舊客戶 is recorded per visit, so every event's staffFields
+  //     needs the definition — without it the value written onto new records
+  //     would resolve to nothing in the records list and the export.
+  //     Append-only and existence-checked: an admin cannot create this field
+  //     themselves (it is source: 'event'), but a re-run must not duplicate it.
+  //     Records written before this version simply have no value, which is the
+  //     truth — nobody was asked at the time. ---
+  async migrateTo310(events) {
+    const def = this.getDefaultStaffFields().find(f => f.id === 'customer_status');
+    for (const ev of events) {
+      const key = this.defKey(ev.id, 'staffFields');
+      const row = await this.dbGet('fieldDefinitions', key);
+      if (!row?.value) continue;
+      if (row.value.some(f => f.id === 'customer_status')) continue;
+      // Slotted after visit_date so the reception fields stay together.
+      const idx = row.value.findIndex(f => f.id === 'visit_date');
+      const next = [...row.value];
+      next.splice(idx >= 0 ? idx + 1 : next.length, 0, { ...def });
+      await this.saveFieldDefs(key, next.map((f, i) => ({ ...f, order: i })));
+    }
+    await this.saveConfig('migratedTo310', true);
   }
 
   // Shared by every roster replacement. `flag` is what makes each one run once:
@@ -4246,13 +4290,14 @@ class Component extends DCLogic {
     // range a silent default would misdate the record, so make the user choose.
     const inRange = ev && today >= ev.startDate && today <= ev.endDate;
     this.setState({ ...defs, ...this.flowResetPatch(), currentEventId: id, screen: 'eventHome',
-      sessionGreeters: [], sessionDate: inRange ? today : '', eventsManageMode: false });
+      sessionGreeters: [], sessionDate: inRange ? today : '', sessionCustomerStatus: '',
+      eventsManageMode: false });
   }
 
   backToEvents() {
     this.setState({ ...this.flowResetPatch(), screen: 'events', currentEventId: null,
       customerFields: [], needsFields: [], companyFields: [], staffFields: [],
-      sessionGreeters: [], sessionDate: '', eventsManageMode: false });
+      sessionGreeters: [], sessionDate: '', sessionCustomerStatus: '', eventsManageMode: false });
   }
 
   openEventEditor(mode, ev) {
@@ -4361,14 +4406,20 @@ class Component extends DCLogic {
   // point every path into a form goes through.
   canStartFlow() {
     const ev = this.currentEvent();
-    return !!ev && ev.status !== 'ended' && this.state.sessionGreeters.length > 0 && !!this.state.sessionDate;
+    return !!ev && ev.status !== 'ended' && this.state.sessionGreeters.length > 0
+      && !!this.state.sessionDate && !!this.state.sessionCustomerStatus;
   }
-  startFlow(choice, quickMode = false) {
-    if (!this.canStartFlow()) { this.showToastMsg('請先選擇填單人員與填單日期'); return; }
-    this.setState({ ...this.flowResetPatch(), firstChoice: choice, quickMode,
+  startFlow(choice) {
+    if (!this.canStartFlow()) { this.showToastMsg('請先選擇新舊客戶、填單人員與填單日期'); return; }
+    // Which form comes first is the entry button's job; whether Company
+    // Profile is in the flow at all comes from 新／舊客戶.
+    this.setState({ ...this.flowResetPatch(), firstChoice: choice,
+      quickMode: this.state.sessionCustomerStatus === 'Existing',
       screen: choice === 'data' ? 'customerForm' : 'needsForm' });
   }
-  goHome() { this.setState({ ...this.flowResetPatch(), screen: 'eventHome' }); }
+  // Clearing 新／舊客戶 belongs here rather than in flowResetPatch(), which
+  // startFlow() spreads — that would wipe the choice on the way in.
+  goHome() { this.setState({ ...this.flowResetPatch(), sessionCustomerStatus: '', screen: 'eventHome' }); }
 
   validateGroup(fields, values) {
     const errors = {};
@@ -4409,7 +4460,8 @@ class Component extends DCLogic {
       id: this.genUUID(), timestamp: new Date().toISOString(), device: this.state.deviceName,
       eventId: this.state.currentEventId,
       customerFields: {}, needsFields: {}, companyFields: {},
-      staffFields: { greeter: [...this.state.sessionGreeters], visit_date: this.state.sessionDate },
+      staffFields: { greeter: [...this.state.sessionGreeters], visit_date: this.state.sessionDate,
+        customer_status: this.state.sessionCustomerStatus },
       gdprConsent: false, cardPhoto: null,
       ...patch,
     };
@@ -4432,8 +4484,12 @@ class Component extends DCLogic {
     // a flow is in progress (editRecord preloads it), hence a plain assignment.
     const patch = await this.upsertFlowRecord({ customerFields: vals, gdprConsent: true,
       cardPhoto: this.state.cardPhotoBase64 ?? null });
-    // quickMode skips Company Profile, so customer hands straight to needs.
-    const next = quickMode ? 'needsForm' : (firstChoice === 'data' ? 'companyForm' : 'handoff');
+    // quickMode skips Company Profile, so the two forms hand straight to each
+    // other — but only in the direction firstChoice set. Customer is the last
+    // step when the flow started from needs.
+    const next = quickMode
+      ? (firstChoice === 'data' ? 'needsForm' : 'handoff')
+      : (firstChoice === 'data' ? 'companyForm' : 'handoff');
     this.setState({ ...patch, formValues, formErrors: {}, screen: next });
   }
 
@@ -4443,8 +4499,9 @@ class Component extends DCLogic {
     const errors = this.validateGroup(needsFields, needsValues);
     if (Object.keys(errors).length > 0) { this.setState({ needsValues, needsErrors: errors }); return; }
     const patch = await this.upsertFlowRecord({ needsFields: { ...needsValues } });
-    // In quickMode needs is the last step whichever way round the flow went.
-    const next = quickMode ? 'handoff' : (firstChoice === 'needs' ? 'companyForm' : 'handoff');
+    const next = quickMode
+      ? (firstChoice === 'needs' ? 'customerForm' : 'handoff')
+      : (firstChoice === 'needs' ? 'companyForm' : 'handoff');
     this.setState({ ...patch, needsValues, needsErrors: {}, screen: next });
   }
 
@@ -5163,7 +5220,8 @@ class Component extends DCLogic {
 
   renderVals() {
     const { screen, adminTab, records, editingRecordId, firstChoice } = this.state;
-    const { currentEventId, sessionGreeters, sessionDate, eventsManageMode } = this.state;
+    const { currentEventId, sessionGreeters, sessionDate, sessionCustomerStatus,
+      eventsManageMode } = this.state;
 
     const showEvents = screen === 'events';
     const showEventHome = screen === 'eventHome';
@@ -5226,6 +5284,13 @@ class Component extends DCLogic {
     // Beyond the chip cap the range is too long to lay out as buttons; a plain
     // date input takes over so an unusually long event still works.
     const eventDateMode = dates.length > 0;
+    const customerStatusItems = [
+      { en: 'New Customer', zh: '新客戶', value: 'New' },
+      { en: 'Existing Customer', zh: '舊客戶', value: 'Existing' },
+    ].map(o => ({
+      ...evChip(o.en, o.zh, sessionCustomerStatus === o.value),
+      onClick: () => this.setState({ sessionCustomerStatus: o.value }),
+    }));
     const eventDateItems = dates.map(d => ({
       ...evChip(d.slice(5).replace('-', '/'), d, sessionDate === d),
       onClick: () => this.setState({ sessionDate: d }),
@@ -5240,7 +5305,7 @@ class Component extends DCLogic {
       ? `填單人員：${staffNames.join('、')}　｜　填單日期：${sessionDate}`
       : '';
     const entryHint = eventEnded ? '此活動已結束，無法填寫新表單'
-      : (canStart ? '' : '請先選擇填單人員與填單日期');
+      : (canStart ? '' : '請先選擇新舊客戶、填單人員與填單日期');
 
     const mkTab = (id, label) => ({
       label, onClick: () => this.setState({ adminTab: id }),
@@ -5263,11 +5328,17 @@ class Component extends DCLogic {
     // quickMode is two steps and always customer → needs, so its labels do not
     // go through the firstChoice reasoning above.
     const quick = this.state.quickMode;
+    // Both the 2-step and 3-step flows read off firstChoice: whichever form
+    // started the flow is step 1 and shows Next; the other is last and shows
+    // Finish. An earlier version hard-coded customer as quickMode's step 1,
+    // which was true only while 快速填單 was the single way in.
+    const lastStep = quick ? '2 / 2' : '3 / 3';
+    const firstIs = (which) => firstChoice === which;
     const customerSubmitLabel = editing ? 'Save 儲存'
-      : (quick ? 'Next 下一步 →' : (firstChoice === 'needs' ? 'Finish 完成' : 'Next 下一步 →'));
-    const customerStepLabel = quick ? '1 / 2' : (firstChoice === 'data' ? '1 / 3' : '3 / 3');
-    const needsSubmitLabel = quick ? 'Finish 完成' : (firstChoice === 'data' ? 'Finish 完成' : 'Next 下一步 →');
-    const needsStepLabel = quick ? '2 / 2' : (firstChoice === 'needs' ? '1 / 3' : '3 / 3');
+      : (firstIs('data') ? 'Next 下一步 →' : 'Finish 完成');
+    const customerStepLabel = firstIs('data') ? (quick ? '1 / 2' : '1 / 3') : lastStep;
+    const needsSubmitLabel = firstIs('needs') ? 'Next 下一步 →' : 'Finish 完成';
+    const needsStepLabel = firstIs('needs') ? (quick ? '1 / 2' : '1 / 3') : lastStep;
     const needsBackLabel = '← Back 返回';
     const companySubmitLabel = 'Next 下一步 →';
     const companyStepLabel = '2 / 3';
@@ -5470,16 +5541,16 @@ class Component extends DCLogic {
       eventStaffItems, eventDateItems, eventDateMode, eventDateNoChips: !eventDateMode,
       eventDateValue: sessionDate,
       onEventDateInput: (e) => this.setState({ sessionDate: e.target.value }),
+      customerStatusItems,
       canStart, entryDisabled: !canStart, entryHint, showEntryHint: !!entryHint,
       entryOpacity: canStart ? '1' : '0.45',
       entryCursor: canStart ? 'pointer' : 'not-allowed',
       hasSession, sessionBanner,
-      onResetSession: () => this.setState({ sessionGreeters: [], sessionDate: '' }),
+      onResetSession: () => this.setState({ sessionGreeters: [], sessionDate: '', sessionCustomerStatus: '' }),
       onBackToEvents: () => this.backToEvents(),
       onOpenPinDialog: () => this.setState({ showPinDialog: true, pinPurpose: 'admin', pinValue: '', pinError: false }),
       onChooseData: () => this.startFlow('data'),
       onChooseNeeds: () => this.startFlow('needs'),
-      onChooseQuick: () => this.startFlow('data', true),
       onOpenBrowse: () => this.setState({ showPinDialog: true, pinPurpose: 'browse', pinValue: '', pinError: false }),
       // Record browser
       showBrowse, browseRows,
@@ -5509,17 +5580,17 @@ class Component extends DCLogic {
       onCustomerSubmit: () => this.submitCustomerForm(),
       onCustomerBack: () => {
         if (editingRecordId) { this.setState({ ...this.flowResetPatch(), ...this.afterRecordEditPatch() }); }
-        else if (firstChoice === 'needs') { this.setState({ screen: 'companyForm' }); }
-        else { this.goHome(); }
+        else if (firstChoice === 'data') { this.goHome(); }
+        else { this.setState({ screen: this.state.quickMode ? 'needsForm' : 'companyForm' }); }
       },
       // Needs form
       needsFormFields, needsSubmitLabel, needsStepLabel, needsBackLabel,
       onNeedsSubmit: () => this.submitNeedsForm(),
       onNeedsBack: () => {
-        // quickMode has no company step to go back through.
-        if (this.state.quickMode) { this.setState({ screen: 'customerForm' }); }
-        else if (firstChoice === 'data') { this.setState({ screen: 'companyForm' }); }
-        else { this.goHome(); }
+        // Step 1 goes home; step 2 goes back to whatever preceded it, which in
+        // quickMode is the other form rather than Company Profile.
+        if (firstChoice === 'needs') { this.goHome(); }
+        else { this.setState({ screen: this.state.quickMode ? 'customerForm' : 'companyForm' }); }
       },
       // Company Profile form (always step 2; back goes to whichever of
       // customer/needs was completed first)

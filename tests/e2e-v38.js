@@ -77,10 +77,14 @@ const ROSTER_ZH = ['蘇秋菊', '黃柏儒', '陳誌翔', '鄭淑卿', '顏耀�
   await page.waitForTimeout(600);
   assert((await page.locator('[data-gear-admin]').innerText()).includes('表單管理'),
     '活動內頁的齒輪標示「表單管理」');
-  assert((await page.locator('[data-entry-quick]').count()) === 1, '出現快速填單入口');
+  assert((await page.locator('[data-entry-quick]').count()) === 0,
+    'v3.10 移除了「快速填單」按鈕，改由新／舊客戶決定是否含公司背景');
   assert((await page.locator('[data-open-browse]').count()) === 1, '出現客戶資料紀錄入口');
 
-  // ---- 5. quick entry: two steps, no company page ----
+  // ---- 5. skipping Company Profile: 舊客戶 + 從客戶資料開始 ----
+  // Was the v3.8 「快速填單」button; v3.10 reaches the same flow through the
+  // 新／舊客戶 gate. The behaviour under test is unchanged: two steps, no
+  // Company Profile, empty companyFields.
   await page.locator('[data-staff-picker] button').first().click();
   await page.waitForTimeout(150);
   const chips = page.locator('[data-date-picker] button');
@@ -88,10 +92,11 @@ const ROSTER_ZH = ['蘇秋菊', '黃柏儒', '陳誌翔', '鄭淑卿', '顏耀�
   else await page.locator('input[type="date"]').first().fill('2026-08-06');
   await page.waitForTimeout(250);
 
-  await page.locator('[data-entry-quick]').click();
+  await H.pickCustomerStatus(page, 'Existing');
+  await page.locator('[data-entry-customer]').click();
   await page.waitForTimeout(600);
   let body = await page.locator('body').innerText();
-  assert(body.includes('1 / 2'), '快速填單第一步顯示 1 / 2：' + (body.match(/\d \/ \d/) || ['(無)'])[0]);
+  assert(body.includes('1 / 2'), '舊客戶第一步顯示 1 / 2：' + (body.match(/\d \/ \d/) || ['(無)'])[0]);
 
   await page.locator('input[placeholder^="Enter Name"]').first().fill('快速客戶');
   await page.locator('input[placeholder^="Enter Company"]').first().fill('快速公司');
@@ -113,20 +118,23 @@ const ROSTER_ZH = ['蘇秋菊', '黃柏儒', '陳誌翔', '鄭淑卿', '顏耀�
   body = await page.locator('body').innerText();
   assert(body.includes('2 / 2'), '第二步顯示 2 / 2');
   assert(!body.includes('Company Profile') && !body.includes('公司背景'),
-    '快速填單完全沒有經過公司背景頁');
+    '舊客戶完全沒有經過公司背景頁');
   await page.getByRole('button', { name: /Finish 完成/ }).click();
   await page.waitForTimeout(800);
 
   const quickRec = (await H.readAll(page, 'records'))[0];
-  assert(quickRec.customerFields.name === '快速客戶', '快速填單有寫入紀錄');
+  assert(quickRec.customerFields.name === '快速客戶', '舊客戶流程有寫入紀錄');
+  assert(quickRec.staffFields.customer_status === 'Existing',
+    '紀錄標記為舊客戶：' + quickRec.staffFields.customer_status);
   assert(Object.keys(quickRec.companyFields || {}).length === 0,
-    '快速填單的公司背景為空：' + JSON.stringify(quickRec.companyFields));
+    '舊客戶的公司背景為空：' + JSON.stringify(quickRec.companyFields));
   assert(quickRec.customerFields.nationality === 'Germany',
     '國籍存的是英文國名：' + quickRec.customerFields.nationality);
 
   // ---- 6. the normal flow still has all three steps ----
   await page.getByRole('button', { name: /完成，返回|Done/ }).first().click().catch(() => {});
   await page.waitForTimeout(600);
+  await H.pickCustomerStatus(page);
   await page.locator('[data-entry-customer]').click();
   await page.waitForTimeout(500);
   body = await page.locator('body').innerText();

@@ -25,6 +25,7 @@ const TABS = ['客戶資料欄位', '客戶需求欄位', '公司背景欄位', 
   await page.waitForTimeout(1600);
   await H.enterEvent(page);
   // One record, so the Records tab actually renders its table.
+  await H.pickCustomerStatus(page);
   await page.locator('[data-entry-customer]').click();
   await page.waitForTimeout(500);
   await H.runFlow(page, { name: '王小明', company: '永盛國際貿易股份有限公司台中分公司' });

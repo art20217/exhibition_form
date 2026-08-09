@@ -74,6 +74,8 @@ fs.mkdirSync(SHOT, { recursive: true });
     screens.push(['活動內頁', await headerProbe()]);
     await page.screenshot({ path: path.join(SHOT, `hdr_${w}_eventhome.png`) });
 
+    await H.pickCustomerStatus(page);
+
     await page.locator('[data-entry-customer]').click();
     await page.waitForTimeout(450);
     screens.push(['客戶資料', await headerProbe()]);
@@ -103,6 +105,7 @@ fs.mkdirSync(SHOT, { recursive: true });
   await page.goto('http://localhost:8946/');
   await page.waitForTimeout(1200);
   await H.enterEvent(page);
+  await H.pickCustomerStatus(page);
   await page.locator('[data-entry-needs]').click();
   await page.waitForTimeout(500);
   await page.screenshot({ path: path.join(SHOT, 'scale_needs.png'), fullPage: true });

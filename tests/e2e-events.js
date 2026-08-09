@@ -104,7 +104,13 @@ const BASE = 'http://localhost:8952';
   await page.locator('[data-date-picker] button').nth(1).click();   // 08/06
   await page.waitForTimeout(250);
   g = await entryDisabled();
-  assert(!g.cust && !g.needs && g.hint === '', '人員與日期都選好後兩個入口才開放');
+  // v3.10 added a third gate: 新／舊客戶 decides whether Company Profile is in
+  // the flow, so the entries stay shut until it is answered too.
+  assert(g.cust && g.needs, '人員與日期都選了、但還沒選新舊客戶時仍停用');
+
+  await H.pickCustomerStatus(page, 'New');
+  g = await entryDisabled();
+  assert(!g.cust && !g.needs && g.hint === '', '三項都選好後兩個入口才開放');
 
   // …and the reverse order: date without a name is equally blocked.
   await page.getByRole('button', { name: '重新選擇' }).click();
@@ -120,10 +126,15 @@ const BASE = 'http://localhost:8952';
   // ---- 5. multi-select: add a second name, then run the flow ----
   await page.locator('[data-staff-picker] button').nth(1).click();
   await page.waitForTimeout(250);
+  // 重新選擇 above cleared 新／舊客戶 along with the rest of the session, which
+  // is the point of it — pick again before the entries will open.
+  await H.pickCustomerStatus(page, 'New');
   const banner = await page.locator('[data-session-banner]').innerText();
   assert(banner.includes('填單人員') && banner.includes('、') && banner.includes('2026-08-06'),
     '橫幅顯示複選的兩位人員與日期：' + banner.replace(/\n/g, ' '));
   await page.screenshot({ path: path.join(SHOT, '02_gate_open.png'), fullPage: true });
+
+  await H.pickCustomerStatus(page);
 
   await page.locator('[data-entry-customer]').click();
   await page.waitForTimeout(600);
@@ -145,8 +156,14 @@ const BASE = 'http://localhost:8952';
   await page.waitForTimeout(600);
   const banner2 = await page.locator('[data-session-banner]').innerText();
   assert(banner2.includes('2026-08-06') && banner2.includes('、'), '填完回到活動頁，人員與日期仍保留');
+  // v3.10: the two sticky answers stay, but 新／舊客戶 does not — the next
+  // visitor may be the other kind, and carrying it over would silently add or
+  // drop the Company Profile step.
   g = await entryDisabled();
-  assert(!g.cust, '保留的選擇讓入口維持開放，下一位客戶可直接開始');
+  assert(g.cust && g.needs, '填完一筆後新舊客戶已重置，入口重新停用');
+  await H.pickCustomerStatus(page, 'New');
+  g = await entryDisabled();
+  assert(!g.cust && !g.needs, '重選新舊客戶後即可接待下一位，人員與日期不必重選');
   await page.getByRole('button', { name: '重新選擇' }).click();
   await page.waitForTimeout(300);
   g = await entryDisabled();
@@ -219,6 +236,7 @@ const BASE = 'http://localhost:8952';
   await page.locator('[data-staff-picker] button').first().click();
   await page.locator('[data-date-picker] button').first().click();
   await page.waitForTimeout(300);
+  await H.pickCustomerStatus(page);
   await page.locator('[data-entry-customer]').click();
   await page.waitForTimeout(600);
   await H.runFlow(page, { name: 'Hans Müller', company: 'Bayer GmbH' });

@@ -76,7 +76,10 @@ const wipeDB = (page) => page.evaluate(() => new Promise((res, rej) => {
 
 // Opens the first event and selects the first staff member plus the first date,
 // leaving the page on the event home with both form entries enabled.
-async function enterEvent(page, { staffIndex = 0 } = {}) {
+// `customerStatus` picks 新客戶 / 舊客戶, the v3.10 gate that decides whether
+// Company Profile is part of the flow. Defaults to 'New' — the three-step flow
+// every suite written before v3.10 expects.
+async function enterEvent(page, { staffIndex = 0, customerStatus = 'New' } = {}) {
   await page.locator('[data-event-card] button').first().click();
   await page.waitForTimeout(500);
   await page.locator('[data-staff-picker] button').nth(staffIndex).click();
@@ -84,6 +87,14 @@ async function enterEvent(page, { staffIndex = 0 } = {}) {
   const chips = page.locator('[data-date-picker] button');
   if (await chips.count()) { await chips.first().click(); }
   else { await page.locator('input[type="date"]').first().fill('2026-08-06'); }
+  await page.waitForTimeout(150);
+  await pickCustomerStatus(page, customerStatus);
+}
+
+// Separate from enterEvent because the choice resets after every record, so a
+// suite filling a second form has to pick it again without re-entering.
+async function pickCustomerStatus(page, status = 'New') {
+  await page.locator('[data-status-picker] button').nth(status === 'Existing' ? 1 : 0).click();
   await page.waitForTimeout(250);
 }
 
@@ -169,5 +180,5 @@ const writeDefs = (page, group, fields) => page.evaluate(([g, v]) => new Promise
   };
 }), [group, fields]);
 
-module.exports = { APP_HTML, launchBrowser, serve, wipeDB, enterEvent, gotoEvent, openAdmin,
+module.exports = { APP_HTML, launchBrowser, serve, wipeDB, enterEvent, pickCustomerStatus, gotoEvent, openAdmin,
   unlockManage, runFlow, readAll, readDefs, writeDefs };

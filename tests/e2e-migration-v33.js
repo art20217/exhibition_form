@@ -117,13 +117,21 @@ fs.mkdirSync(SHOT_DIR, { recursive: true });
   assert(t.includes('後台自訂機型'), '感興趣產品的後台自訂選項未被覆蓋');
   assert(!t.includes('潛力評級'), '潛力評級標籤已不存在');
 
-  // --- staff page trimmed to the two reception fields ---
+  // --- the five moved fields are gone from the staff group ---
   // v3.5 removed the 業務備註欄位 tab (reception is configured on the event), so
   // the v3.3 migration's outcome is checked against the stored definitions.
-  const staffDefs = await H.readDefs(page, 'staffFields');
-  assert(staffDefs.length === 2, `業務備註欄位只剩 2 個（實際 ${staffDefs.length}）`);
-  t = staffDefs.map(f => f.nameZh + ' ' + f.nameEn).join('\n');
-  assert(t.includes('接待人員') && t.includes('訪談日期'), '業務欄位保留接待人員與訪談日期');
+  //
+  // Asserted by field id, not by count: what v3.3 promises is that the five
+  // evaluation fields *left* this group, not that the group has exactly two
+  // entries. Later versions legitimately add reception fields here (v3.10 added
+  // customer_status), and a count assertion would fail on those without any
+  // v3.3 behaviour having changed.
+  const staffIds = (await H.readDefs(page, 'staffFields')).map(f => f.id);
+  const MOVED = ['nationality', 'language', 'potential', 'product_interest', 'notes'];
+  const stillHere = MOVED.filter(id => staffIds.includes(id));
+  assert(stillHere.length === 0, `五個評估欄位都已搬離業務群組（仍留下：${stillHere.join(',') || '無'}）`);
+  assert(staffIds.includes('greeter') && staffIds.includes('visit_date'),
+    `業務欄位保留接待人員與訪談日期（實際 ${staffIds.join(',')}）`);
 
   // --- old record's values still resolve through the staffFields fallback ---
   await page.getByRole('button', { name: '資料紀錄' }).click();
@@ -162,7 +170,9 @@ fs.mkdirSync(SHOT_DIR, { recursive: true });
   await page.waitForTimeout(300);
   const order2 = (await page.locator('[data-field-row]').allInnerTexts()).map(x => x.split('\n')[0]);
   assert(order2.length === 4, `重新載入後需求欄位仍是 4 個、沒有重複搬移（實際 ${order2.length}）`);
-  assert((await H.readDefs(page, 'staffFields')).length === 2, '重新載入後業務備註欄位仍是 2 個');
+  const staffIds2 = (await H.readDefs(page, 'staffFields')).map(f => f.id);
+  assert(MOVED.every(id => !staffIds2.includes(id)),
+    `重新載入後五個評估欄位沒有被搬回業務群組（實際 ${staffIds2.join(',')}）`);
 
   console.log(fails ? `MIGRATION FAILED (${fails})` : 'MIGRATION PASSED');
   await browser.close();

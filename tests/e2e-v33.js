@@ -55,6 +55,7 @@ const fieldBlock = (page, labelText) => page.locator('label', { hasText: labelTe
   await H.enterEvent(page);
 
   // ===== 3. + 4. field relocation, walking the full flow =====
+  await H.pickCustomerStatus(page);
   await page.locator('[data-entry-customer]').click();
   await page.waitForTimeout(400);
   await shot(page, 'customer-form');

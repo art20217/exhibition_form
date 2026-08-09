@@ -14,6 +14,9 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 
 ## 這一版有什麼新東西
 
+**v3.10.0** — 填單入口改為先選「新客戶／舊客戶」再選「從客戶資料開始／從客戶需求開始」；
+移除「快速填單」。舊客戶跳過公司背景，新舊客戶會寫進紀錄並可匯出。
+
 **v3.9.0** — 編輯紀錄時，選項類欄位改為只顯示已選中的值，每個欄位附一個「編輯」鈕開啟
 彈窗修改；客戶填單流程不受影響。
 
@@ -63,20 +66,20 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 - 真正的 `<x-dc>` 模板元素之前，檔案中不可出現字面上的 x-dc 開頭標籤序列（dc-runtime 以第一個出現位置定位模板）。
 - 選項的 `en` 是**紀錄實際儲存的值**，`zh` 只用於顯示。要改 `en` 就必須同步改寫已蒐集紀錄中的值（見 `loadAllData` 中的 `VALUE_RENAMES`），否則舊答案會對不上選項；只改中文標籤則用 `labelFixes`，以「原值」比對，後台已自訂過的標籤不會被覆蓋。
 - `state` 的 `customerFields` / `needsFields` / `companyFields` / `staffFields` 永遠是**目前開啟活動**的定義，所以表單、後台、匯出等讀取端不需要知道活動的存在；只有存取 IndexedDB 的那一層（`saveEventDefs` / `loadEventDefs` / `defKey`）需要帶活動前綴。
-- 欄位若標記 `source: 'event'`（接待人員、訪談日期），代表其內容由活動頁供應。v3.5 移除了業務備註頁與該頁籤，這兩個欄位不再有任何編輯介面——但**定義刻意保留**，因為資料紀錄的「接待人員」欄與匯出欄位都靠它們解析。
+- 欄位若標記 `source: 'event'`（接待人員、訪談日期、新舊客戶），代表其內容由活動頁供應。v3.5 移除了業務備註頁與該頁籤，這兩個欄位不再有任何編輯介面——但**定義刻意保留**，因為資料紀錄的「接待人員」欄與匯出欄位都靠它們解析。
 
 ### 測試
 
 ```bash
 npm ci
 npx playwright-core install chromium   # 首次執行才需要
-npm test                               # 18 支套件，約 4.5 分鐘
+npm test                               # 20 支套件，約 5.5 分鐘
 npm test -- pin-mobile events          # 只跑名稱含這些字串的套件
 ```
 
 每次 push 與 PR 由 `.github/workflows/test.yml` 自動執行；失敗時截圖會上傳為 artifact。
 
-套件依序執行，不能平行——每支各自起 HTTP server 並清空同一個 IndexedDB。涵蓋範圍包含完整填單流程、後台各頁籤、版面尺寸、資料紀錄欄位、匯出內容，以及 **v2 → v3.8 的每一段遷移**（各自植入該版本形狀的資料庫再驗證結果）。
+套件依序執行，不能平行——每支各自起 HTTP server 並清空同一個 IndexedDB。涵蓋範圍包含完整填單流程、後台各頁籤、版面尺寸、資料紀錄欄位、匯出內容，以及 **v2 → v3.10 的每一段遷移**（各自植入該版本形狀的資料庫再驗證結果）。
 
 寫測試前請先讀下面的**踩雷筆記**，其中兩則直接關於測試怎麼寫才抓得到問題。
 
@@ -141,7 +144,7 @@ exhibition_form/
 ├── tests/                  # 端到端測試（Playwright 驅動 headless Chromium）
 │   ├── helpers.js          #   共用導覽、IndexedDB 讀寫、瀏覽器啟動
 │   ├── run-all.js          #   依序執行全部套件的 runner
-│   └── e2e-*.js            #   18 支套件
+│   └── e2e-*.js            #   20 支套件
 ├── .github/workflows/      # CI：每次 push 與 PR 跑完整測試
 ├── docs/wiki/              # Wiki 頁面的原始檔（正本在 GitHub Wiki，見下方說明）
 ├── package.json
