@@ -130,24 +130,35 @@ fs.mkdirSync(SHOT, { recursive: true });
   assert(has('Tien Kang') && has('US$10,000,000 以上'), '匯出帶出的是改名後的新值');
   assert(!has('Tiangang') && !has('US$100,000,001 and above'), '匯出不再出現舊值');
 
-  // Editing renders customer + needs + company as one combined form.
+  // Editing renders customer + needs + company as one combined form. As of
+  // v3.9 the option fields there are collapsed to their chosen values, so the
+  // renamed values are read off the summary rows rather than off chip borders.
   await page.getByRole('button', { name: '編輯' }).first().click();
   await page.waitForTimeout(800);
   await page.screenshot({ path: path.join(SHOT, '02_edit-company.png'), fullPage: true });
-  const checked = await page.locator('label, button').evaluateAll(els => els
-    .filter(el => getComputedStyle(el).borderColor === 'rgb(0, 85, 184)')
-    .map(el => el.innerText.trim()));
-  assert(checked.some(t => t.startsWith('Tien Kang')), '編輯時「Tien Kang 天崗」仍是勾選狀態');
-  assert(checked.some(t => t.includes('US$10,000,000 以上')), '編輯時營業額仍是選取狀態');
-  assert(checked.some(t => t.startsWith('Shoe Material Supplier')), '編輯時公司型態仍是選取狀態');
+  const summaryFor = (label) => page.locator('label', { hasText: label }).locator('xpath=..')
+    .locator('[data-summary-value]').first().innerText();
+  assert((await summaryFor('Machines Used')).includes('Tien Kang'),
+    '編輯時「Tien Kang 天崗」仍是已選中的值');
+  assert((await summaryFor('Revenue')).includes('US$10,000,000 以上'),
+    '編輯時營業額仍是已選中的值');
+  assert((await summaryFor('Company Type')).includes('Shoe Material Supplier'),
+    '編輯時公司型態仍是已選中的值');
 
-  // Revenue chips must read exactly the three bands — no doubled label.
-  const revChips = await page.locator('label', { hasText: 'Revenue' }).locator('xpath=..')
-    .locator('button').allInnerTexts();
-  const revClean = revChips.map(t => t.replace(/\s+/g, ' ').trim());
+  // Revenue's three bands must each render their label once — the doubled-label
+  // bug this guards against is about chip rendering, so open the field's modal
+  // where the chips actually live.
+  await page.locator('label', { hasText: 'Revenue' }).locator('xpath=..')
+    .locator('[data-edit-field]').first().click();
+  await page.waitForTimeout(400);
+  const revChips = await page.locator('[data-value-editor] button').allInnerTexts();
+  const revClean = revChips.map(t => t.replace(/\s+/g, ' ').trim())
+    .filter(t => t && t !== '取消' && t !== '完成');
   assert(JSON.stringify(revClean) === JSON.stringify(
     ['US$5,000,000 以下', 'US$5,000,000 - 10,000,000', 'US$10,000,000 以上']),
     '營業額三個選項各只顯示一次標籤：' + JSON.stringify(revClean));
+  await page.locator('[data-ve-cancel]').click();
+  await page.waitForTimeout(300);
 
   // Second load is a no-op
   await page.goto('http://localhost:8942/');
