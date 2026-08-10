@@ -2400,7 +2400,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">
-            v3.11.0 — Offline Exhibition Form
+            v3.12.0 — Offline Exhibition Form
             <sc-if value="{{ swDisabled }}">
               <span data-sw-disabled="" style="display: block; margin-top: 4px; color: #B45309">離線快取已停用，網址加上 ?sw=on 可重新啟用</span>
             </sc-if>
@@ -3512,8 +3512,9 @@ class Component extends DCLogic {
 
   state = {
     screen: 'events',
-    // Events. `state.records` always holds *every* record (the event list shows
-    // a per-event count); anything scoped to the open event filters by eventId.
+    // Events. `state.records` always holds *every* record, **including v3.12
+    // tombstones** — read it through liveRecords() / eventRecords(), never
+    // directly, or deleted rows leak back into the list and the export.
     events: [], currentEventId: null,
     eventsManageMode: false,        // unlocked by PIN on the event list
     showEventEditor: false, eventEditorMode: 'add', editingEventId: null,
@@ -3550,7 +3551,9 @@ class Component extends DCLogic {
     // could write it a day early and nothing in the app could fix it.
     editVisitDate: '',
     adminTab: 'customer',
-    pin: '0000', deviceName: '',
+    // deviceName is the human label shown in exports; deviceId is the sync
+    // identity (see loadAllData). They are deliberately not the same thing.
+    pin: '0000', deviceName: '', deviceId: '',
     gdprEn: 'I consent to the organizer collecting and storing my contact information for the purpose of business follow-up. My data will not be shared with third parties.',
     gdprZh: '本人同意主辦單位蒐集並儲存本人之聯絡資訊，用於後續商業聯繫。本人資料不會提供予第三方。',
     customerFields: [], needsFields: [], companyFields: [], staffFields: [],
@@ -3761,11 +3764,12 @@ class Component extends DCLogic {
   dbClear(store) { return new Promise((res, rej) => { const tx = this.db.transaction(store, 'readwrite'); const r = tx.objectStore(store).clear(); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
 
   async loadAllData() {
-    const [pinD, devD, gdprEnD, gdprZhD, mig35D, mig36D, mig38D, mig310D] = await Promise.all([
-      this.dbGet('config','pin'), this.dbGet('config','deviceName'),
+    const [pinD, devD, devIdD, gdprEnD, gdprZhD, mig35D, mig36D, mig38D, mig310D, mig312D] = await Promise.all([
+      this.dbGet('config','pin'), this.dbGet('config','deviceName'), this.dbGet('config','deviceId'),
       this.dbGet('config','gdprEn'), this.dbGet('config','gdprZh'),
       this.dbGet('config','migratedTo35'), this.dbGet('config','migratedTo36'),
       this.dbGet('config','migratedTo38'), this.dbGet('config','migratedTo310'),
+      this.dbGet('config','migratedTo312'),
     ]);
     let records = await this.dbGetAll('records');
     let events = await this.dbGetAll('events');
@@ -3788,14 +3792,37 @@ class Component extends DCLogic {
     if (!mig36D?.value) await this.resetStaffRosters(events, 'migratedTo36');
     if (!mig38D?.value) await this.migrateTo38(events);
     if (!mig310D?.value) await this.migrateTo310(events);
+    if (!mig312D?.value) records = await this.migrateTo312(records);
+
+    // The sync identity of this install. Distinct from deviceName, which is a
+    // human label anyone can retype or blank out in 系統設定 — it can even be
+    // identical on two tablets. Generated once and never shown in the UI.
+    const deviceId = devIdD?.value || this.genUUID();
+    if (!devIdD) await this.dbPut('config', { key: 'deviceId', value: deviceId });
 
     this.setState({
-      pin: pinD?.value ?? '0000', deviceName: devD?.value ?? defaultDev,
+      pin: pinD?.value ?? '0000', deviceName: devD?.value ?? defaultDev, deviceId,
       gdprEn: gdprEnD?.value ?? this.state.gdprEn, gdprZh: gdprZhD?.value ?? this.state.gdprZh,
       events: this.sortEvents(events),
       records: records.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)),
     });
     if (!devD) await this.dbPut('config', { key: 'deviceName', value: defaultDev });
+  }
+
+  // v3.12: every record needs a modification time before sync can decide which
+  // copy of a row is newer. Existing records only know when they were created,
+  // and that is the honest answer — a later timestamp would be invented, and
+  // inventing one biases every future conflict in this device's favour.
+  async migrateTo312(records) {
+    const out = [];
+    for (const r of records) {
+      if (r.updatedAt) { out.push(r); continue; }
+      const patched = { ...r, updatedAt: r.timestamp };
+      await this.dbPut('records', patched);
+      out.push(patched);
+    }
+    await this.dbPut('config', { key: 'migratedTo312', value: true });
+    return out;
   }
 
   // Newest first, so the event most likely to be in use sits at the top.
@@ -4308,7 +4335,31 @@ class Component extends DCLogic {
   // ===== EVENTS =====
   currentEvent() { return this.state.events.find(e => e.id === this.state.currentEventId) || null; }
 
-  eventRecords(eventId) { return this.state.records.filter(r => r.eventId === eventId); }
+  // v3.12: deletes became tombstones so sync can tell "removed here" apart from
+  // "not received there yet". Nothing user-facing may read `state.records`
+  // directly any more — the two helpers below are the only supported readers,
+  // and the failure mode they exist to prevent is a deleted record reappearing
+  // in the export.
+  liveRecords() { return this.state.records.filter(r => !r.deletedAt); }
+
+  eventRecords(eventId) { return this.liveRecords().filter(r => r.eventId === eventId); }
+
+  // Marks rows deleted, writes them back, and returns the new records array.
+  // The tombstone keeps `id`, `eventId` and `updatedAt`; every other field is
+  // dropped, because a deleted record has no business still holding a visitor's
+  // name, phone number and card photo on the tablet.
+  async tombstone(rows) {
+    const now = new Date().toISOString();
+    const ids = new Set(rows.map(r => r.id));
+    for (const r of rows) {
+      await this.dbPut('records', { id: r.id, eventId: r.eventId, deviceId: r.deviceId ?? null,
+        timestamp: r.timestamp, updatedAt: now, deletedAt: now });
+    }
+    return this.state.records.map(r => ids.has(r.id)
+      ? { id: r.id, eventId: r.eventId, deviceId: r.deviceId ?? null,
+          timestamp: r.timestamp, updatedAt: now, deletedAt: now }
+      : r);
+  }
 
   dateRangeLabel(ev) {
     if (!ev) return '';
@@ -4430,12 +4481,13 @@ class Component extends DCLogic {
   }
 
   async deleteEvent(id) {
-    const doomed = this.state.records.filter(r => r.eventId === id);
-    for (const r of doomed) await this.dbDelete('records', r.id);
+    // The records leave tombstones; the event and its field definitions are
+    // removed outright. Only records sync in the first implementation, so an
+    // event row has nothing to tell a server about (see docs/sync-contract.md).
+    const records = await this.tombstone(this.eventRecords(id));
     for (const g of this.DEF_GROUPS) await this.dbDelete('fieldDefinitions', this.defKey(id, g));
     await this.dbDelete('events', id);
-    this.setState({ events: this.state.events.filter(e => e.id !== id),
-      records: this.state.records.filter(r => r.eventId !== id) });
+    this.setState({ events: this.state.events.filter(e => e.id !== id), records });
     this.showToastMsg('活動已刪除');
   }
 
@@ -4508,8 +4560,9 @@ class Component extends DCLogic {
 
   async upsertFlowRecord(patch) {
     const { currentRecordId, records } = this.state;
+    const now = new Date().toISOString();
     if (currentRecordId) {
-      const updated = records.map(r => r.id === currentRecordId ? { ...r, ...patch } : r);
+      const updated = records.map(r => r.id === currentRecordId ? { ...r, ...patch, updatedAt: now } : r);
       const rec = updated.find(r => r.id === currentRecordId);
       if (rec) await this.dbPut('records', rec);
       return { records: updated, currentRecordId };
@@ -4518,7 +4571,11 @@ class Component extends DCLogic {
     // record comes into existence, so a flow abandoned midway still carries who
     // was at the table and on which day.
     const record = {
-      id: this.genUUID(), timestamp: new Date().toISOString(), device: this.state.deviceName,
+      // `timestamp` stays the creation time and keeps its existing meaning
+      // (exports and the record list sort by it). `updatedAt` is what sync
+      // compares; they are equal until the first edit.
+      id: this.genUUID(), timestamp: now, updatedAt: now, deletedAt: null,
+      device: this.state.deviceName, deviceId: this.state.deviceId,
       eventId: this.state.currentEventId,
       customerFields: {}, needsFields: {}, companyFields: {},
       staffFields: { greeter: [...this.state.sessionGreeters], visit_date: this.state.sessionDate,
@@ -4594,7 +4651,8 @@ class Component extends DCLogic {
     const updated = records.map(r => r.id === editingRecordId
       ? { ...r, customerFields: vals, needsFields: { ...needsValues }, companyFields: { ...companyValues },
           staffFields: { ...r.staffFields, visit_date: visitDate || r.staffFields?.visit_date },
-          cardPhoto: this.state.cardPhotoBase64 ?? null }
+          cardPhoto: this.state.cardPhotoBase64 ?? null,
+          updatedAt: new Date().toISOString() }
       : r);
     const rec = updated.find(r => r.id === editingRecordId);
     if (rec) await this.dbPut('records', rec);
@@ -5033,7 +5091,7 @@ class Component extends DCLogic {
   // `returnTo` is where finishing or cancelling the edit lands: 'admin' for the
   // 表單管理 records tab, 'browse' for reception's record browser.
   editRecord(id, returnTo = 'admin') {
-    const rec = this.state.records.find(x => x.id === id);
+    const rec = this.liveRecords().find(x => x.id === id);
     if (!rec) return;
     const vals = this.editValuesFor(rec, this.state.customerFields, 'customer');
     const phoneF = this.state.customerFields.find(f => f.type === 'tel');
@@ -5051,13 +5109,17 @@ class Component extends DCLogic {
       recordReturnTo: returnTo });
   }
 
-  async deleteRecord(id) { await this.dbDelete('records', id); this.setState({ records: this.state.records.filter(r => r.id !== id) }); this.showToastMsg('紀錄已刪除'); }
+  async deleteRecord(id) {
+    const rec = this.liveRecords().find(r => r.id === id);
+    if (!rec) return;
+    this.setState({ records: await this.tombstone([rec]) });
+    this.showToastMsg('紀錄已刪除');
+  }
 
   // Scoped to the open event — other events' records must survive.
   async clearAllRecords() {
     const id = this.state.currentEventId;
-    for (const r of this.eventRecords(id)) await this.dbDelete('records', r.id);
-    this.setState({ records: this.state.records.filter(r => r.eventId !== id) });
+    this.setState({ records: await this.tombstone(this.eventRecords(id)) });
     this.showToastMsg('已清除本活動全部紀錄');
   }
 

@@ -327,9 +327,15 @@ const BASE = 'http://localhost:8952';
   await page.getByRole('button', { name: '確定刪除' }).click();
   await page.waitForTimeout(800);
   assert((await page.locator('[data-event-card]').count()) === 1, '活動已刪除，只剩一個');
-  const leftRecs = await H.readAll(page, 'records');
+  // v3.12 deletes leave tombstones, so the store still holds the removed rows —
+  // what must be gone is the *live* record. The tombstone itself is checked in
+  // e2e-sync-model.js.
+  const allRecs = await H.readAll(page, 'records');
+  const leftRecs = allRecs.filter(r => !r.deletedAt);
   assert(leftRecs.length === 1 && leftRecs[0].customerFields.name === '王小明',
     '被刪活動的紀錄一併消失，其他活動的紀錄完好：' + leftRecs.map(r => r.customerFields.name));
+  assert(allRecs.some(r => r.deletedAt && r.eventId === b.id),
+    '被刪活動的紀錄留下墓碑，同步時才知道那是「刪掉了」而不是「還沒收到」');
   const leftDefs = await H.readAll(page, 'fieldDefinitions');
   assert(leftDefs.length === 4 && !leftDefs.some(d => d.key.startsWith(b.id)),
     '被刪活動的欄位定義一併消失：' + leftDefs.map(d => d.key.split('::')[1]).join(','));

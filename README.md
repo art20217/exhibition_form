@@ -14,6 +14,9 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 
 ## 這一版有什麼新東西
 
+**v3.12.0** — 同步契約（[`docs/sync-contract.md`](docs/sync-contract.md)）與其所需的資料模型：
+`updatedAt`、墓碑式軟刪除、`deviceId`。**尚未有任何網路功能**，實際同步在下一版。
+
 **v3.11.0** — 修正填單日期差一天（時區換算錯誤，**已存的紀錄不會自動修正**）；
 紀錄編輯頁可改訪談日期；活動管理模式下卡片不再是填單入口，改由「查看紀錄」進入；
 國籍選定後仍顯示中文。
@@ -39,6 +42,7 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 | 怎麼操作（展前、現場、展後） | **[Wiki — 使用指南](https://github.com/art20217/exhibition_form/wiki)** |
 | 系統有哪些功能 | **[Wiki — 功能總覽](https://github.com/art20217/exhibition_form/wiki)** |
 | 版本沿革、資料遷移 | [CHANGELOG.md](CHANGELOG.md) |
+| 同步協定（給實作伺服器的人） | [docs/sync-contract.md](docs/sync-contract.md) |
 | 後續規劃、技術債 | [Issues](https://github.com/art20217/exhibition_form/issues) |
 | 技術架構、改程式碼要注意什麼 | 本文件以下的內容 |
 
@@ -54,7 +58,7 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 |---|---|
 | 檔案結構 | 單一 `index.html`，內含所有 CSS / JS / 函式庫，原始碼直接可讀可改 |
 | 前端框架 | React 18.3.1 UMD（內嵌）+ DC 模板引擎（dc-runtime，內嵌） |
-| 資料儲存 | IndexedDB v2（四個 Object Store：`config`、`events`、`records`、`fieldDefinitions`）。`fieldDefinitions` 以 `<活動 id>::<群組>` 為鍵，每場活動各有 customerFields / needsFields / companyFields / staffFields 四組定義；每筆 `records` 帶 `eventId`；`config` 為全域設定（PIN、裝置名稱、GDPR 條文、遷移旗標） |
+| 資料儲存 | IndexedDB v2（四個 Object Store：`config`、`events`、`records`、`fieldDefinitions`）。`fieldDefinitions` 以 `<活動 id>::<群組>` 為鍵，每場活動各有 customerFields / needsFields / companyFields / staffFields 四組定義；每筆 `records` 帶 `eventId`，並自 v3.12 起帶 `updatedAt` / `deletedAt`（墓碑）/ `deviceId`；`config` 為全域設定（PIN、裝置名稱、`deviceId`、GDPR 條文、遷移旗標） |
 | 照片處理 | Canvas API 壓縮後以 Base64 存入 IndexedDB |
 | 匯出 | 內建 XLSX 生成 + ZIP 打包（ExportLib，inline 於 HTML 中） |
 | 拖曳排序 | Pointer Events 自製實作（相容 iPad Safari 觸控，不依賴 HTML5 Drag & Drop） |
@@ -70,6 +74,7 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 - 真正的 `<x-dc>` 模板元素之前，檔案中不可出現字面上的 x-dc 開頭標籤序列（dc-runtime 以第一個出現位置定位模板）。
 - 選項的 `en` 是**紀錄實際儲存的值**，`zh` 只用於顯示。要改 `en` 就必須同步改寫已蒐集紀錄中的值（見 `loadAllData` 中的 `VALUE_RENAMES`），否則舊答案會對不上選項；只改中文標籤則用 `labelFixes`，以「原值」比對，後台已自訂過的標籤不會被覆蓋。
 - `state` 的 `customerFields` / `needsFields` / `companyFields` / `staffFields` 永遠是**目前開啟活動**的定義，所以表單、後台、匯出等讀取端不需要知道活動的存在；只有存取 IndexedDB 的那一層（`saveEventDefs` / `loadEventDefs` / `defKey`）需要帶活動前綴。
+- **`state.records` 含 v3.12 的墓碑（軟刪除），永遠透過 `liveRecords()` 或 `eventRecords()` 讀取，不要直接讀。** 墓碑不保留任何欄位值，所以漏掉過濾時它會渲染成**一列空白**——用姓名比對的斷言看不到它。要抓這件事得驗筆數（`tests/e2e-sync-model.js` 對後台筆數與匯出的列數各有一條）。
 - 欄位若標記 `source: 'event'`（接待人員、訪談日期、新舊客戶），代表其內容由活動頁供應。v3.5 移除了業務備註頁與該頁籤，這三個欄位在表單管理中不再有編輯介面——但**定義刻意保留**，因為資料紀錄的「接待人員」欄與匯出欄位都靠它們解析。唯一的例外是**訪談日期在紀錄編輯頁可改**（v3.11），因為它先前完全沒有修正途徑；另外兩個維持唯讀。
 
 ### 測試
@@ -77,13 +82,13 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 ```bash
 npm ci
 npx playwright-core install chromium   # 首次執行才需要
-npm test                               # 22 支套件，約 5.5 分鐘
+npm test                               # 23 支套件，約 6 分鐘
 npm test -- pin-mobile events          # 只跑名稱含這些字串的套件
 ```
 
 每次 push 與 PR 由 `.github/workflows/test.yml` 自動執行；失敗時截圖會上傳為 artifact。
 
-套件依序執行，不能平行——每支各自起 HTTP server 並清空同一個 IndexedDB。涵蓋範圍包含完整填單流程、後台各頁籤、版面尺寸、資料紀錄欄位、匯出內容，以及 **v2 → v3.10 的每一段遷移**（各自植入該版本形狀的資料庫再驗證結果）。
+套件依序執行，不能平行——每支各自起 HTTP server 並清空同一個 IndexedDB。涵蓋範圍包含完整填單流程、後台各頁籤、版面尺寸、資料紀錄欄位、匯出內容，以及 **v2 → v3.12 的每一段遷移**（各自植入該版本形狀的資料庫再驗證結果）。
 
 `e2e-timezone.js` 是唯一明寫 `timezoneId` 的套件，理由見下面的踩雷筆記。
 
@@ -91,7 +96,7 @@ npm test -- pin-mobile events          # 只跑名稱含這些字串的套件
 
 ### 已知限制
 
-- **不具備雲端同步。** 多台平板的資料需各自匯出後手動合併。
+- **尚不具備雲端同步。** 多台平板的資料目前仍需各自匯出後手動合併。v3.12 已完成同步所需的資料模型與[協定規格](docs/sync-contract.md)，但**還沒有任何網路功能**，伺服器端也尚未存在（[#8](https://github.com/art20217/exhibition_form/issues/8)、[#9](https://github.com/art20217/exhibition_form/issues/9)）。
 - **照片儲存佔用 IndexedDB 空間。** 壓縮後單張約 200～500KB，100 筆含照片約 20～50MB。iPad Safari 的 IndexedDB 配額通常足夠，但建議展後及時匯出並清除。
 - **瀏覽器清除資料會遺失所有紀錄。** 確保平板已啟用螢幕鎖定密碼，避免他人誤操作。
 - **不含 OCR 名片辨識。** 名片照片僅作為存檔，不自動擷取文字。
@@ -164,9 +169,11 @@ exhibition_form/
 ├── tests/                  # 端到端測試（Playwright 驅動 headless Chromium）
 │   ├── helpers.js          #   共用導覽、IndexedDB 讀寫、瀏覽器啟動
 │   ├── run-all.js          #   依序執行全部套件的 runner
-│   └── e2e-*.js            #   22 支套件
+│   └── e2e-*.js            #   23 支套件
 ├── .github/workflows/      # CI：每次 push 與 PR 跑完整測試
-├── docs/wiki/              # Wiki 頁面的原始檔（正本在 GitHub Wiki，見下方說明）
+├── docs/
+│   ├── sync-contract.md    #   同步協定規格（寫給日後實作伺服器的人）
+│   └── wiki/               #   Wiki 頁面的原始檔（正本在 GitHub Wiki，見下方說明）
 ├── package.json
 ├── CHANGELOG.md            # 版本沿革與資料遷移
 └── README.md               # 本文件
