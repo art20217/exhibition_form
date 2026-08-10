@@ -74,7 +74,10 @@ const BASE = 'http://localhost:8952';
   assert((await page.locator('body').innerText()).includes('8 位接待人員'), '接待人員刪減後卡片數字同步（回到 8）');
 
   // ---- 4. the fill-in gate ----
-  await page.locator('[data-event-card] button').first().click();
+  // Still unlocked from the edits above, and v3.11 cards are inert in manage
+  // mode — lock before entering.
+  await H.lockManage(page);
+  await page.locator('[data-ev-enter]').first().click();
   await page.waitForTimeout(600);
   const entryDisabled = () => page.evaluate(() => ({
     cust: document.querySelector('[data-entry-customer]').disabled,
@@ -218,7 +221,8 @@ const BASE = 'http://localhost:8952';
   assert(JSON.stringify(a.fields) === JSON.stringify(b.fields), '複製而來的欄位與來源一致');
 
   // Rename a field in the new event and prove the source event is untouched.
-  await page.locator('[data-event-card]', { hasText: '2027 德國展' }).locator('button').first().click();
+  await H.lockManage(page);
+  await page.locator('[data-event-card]', { hasText: '2027 德國展' }).locator('[data-ev-enter]').click();
   await page.waitForTimeout(600);
   await H.openAdmin(page, '客戶資料欄位');
   await page.locator('[data-field-row]', { hasText: '姓名' }).getByRole('button').first().click();
@@ -282,23 +286,36 @@ const BASE = 'http://localhost:8952';
   const afterEnd = await page.locator('body').innerText();
   assert(afterEnd.includes('已結束'), '活動移到「已結束」區');
 
-  await page.locator('[data-event-card]', { hasText: '2027 德國展' }).locator('button').first().click();
-  await page.waitForTimeout(600);
+  // An ended event is only listed while manage mode is on, and v3.11 made the
+  // cards inert there — 查看紀錄 is the one way in. It lands on 表單管理's
+  // records tab, which is where 匯出 lives, so the promise made by the
+  // 結束活動 confirm ("資料與匯出仍可查看") stays true.
+  await page.locator('[data-event-card]', { hasText: '2027 德國展' })
+    .locator('[data-ev-records]').click();
+  await page.waitForTimeout(800);
+  let ended = await page.locator('body').innerText();
+  assert(ended.includes('Hans Müller'), '已結束的活動經「查看紀錄」仍看得到資料');
+  assert((await page.getByRole('button', { name: '匯出資料' }).count()) === 1,
+    '已結束的活動仍匯得出來');
+
+  // From there the event page is still reachable, and its entries stay shut.
+  await page.getByRole('button', { name: '← 返回表單' }).click();
+  await page.waitForTimeout(500);
   await page.locator('[data-staff-picker] button').first().click();
   await page.locator('[data-date-picker] button').first().click();
   await page.waitForTimeout(300);
   g = await entryDisabled();
   assert(g.cust && g.needs && g.hint.includes('已結束'),
     '已結束的活動即使選了人員與日期也無法進入表單：' + g.hint);
-  await H.openAdmin(page, '資料紀錄');
-  assert((await page.locator('body').innerText()).includes('Hans Müller'), '已結束的活動仍可查看資料');
 
   // ---- 12. deleting an event takes its records and definitions with it ----
-  await page.getByRole('button', { name: '← 返回表單' }).click();
-  await page.waitForTimeout(400);
+  // Already on the event page. Going back restores manage mode by itself,
+  // because 查看紀錄 is what got us here — otherwise the ended event would
+  // disappear from the list on the way out and be unreachable.
   await page.getByRole('button', { name: '← 活動列表' }).click();
   await page.waitForTimeout(500);
-  await H.unlockManage(page);
+  assert((await page.locator('[data-event-card]', { hasText: '2027 德國展' }).count()) === 1,
+    '從「查看紀錄」返回活動列表後仍在管理模式，已結束的活動沒有消失');
   await page.locator('[data-event-card]', { hasText: '2027 德國展' })
     .getByRole('button', { name: '刪除' }).click();
   await page.waitForTimeout(300);

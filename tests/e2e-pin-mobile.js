@@ -70,7 +70,9 @@ const BASE = 'http://localhost:8957';
       `${vp.label}：輸入 PIN 後解鎖成功（出現「＋ 新增活動」）`);
 
     // --- the same typing path works for the admin panel, not just unlock ---
-    await page.locator('[data-event-card] button').first().click();
+    // Manage mode makes the cards inert (v3.11), so lock it before entering.
+    await H.lockManage(page);
+    await page.locator('[data-ev-enter]').first().click();
     await page.waitForTimeout(500);
     await H.openAdmin(page);
     assert((await page.locator('body').innerText()).includes('客戶資料欄位'),

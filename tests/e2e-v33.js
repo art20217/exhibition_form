@@ -217,9 +217,12 @@ const fieldBlock = (page, labelText) => page.locator('label', { hasText: labelTe
   await assert(await page.getByRole('button', { name: /Remove 移除/ }).isVisible(),
     '編輯紀錄時已載入既有名片照片預覽');
   // Nationality is an option field, so v3.9 renders it as a summary row in edit
-  // mode — the value is text now, not an input.
-  await assert((await fieldBlock(page, 'Nationality').locator('[data-summary-value]').innerText()) === 'Japan',
-    '編輯時載入客戶資料頁的國籍值');
+  // mode — the value is text now, not an input. v3.11 shows it in both
+  // languages; `Japan` is still what the record stores (asserted on the record
+  // itself further down).
+  const natSummary = await fieldBlock(page, 'Nationality').locator('[data-summary-value]').innerText();
+  await assert(natSummary.includes('Japan') && natSummary.includes('日本'),
+    '編輯時載入客戶資料頁的國籍值，中英並陳：' + natSummary);
   await page.getByRole('button', { name: /Save 儲存/ }).click();
   await page.waitForTimeout(600);
   const afterEdit = await page.locator('body').innerText();

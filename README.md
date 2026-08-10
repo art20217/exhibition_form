@@ -14,6 +14,10 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 
 ## 這一版有什麼新東西
 
+**v3.11.0** — 修正填單日期差一天（時區換算錯誤，**已存的紀錄不會自動修正**）；
+紀錄編輯頁可改訪談日期；活動管理模式下卡片不再是填單入口，改由「查看紀錄」進入；
+國籍選定後仍顯示中文。
+
 **v3.10.0** — 填單入口改為先選「新客戶／舊客戶」再選「從客戶資料開始／從客戶需求開始」；
 移除「快速填單」。舊客戶跳過公司背景，新舊客戶會寫進紀錄並可匯出。
 
@@ -66,20 +70,22 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 - 真正的 `<x-dc>` 模板元素之前，檔案中不可出現字面上的 x-dc 開頭標籤序列（dc-runtime 以第一個出現位置定位模板）。
 - 選項的 `en` 是**紀錄實際儲存的值**，`zh` 只用於顯示。要改 `en` 就必須同步改寫已蒐集紀錄中的值（見 `loadAllData` 中的 `VALUE_RENAMES`），否則舊答案會對不上選項；只改中文標籤則用 `labelFixes`，以「原值」比對，後台已自訂過的標籤不會被覆蓋。
 - `state` 的 `customerFields` / `needsFields` / `companyFields` / `staffFields` 永遠是**目前開啟活動**的定義，所以表單、後台、匯出等讀取端不需要知道活動的存在；只有存取 IndexedDB 的那一層（`saveEventDefs` / `loadEventDefs` / `defKey`）需要帶活動前綴。
-- 欄位若標記 `source: 'event'`（接待人員、訪談日期、新舊客戶），代表其內容由活動頁供應。v3.5 移除了業務備註頁與該頁籤，這兩個欄位不再有任何編輯介面——但**定義刻意保留**，因為資料紀錄的「接待人員」欄與匯出欄位都靠它們解析。
+- 欄位若標記 `source: 'event'`（接待人員、訪談日期、新舊客戶），代表其內容由活動頁供應。v3.5 移除了業務備註頁與該頁籤，這三個欄位在表單管理中不再有編輯介面——但**定義刻意保留**，因為資料紀錄的「接待人員」欄與匯出欄位都靠它們解析。唯一的例外是**訪談日期在紀錄編輯頁可改**（v3.11），因為它先前完全沒有修正途徑；另外兩個維持唯讀。
 
 ### 測試
 
 ```bash
 npm ci
 npx playwright-core install chromium   # 首次執行才需要
-npm test                               # 20 支套件，約 5.5 分鐘
+npm test                               # 22 支套件，約 5.5 分鐘
 npm test -- pin-mobile events          # 只跑名稱含這些字串的套件
 ```
 
 每次 push 與 PR 由 `.github/workflows/test.yml` 自動執行；失敗時截圖會上傳為 artifact。
 
 套件依序執行，不能平行——每支各自起 HTTP server 並清空同一個 IndexedDB。涵蓋範圍包含完整填單流程、後台各頁籤、版面尺寸、資料紀錄欄位、匯出內容，以及 **v2 → v3.10 的每一段遷移**（各自植入該版本形狀的資料庫再驗證結果）。
+
+`e2e-timezone.js` 是唯一明寫 `timezoneId` 的套件，理由見下面的踩雷筆記。
 
 寫測試前請先讀下面的**踩雷筆記**，其中兩則直接關於測試怎麼寫才抓得到問題。
 
@@ -92,6 +98,7 @@ npm test -- pin-mobile events          # 只跑名稱含這些字串的套件
 - **PIN 碼僅防止誤觸，不構成安全機制。** 活動管理、表單管理與客戶資料紀錄**共用同一組 PIN**，因此瀏覽頁「不能刪除、不能匯出」是流程上的區隔而非權限上的——拿到 PIN 的人一樣能自己進表單管理做這兩件事（[#10](https://github.com/art20217/exhibition_form/issues/10)）。
 - **填單人員靠業務自行選擇，系統不驗證身分。** 換人接待時若忘了點「重新選擇」，紀錄會掛在上一位業務名下——活動頁上方的常駐橫幅就是為了讓這件事一眼看得出來。
 - **活動之間的欄位設定不會同步。** 複製活動是一次性的深拷貝；建立之後修改任一方都不影響另一方。
+- **v3.11 之前用日期籤填的紀錄，訪談日期可能早一天**（僅限 UTC 以東的時區，例如台灣）。程式已修正，但既有紀錄**不會自動更正**——偏移後的值落在活動期間內時，與手動輸入的正確值無從分辨。請在客戶資料紀錄中逐筆核對，在編輯頁修改。
 
 ---
 
@@ -109,6 +116,19 @@ npm test -- pin-mobile events          # 只跑名稱含這些字串的套件
 隱藏它等於把可輸入區一起拿掉——欄位仍能取得焦點（iOS 會彈出鍵盤），但沒有東西可顯示、
 也沒有東西可打字。**Blink 根本沒有實作這個 pseudo-element**，所以 headless Chromium
 測不出來。要隱藏圖示請只針對個別的裝飾按鈕（`::-webkit-credentials-auto-fill-button` 等）。
+
+### 日期字串不要經過 `toISOString()`
+
+`new Date('2026-09-23T00:00:00')` 解析成**本地**午夜，`toISOString()` 會轉成 UTC——
+UTC+8 往回退 8 小時就跨過日界，得到 `2026-09-22`。活動日期籤曾經整組往前一天，
+而且那個值會直接存進紀錄的訪談日期並帶進匯出。
+
+**要日曆日就用本地欄位**（`getFullYear()` / `getMonth()` / `getDate()`，見 `ymd()`）；
+`toISOString()` 只留給真正的時間戳記（`timestamp`、`createdAt`），那些記的是瞬間，UTC 才對。
+
+**CI 跑在 UTC，這類 bug 在那裡完全不會發作。** 任何與日曆日有關的測試都必須明寫
+`browser.newContext({ timezoneId: ... })`，而且值得同時測 UTC 的東、西兩側——只測一側
+分不出「不該轉 UTC」和「偏移方向反了」。`tests/e2e-timezone.js` 就是這樣寫的。
 
 ### Service Worker 的兩條規則
 
@@ -144,7 +164,7 @@ exhibition_form/
 ├── tests/                  # 端到端測試（Playwright 驅動 headless Chromium）
 │   ├── helpers.js          #   共用導覽、IndexedDB 讀寫、瀏覽器啟動
 │   ├── run-all.js          #   依序執行全部套件的 runner
-│   └── e2e-*.js            #   20 支套件
+│   └── e2e-*.js            #   22 支套件
 ├── .github/workflows/      # CI：每次 push 與 PR 跑完整測試
 ├── docs/wiki/              # Wiki 頁面的原始檔（正本在 GitHub Wiki，見下方說明）
 ├── package.json

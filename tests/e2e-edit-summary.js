@@ -101,6 +101,26 @@ const UNPICKED = ['Sample Required', 'Become a Distributor'];
   assert((await page.locator('[data-summary-empty]').count()) > 0,
     '未填的選項欄位顯示「未填」而不是消失');
 
+  // v3.11: 訪談日期 comes from the event page and had no correction path at
+  // all — a record dated wrong stayed wrong. Edit mode is the one place it can
+  // be changed; the other two event-supplied fields stay read-only.
+  const dateBox = page.locator('[data-edit-visit-date]');
+  assert((await dateBox.count()) === 1, '編輯模式出現訪談日期欄位');
+  const wasDate = await dateBox.inputValue();
+  assert(/^\d{4}-\d{2}-\d{2}$/.test(wasDate), '帶出紀錄原本的訪談日期：' + wasDate);
+  await dateBox.fill('2026-09-23');
+  await page.waitForTimeout(150);
+  body = await page.locator('body').innerText();
+  assert(!body.includes('新舊客戶') && !body.includes('接待人員'),
+    '接待人員與新舊客戶沒有跟著變成可編輯');
+
+  // v3.11: the searchable select is the only field whose option list is hidden
+  // once closed, so its summary is where the Chinese name has to appear.
+  const natRow = page.locator('[data-summary-row]').filter({ hasText: 'Taiwan' }).first();
+  const natText = await natRow.locator('[data-summary-value]').innerText();
+  assert(natText.includes('Taiwan') && natText.includes('台灣'),
+    '國籍摘要中英並陳：' + natText);
+
   // ---- 3. the modal edits exactly one field ----
   const inquiryRow = page.locator('[data-summary-row]')
     .filter({ hasText: 'Request Quote' }).first();
@@ -148,7 +168,12 @@ const UNPICKED = ['Sample Required', 'Become a Distributor'];
     && rec.needsFields.inquiry_type.includes('Sample Required'),
     '彈窗改的選項有存到：' + JSON.stringify(rec.needsFields.inquiry_type));
   assert(rec.customerFields.nationality === 'Taiwan',
-    '沒有被編輯的欄位維持原值：' + rec.customerFields.nationality);
+    '沒有被編輯的欄位維持原值，且儲存的仍是英文值：' + rec.customerFields.nationality);
+  assert(rec.staffFields.visit_date === '2026-09-23',
+    '改過的訪談日期有存到：' + rec.staffFields.visit_date);
+  assert(Array.isArray(rec.staffFields.greeter) && rec.staffFields.greeter.length > 0
+    && rec.staffFields.customer_status === 'New',
+    '同組的接待人員與新舊客戶沒有被順手清掉：' + JSON.stringify(rec.staffFields));
 
   assert(errors.length === 0, '無 console error：' + errors.join(' | '));
 
