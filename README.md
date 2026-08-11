@@ -103,7 +103,8 @@ npm test -- pin-mobile events          # 只跑名稱含這些字串的套件
 
 ### 已知限制
 
-- **雲端同步需要自備伺服器。** v3.13 起客戶端可同步紀錄，但**正式伺服器尚不存在**——`server/` 下的是參考實作，用於測試與交付規格。未設定伺服器時 app 完全離線運作，多台平板仍需各自匯出後手動合併（[#8](https://github.com/art20217/exhibition_form/issues/8)、[#9](https://github.com/art20217/exhibition_form/issues/9)）。
+- **雲端同步需要自備伺服器。** v3.13 起客戶端可同步紀錄，但**正式伺服器尚不存在**——`server/` 下的是參考實作，用於測試與交付規格。未設定伺服器時 app 完全離線運作（[#8](https://github.com/art20217/exhibition_form/issues/8)、[#9](https://github.com/art20217/exhibition_form/issues/9)）。
+- **同步的範圍是「紀錄送達伺服器」，不是「兩台平板互相看得到」。** 活動不同步，所以從別台拉回來的紀錄帶的是原本那台的 `eventId`，接收端沒有對應活動，該筆紀錄會留在資料庫裡卻不出現在任何畫面或匯出。要跨平板互看需要活動同步（契約 v2）。
 - **同步伺服器必須是 https。** App 由 GitHub Pages 以 https 提供，瀏覽器會擋掉對 `http://` 位址的請求，所以「筆電接在展場 Wi-Fi 上」這個做法不通。部署方式見 [`server/README.md`](server/README.md)。
 - **名片照片尚未同步。** 契約已定義端點、參考伺服器也實作了，但客戶端要到 v3.14。
 - **照片儲存佔用 IndexedDB 空間。** 壓縮後單張約 200～500KB，100 筆含照片約 20～50MB。iPad Safari 的 IndexedDB 配額通常足夠，但建議展後及時匯出並清除。

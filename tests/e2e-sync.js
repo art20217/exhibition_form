@@ -1,9 +1,14 @@
 // v3.13: the foreground sync engine, driven against the reference server.
 //
-// Two browser contexts stand in for two tablets, because that is the thing
-// actually being built — one tablet talking to a server proves almost nothing.
-// What matters is that records collected on A show up on B, that an edit on B
-// wins on A, and that a delete on A removes the row from B.
+// Two browser contexts stand in for two tablets: one tablet talking to a server
+// cannot show that a record survives the round trip, that an edit wins by
+// updatedAt, or that a delete propagates.
+//
+// **Scope, because it is easy to overstate.** Contract v1 syncs records but not
+// events, so what these assertions establish is that the data reaches the other
+// tablet's *database* — not that it is visible there. See liveNames() below.
+// The capability being tested is "every tablet's records reach the server",
+// which is what "多台平板資料合併" needs; cross-tablet display needs event sync.
 //
 // The show's Wi-Fi drops constantly, so the failure cases carry as much weight
 // as the happy path: a resend must not duplicate, an outage must not lose
@@ -62,6 +67,18 @@ fs.mkdirSync(SHOT, { recursive: true });
     }));
   };
 
+  // Reads the record store directly, NOT what the screen shows.
+  //
+  // That distinction matters and is easy to miss: contract v1 syncs records but
+  // not events, so a record pulled from another tablet keeps the *originating*
+  // tablet's eventId. Every screen filters through eventRecords(), which only
+  // matches the currently open event — so a pulled record lands in IndexedDB and
+  // appears in no list, no count and no export on the receiving tablet.
+  //
+  // So these assertions prove the data arrives, and nothing more. Passing here
+  // does NOT mean two tablets can see each other's records; that needs event
+  // sync (contract v2). The reachable goal today is "every tablet's records
+  // reach the server", which is what the pushes below check.
   const liveNames = (page) => page.evaluate(() =>
     window.__app.state.records.filter(r => !r.deletedAt).map(r => r.customerFields && r.customerFields.name).sort());
 
@@ -115,7 +132,7 @@ fs.mkdirSync(SHOT, { recursive: true });
   assert(st.status === 'idle', `B 同步成功（狀態 ${st.status} ${st.error}）`);
   let names = await liveNames(B.page);
   assert(JSON.stringify(names) === JSON.stringify(['李大華', '王小明']),
-    'B 拉到了 A 的兩筆紀錄：' + names.join('、'));
+    'B 的資料庫收到了 A 的兩筆紀錄（畫面上看不到——活動不同步）：' + names.join('、'));
   assert(st.seq > 0, 'B 的游標已推進：' + st.seq);
   await B.page.screenshot({ path: path.join(SHOT, '01_b_pulled.png'), fullPage: true });
 
@@ -135,7 +152,7 @@ fs.mkdirSync(SHOT, { recursive: true });
   st = await syncAndWait(A.page);
   names = await liveNames(A.page);
   assert(names.includes('王小明（B 改）') && !names.includes('王小明'),
-    'A 套用了 B 的修改（LWW）：' + names.join('、'));
+    'A 的資料庫套用了 B 的修改（LWW）：' + names.join('、'));
 
   // ---- A deletes; the tombstone reaches B ----
   await A.page.evaluate((id) => window.__app.deleteRecord(id), targetId);
@@ -144,7 +161,7 @@ fs.mkdirSync(SHOT, { recursive: true });
   st = await syncAndWait(B.page);
   names = await liveNames(B.page);
   assert(JSON.stringify(names) === JSON.stringify(['李大華']),
-    'B 上該筆已消失，墓碑有傳過去：' + names.join('、'));
+    'B 的資料庫中該筆已成為墓碑，刪除有傳過去：' + names.join('、'));
   const bTomb = await B.page.evaluate((id) =>
     !!window.__app.state.records.find(r => r.id === id && r.deletedAt), targetId);
   assert(bTomb, 'B 收到的是墓碑，不是整筆消失——否則下次同步又會長回來');
