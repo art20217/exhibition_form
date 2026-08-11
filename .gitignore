@@ -4,3 +4,4 @@ node_modules
 # (CI uploads these on failure) and the export ZIP the export test downloads.
 tests/shots-*/
 tests/*.zip
+server/data/

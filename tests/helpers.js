@@ -69,6 +69,56 @@ function serve(port = 0) {
   }));
 }
 
+// Starts the reference sync server (server/index.js) on a free port, in this
+// process. Same shape as serve() above: resolves once listening, with `base`
+// set to the URL the app should be pointed at.
+//
+// `http://localhost` is a secure context, so the app can call it from a page
+// served over http in tests — a LAN IP over plain http would be blocked as
+// mixed content on the real HTTPS deployment (see docs/sync-contract.md).
+async function startSyncServer({ tokens = ['test-token'], dataDir } = {}) {
+  const { createServer } = require('../server/index.js');
+  const dir = dataDir || fs.mkdtempSync(path.join(require('os').tmpdir(), 'sync-'));
+  fs.rmSync(dir, { recursive: true, force: true });
+  const server = createServer({ data: dir, tokens });
+  await new Promise(r => server.listen(0, r));
+  server.base = 'http://localhost:' + server.address().port + '/v1';
+  server.dataDir = dir;
+  return server;
+}
+
+// Reads everything the sync server holds, through its debug endpoint.
+async function serverRecords(syncServer, token = 'test-token') {
+  const res = await fetch(syncServer.base.replace(/\/v1$/, '') + '/debug/all', {
+    headers: { Authorization: 'Bearer ' + token },
+  });
+  return (await res.json()).records;
+}
+
+// Writes the sync settings into config. Must run on a page where the app has
+// already booted — the `config` object store only exists once initDB() has run,
+// and opening the database without a version on a wiped origin creates an empty
+// one instead. Reload afterwards so loadAllData() picks the values up.
+async function configureSync(page, base, token = 'test-token') {
+  await page.evaluate(([u, t]) => new Promise((res, rej) => {
+    const r = indexedDB.open('ExhibitionFormDB');
+    r.onerror = () => rej(new Error('open failed: ' + r.error));
+    r.onsuccess = () => {
+      const db = r.result;
+      if (!db.objectStoreNames.contains('config')) {
+        db.close();
+        rej(new Error('config store missing — app has not booted on this page yet'));
+        return;
+      }
+      const tx = db.transaction('config', 'readwrite');
+      tx.objectStore('config').put({ key: 'syncUrl', value: u });
+      tx.objectStore('config').put({ key: 'syncToken', value: t });
+      tx.oncomplete = () => { db.close(); res(); };
+      tx.onerror = () => { db.close(); rej(new Error('write failed: ' + tx.error)); };
+    };
+  }), [base, token]);
+}
+
 const wipeDB = (page) => page.evaluate(() => new Promise((res, rej) => {
   const d = indexedDB.deleteDatabase('ExhibitionFormDB');
   d.onerror = () => rej(d.error); d.onsuccess = d.onblocked = () => res();
@@ -188,4 +238,5 @@ const writeDefs = (page, group, fields) => page.evaluate(([g, v]) => new Promise
 }), [group, fields]);
 
 module.exports = { APP_HTML, launchBrowser, serve, wipeDB, enterEvent, pickCustomerStatus, gotoEvent, openAdmin,
-  unlockManage, lockManage, runFlow, readAll, readDefs, writeDefs };
+  unlockManage, lockManage, runFlow, readAll, readDefs, writeDefs,
+  startSyncServer, serverRecords, configureSync };

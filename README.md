@@ -14,8 +14,12 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 
 ## 這一版有什麼新東西
 
+**v3.13.0** — 紀錄的前景同步真的接起來了：推送／拉取、四個觸發點、三種失敗分流，
+外加 [`server/`](server/) 下一支零依賴的參考伺服器。**未設定伺服器時完全沒有動作**；
+名片照片仍未同步。
+
 **v3.12.0** — 同步契約（[`docs/sync-contract.md`](docs/sync-contract.md)）與其所需的資料模型：
-`updatedAt`、墓碑式軟刪除、`deviceId`。**尚未有任何網路功能**，實際同步在下一版。
+`updatedAt`、墓碑式軟刪除、`deviceId`。
 
 **v3.11.0** — 修正填單日期差一天（時區換算錯誤，**已存的紀錄不會自動修正**）；
 紀錄編輯頁可改訪談日期；活動管理模式下卡片不再是填單入口，改由「查看紀錄」進入；
@@ -58,7 +62,7 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 |---|---|
 | 檔案結構 | 單一 `index.html`，內含所有 CSS / JS / 函式庫，原始碼直接可讀可改 |
 | 前端框架 | React 18.3.1 UMD（內嵌）+ DC 模板引擎（dc-runtime，內嵌） |
-| 資料儲存 | IndexedDB v2（四個 Object Store：`config`、`events`、`records`、`fieldDefinitions`）。`fieldDefinitions` 以 `<活動 id>::<群組>` 為鍵，每場活動各有 customerFields / needsFields / companyFields / staffFields 四組定義；每筆 `records` 帶 `eventId`，並自 v3.12 起帶 `updatedAt` / `deletedAt`（墓碑）/ `deviceId`；`config` 為全域設定（PIN、裝置名稱、`deviceId`、GDPR 條文、遷移旗標） |
+| 資料儲存 | IndexedDB v2（四個 Object Store：`config`、`events`、`records`、`fieldDefinitions`）。`fieldDefinitions` 以 `<活動 id>::<群組>` 為鍵，每場活動各有 customerFields / needsFields / companyFields / staffFields 四組定義；每筆 `records` 帶 `eventId`，並自 v3.12 起帶 `updatedAt` / `deletedAt`（墓碑）/ `deviceId`；`config` 為全域設定（PIN、裝置名稱、`deviceId`、GDPR 條文、遷移旗標，以及 v3.13 起的 `syncUrl` / `syncToken` / `syncSeq`） |
 | 照片處理 | Canvas API 壓縮後以 Base64 存入 IndexedDB |
 | 匯出 | 內建 XLSX 生成 + ZIP 打包（ExportLib，inline 於 HTML 中） |
 | 拖曳排序 | Pointer Events 自製實作（相容 iPad Safari 觸控，不依賴 HTML5 Drag & Drop） |
@@ -74,6 +78,7 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 - 真正的 `<x-dc>` 模板元素之前，檔案中不可出現字面上的 x-dc 開頭標籤序列（dc-runtime 以第一個出現位置定位模板）。
 - 選項的 `en` 是**紀錄實際儲存的值**，`zh` 只用於顯示。要改 `en` 就必須同步改寫已蒐集紀錄中的值（見 `loadAllData` 中的 `VALUE_RENAMES`），否則舊答案會對不上選項；只改中文標籤則用 `labelFixes`，以「原值」比對，後台已自訂過的標籤不會被覆蓋。
 - `state` 的 `customerFields` / `needsFields` / `companyFields` / `staffFields` 永遠是**目前開啟活動**的定義，所以表單、後台、匯出等讀取端不需要知道活動的存在；只有存取 IndexedDB 的那一層（`saveEventDefs` / `loadEventDefs` / `defKey`）需要帶活動前綴。
+- **同步（v3.13）在未設定伺服器時完全不動作**，這是預設狀態。拉取只在活動列表或活動內頁進行（`pullAllowed()`）——把遠端資料蓋在使用者正在編輯的那筆上，會靜靜毀掉他的輸入。狀態列與更新橫幅同一個位置、同一條規則：**填單畫面上結構性地不存在**。
 - **`state.records` 含 v3.12 的墓碑（軟刪除），永遠透過 `liveRecords()` 或 `eventRecords()` 讀取，不要直接讀。** 墓碑不保留任何欄位值，所以漏掉過濾時它會渲染成**一列空白**——用姓名比對的斷言看不到它。要抓這件事得驗筆數（`tests/e2e-sync-model.js` 對後台筆數與匯出的列數各有一條）。
 - 欄位若標記 `source: 'event'`（接待人員、訪談日期、新舊客戶），代表其內容由活動頁供應。v3.5 移除了業務備註頁與該頁籤，這三個欄位在表單管理中不再有編輯介面——但**定義刻意保留**，因為資料紀錄的「接待人員」欄與匯出欄位都靠它們解析。唯一的例外是**訪談日期在紀錄編輯頁可改**（v3.11），因為它先前完全沒有修正途徑；另外兩個維持唯讀。
 
@@ -82,7 +87,7 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 ```bash
 npm ci
 npx playwright-core install chromium   # 首次執行才需要
-npm test                               # 23 支套件，約 6 分鐘
+npm test                               # 24 支套件，約 7 分鐘
 npm test -- pin-mobile events          # 只跑名稱含這些字串的套件
 ```
 
@@ -90,13 +95,17 @@ npm test -- pin-mobile events          # 只跑名稱含這些字串的套件
 
 套件依序執行，不能平行——每支各自起 HTTP server 並清空同一個 IndexedDB。涵蓋範圍包含完整填單流程、後台各頁籤、版面尺寸、資料紀錄欄位、匯出內容，以及 **v2 → v3.12 的每一段遷移**（各自植入該版本形狀的資料庫再驗證結果）。
 
+`e2e-sync.js` 用兩個 browser context 當兩台平板，跑真的參考伺服器——單台對伺服器證明不了什麼。
+
 `e2e-timezone.js` 是唯一明寫 `timezoneId` 的套件，理由見下面的踩雷筆記。
 
 寫測試前請先讀下面的**踩雷筆記**，其中兩則直接關於測試怎麼寫才抓得到問題。
 
 ### 已知限制
 
-- **尚不具備雲端同步。** 多台平板的資料目前仍需各自匯出後手動合併。v3.12 已完成同步所需的資料模型與[協定規格](docs/sync-contract.md)，但**還沒有任何網路功能**，伺服器端也尚未存在（[#8](https://github.com/art20217/exhibition_form/issues/8)、[#9](https://github.com/art20217/exhibition_form/issues/9)）。
+- **雲端同步需要自備伺服器。** v3.13 起客戶端可同步紀錄，但**正式伺服器尚不存在**——`server/` 下的是參考實作，用於測試與交付規格。未設定伺服器時 app 完全離線運作，多台平板仍需各自匯出後手動合併（[#8](https://github.com/art20217/exhibition_form/issues/8)、[#9](https://github.com/art20217/exhibition_form/issues/9)）。
+- **同步伺服器必須是 https。** App 由 GitHub Pages 以 https 提供，瀏覽器會擋掉對 `http://` 位址的請求，所以「筆電接在展場 Wi-Fi 上」這個做法不通。部署方式見 [`server/README.md`](server/README.md)。
+- **名片照片尚未同步。** 契約已定義端點、參考伺服器也實作了，但客戶端要到 v3.14。
 - **照片儲存佔用 IndexedDB 空間。** 壓縮後單張約 200～500KB，100 筆含照片約 20～50MB。iPad Safari 的 IndexedDB 配額通常足夠，但建議展後及時匯出並清除。
 - **瀏覽器清除資料會遺失所有紀錄。** 確保平板已啟用螢幕鎖定密碼，避免他人誤操作。
 - **不含 OCR 名片辨識。** 名片照片僅作為存檔，不自動擷取文字。
@@ -135,6 +144,15 @@ UTC+8 往回退 8 小時就跨過日界，得到 `2026-09-22`。活動日期籤�
 `browser.newContext({ timezoneId: ... })`，而且值得同時測 UTC 的東、西兩側——只測一側
 分不出「不該轉 UTC」和「偏移方向反了」。`tests/e2e-timezone.js` 就是這樣寫的。
 
+### 本機修改的時間戳要蓋過它所修改的值
+
+同步的衝突是比 `updatedAt` 決定的，而**平板的時鐘會走偏**。從一台快幾秒的平板拉來的
+紀錄，`updatedAt` 可能還在未來；這時在本機刪除它，若墓碑只標記「現在」，它就比被刪的
+紀錄還舊——同步判定墓碑落敗並丟棄，**刪除靜靜地沒有生效，而且哪裡都不會報錯**。
+
+本機的每一次修改都要走 `nextUpdatedAt(prev)`：動了這筆紀錄，就有權取代它。
+`tests/e2e-sync.js` 有一條刻意製造時鐘偏差的斷言守著。
+
 ### Service Worker 的兩條規則
 
 寫在 `sw.js` 檔頭，都源自「客戶手上的展場平板」這個環境：
@@ -169,17 +187,20 @@ exhibition_form/
 ├── tests/                  # 端到端測試（Playwright 驅動 headless Chromium）
 │   ├── helpers.js          #   共用導覽、IndexedDB 讀寫、瀏覽器啟動
 │   ├── run-all.js          #   依序執行全部套件的 runner
-│   └── e2e-*.js            #   23 支套件
+│   └── e2e-*.js            #   24 支套件
 ├── .github/workflows/      # CI：每次 push 與 PR 跑完整測試
 ├── docs/
 │   ├── sync-contract.md    #   同步協定規格（寫給日後實作伺服器的人）
 │   └── wiki/               #   Wiki 頁面的原始檔（正本在 GitHub Wiki，見下方說明）
+├── server/                 # 同步伺服器的參考實作（零依賴 Node，非正式服務）
 ├── package.json
 ├── CHANGELOG.md            # 版本沿革與資料遷移
 └── README.md               # 本文件
 ```
 
 仍然**沒有 build step**：`index.html` / `sw.js` / `manifest.webmanifest` / `icons/` 原樣部署到 GitHub Pages。`tests/`、`tools/` 與 `package.json` 只服務開發流程。
+
+`server/` **不會部署到 Pages**，它是另外跑在自己主機上的東西——而且是參考實作，不是正式服務。
 
 `docs/wiki/` 是 Wiki 頁面的**原始檔**，方便在 PR 中一起審閱；**正本是 GitHub Wiki**，改完這裡記得同步過去（Wiki 是獨立的 git 倉庫，不會自動跟著更新）。
 
