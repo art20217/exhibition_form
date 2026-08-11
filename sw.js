@@ -20,7 +20,7 @@
 
 // Bump on every release. It is the cache identity: a new value means a new
 // cache, and activate() deletes every other one.
-const VERSION = 'v3.11.0';
+const VERSION = 'v3.13.0';
 const CACHE = 'exhibition-form-' + VERSION;
 
 const PRECACHE = [

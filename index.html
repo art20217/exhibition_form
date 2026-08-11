@@ -2330,6 +2330,16 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </div>
         </div>
       </sc-if>
+      <!-- Sync status sits here for the same reason the update banner does:
+           this is the one screen where nobody is part-way through a form.
+           It never renders on the form screens — structurally, not by a
+           condition. Absent entirely until a sync server is configured. -->
+      <sc-if value="{{ showSyncBar }}">
+        <div data-sync-bar="" style="flex-shrink: 0; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; padding: 10px 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap">
+          <span data-sync-status="" style="font-size: var(--fs-sm); color: {{ syncColor }}">{{ syncLabel }}</span>
+          <button onclick="{{ onSyncNow }}" data-sync-now="" style="height: 34px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer; flex-shrink: 0" style-hover="background: #F0F6FF">立即同步</button>
+        </div>
+      </sc-if>
       <div data-mobile-pad="" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 1.5rem">
         <!-- Full-height column so the version line below can be pushed to the
              bottom with margin-top: auto instead of floating up under the last
@@ -2400,7 +2410,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">
-            v3.11.0 — Offline Exhibition Form
+            v3.13.0 — Offline Exhibition Form
             <sc-if value="{{ swDisabled }}">
               <span data-sw-disabled="" style="display: block; margin-top: 4px; color: #B45309">離線快取已停用，網址加上 ?sw=on 可重新啟用</span>
             </sc-if>
@@ -3370,6 +3380,19 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               <div style="font-size: 1rem; font-weight: 700; color: #1A1A2E; margin-bottom: 12px">GDPR 同意聲明（中文）</div>
               <textarea value="{{ gdprZh }}" oninput="{{ onGdprZhChange }}" rows="3" style="width: 100%; padding: 10px 14px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none; resize: vertical; line-height: 1.5" style-focus="border-color: #0055B8"></textarea>
             </div>
+            <div style="background: #FFF; border-radius: 10px; padding: 20px; border: 1px solid #E2E8F0">
+              <div style="font-size: 1rem; font-weight: 700; color: #1A1A2E; margin-bottom: 12px">同步伺服器</div>
+              <input type="url" data-sync-url="" value="{{ syncUrl }}" oninput="{{ onSyncUrlChange }}" placeholder="https://sync.example.com/v1" style="width: 100%; height: 44px; padding: 0 14px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.9375rem; outline: none" style-focus="border-color: #0055B8">
+              <div style="font-size: 0.8125rem; color: #94A3B8; margin-top: 6px">留空即停用同步。必須是 https——app 由 https 提供，瀏覽器會擋掉對 http 位址的請求</div>
+              <input type="text" data-sync-token="" value="{{ syncToken }}" oninput="{{ onSyncTokenChange }}" placeholder="存取權杖" style="width: 100%; height: 44px; margin-top: 12px; padding: 0 14px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.9375rem; outline: none" style-focus="border-color: #0055B8">
+              <div style="font-size: 0.8125rem; color: #94A3B8; margin-top: 6px">每台平板一組，遺失時由伺服器端撤銷該組即可</div>
+              <div style="display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap">
+                <button onclick="{{ onTestSync }}" data-sync-test="" style="height: 40px; padding: 0 16px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: 0.875rem; cursor: pointer" style-hover="background: #F0F6FF">測試連線</button>
+                <sc-if value="{{ syncTestResult }}">
+                  <span data-sync-test-result="" style="font-size: 0.8125rem; color: #475569">{{ syncTestResult }}</span>
+                </sc-if>
+              </div>
+            </div>
             <div style="padding-bottom: 40px">
               <button onclick="{{ onSaveSettings }}" style="width: 100%; height: 48px; background: #0055B8; color: #FFF; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer" style-hover="background: #004494">儲存設定</button>
             </div>
@@ -3512,8 +3535,9 @@ class Component extends DCLogic {
 
   state = {
     screen: 'events',
-    // Events. `state.records` always holds *every* record (the event list shows
-    // a per-event count); anything scoped to the open event filters by eventId.
+    // Events. `state.records` always holds *every* record, **including v3.12
+    // tombstones** — read it through liveRecords() / eventRecords(), never
+    // directly, or deleted rows leak back into the list and the export.
     events: [], currentEventId: null,
     eventsManageMode: false,        // unlocked by PIN on the event list
     showEventEditor: false, eventEditorMode: 'add', editingEventId: null,
@@ -3550,7 +3574,15 @@ class Component extends DCLogic {
     // could write it a day early and nothing in the app could fix it.
     editVisitDate: '',
     adminTab: 'customer',
-    pin: '0000', deviceName: '',
+    // deviceName is the human label shown in exports; deviceId is the sync
+    // identity (see loadAllData). They are deliberately not the same thing.
+    pin: '0000', deviceName: '', deviceId: '',
+    // Sync (v3.13). An empty syncUrl means sync is off — that is the default,
+    // and with it the app behaves exactly as it did before: no requests, no
+    // status line, nothing on screen.
+    syncUrl: '', syncToken: '', syncSeq: 0,
+    syncStatus: 'off',      // 'off' | 'running' | 'idle' | 'error'
+    syncError: '', syncLastAt: '', syncTestResult: '',
     gdprEn: 'I consent to the organizer collecting and storing my contact information for the purpose of business follow-up. My data will not be shared with third parties.',
     gdprZh: '本人同意主辦單位蒐集並儲存本人之聯絡資訊，用於後續商業聯繫。本人資料不會提供予第三方。',
     customerFields: [], needsFields: [], companyFields: [], staffFields: [],
@@ -3721,11 +3753,19 @@ class Component extends DCLogic {
   }
 
   async componentDidMount() {
+    // A handle on the running app. dc-runtime keeps the instance inside its own
+    // registry, so without this there is no way to inspect sync state — not
+    // from the tests, and not from Safari's console on a tablet that is
+    // misbehaving at a show. The whole source is readable anyway; this hides
+    // nothing that was not already visible.
+    window.__app = this;
     await this.initDB();
     await this.loadAllData();
     this.setState({ dbReady: true });
     this.bindDragReorder();
     this.bindSwUpdate();
+    this.bindSyncTriggers();
+    this.syncNow('startup');
   }
 
   // The registration script (bottom of the file) parks an updated worker and
@@ -3761,11 +3801,14 @@ class Component extends DCLogic {
   dbClear(store) { return new Promise((res, rej) => { const tx = this.db.transaction(store, 'readwrite'); const r = tx.objectStore(store).clear(); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
 
   async loadAllData() {
-    const [pinD, devD, gdprEnD, gdprZhD, mig35D, mig36D, mig38D, mig310D] = await Promise.all([
-      this.dbGet('config','pin'), this.dbGet('config','deviceName'),
+    const [pinD, devD, devIdD, gdprEnD, gdprZhD, mig35D, mig36D, mig38D, mig310D, mig312D,
+      syncUrlD, syncTokenD, syncSeqD] = await Promise.all([
+      this.dbGet('config','pin'), this.dbGet('config','deviceName'), this.dbGet('config','deviceId'),
       this.dbGet('config','gdprEn'), this.dbGet('config','gdprZh'),
       this.dbGet('config','migratedTo35'), this.dbGet('config','migratedTo36'),
       this.dbGet('config','migratedTo38'), this.dbGet('config','migratedTo310'),
+      this.dbGet('config','migratedTo312'),
+      this.dbGet('config','syncUrl'), this.dbGet('config','syncToken'), this.dbGet('config','syncSeq'),
     ]);
     let records = await this.dbGetAll('records');
     let events = await this.dbGetAll('events');
@@ -3788,14 +3831,38 @@ class Component extends DCLogic {
     if (!mig36D?.value) await this.resetStaffRosters(events, 'migratedTo36');
     if (!mig38D?.value) await this.migrateTo38(events);
     if (!mig310D?.value) await this.migrateTo310(events);
+    if (!mig312D?.value) records = await this.migrateTo312(records);
+
+    // The sync identity of this install. Distinct from deviceName, which is a
+    // human label anyone can retype or blank out in 系統設定 — it can even be
+    // identical on two tablets. Generated once and never shown in the UI.
+    const deviceId = devIdD?.value || this.genUUID();
+    if (!devIdD) await this.dbPut('config', { key: 'deviceId', value: deviceId });
 
     this.setState({
-      pin: pinD?.value ?? '0000', deviceName: devD?.value ?? defaultDev,
+      pin: pinD?.value ?? '0000', deviceName: devD?.value ?? defaultDev, deviceId,
+      syncUrl: syncUrlD?.value ?? '', syncToken: syncTokenD?.value ?? '', syncSeq: syncSeqD?.value ?? 0,
       gdprEn: gdprEnD?.value ?? this.state.gdprEn, gdprZh: gdprZhD?.value ?? this.state.gdprZh,
       events: this.sortEvents(events),
       records: records.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)),
     });
     if (!devD) await this.dbPut('config', { key: 'deviceName', value: defaultDev });
+  }
+
+  // v3.12: every record needs a modification time before sync can decide which
+  // copy of a row is newer. Existing records only know when they were created,
+  // and that is the honest answer — a later timestamp would be invented, and
+  // inventing one biases every future conflict in this device's favour.
+  async migrateTo312(records) {
+    const out = [];
+    for (const r of records) {
+      if (r.updatedAt) { out.push(r); continue; }
+      const patched = { ...r, updatedAt: r.timestamp };
+      await this.dbPut('records', patched);
+      out.push(patched);
+    }
+    await this.dbPut('config', { key: 'migratedTo312', value: true });
+    return out;
   }
 
   // Newest first, so the event most likely to be in use sits at the top.
@@ -4273,6 +4340,23 @@ class Component extends DCLogic {
       + '-' + String(d.getDate()).padStart(2, '0');
   }
 
+  // The modification time to stamp on a local change, given what the record
+  // carried before.
+  //
+  // Normally that is simply now. But conflicts are resolved by comparing
+  // updatedAt across devices, and a record pulled from a tablet whose clock
+  // runs fast can already be stamped in the future. Using a bare `now` then
+  // produces a change that looks *older* than what it replaced, and the sync
+  // discards it — a delete that quietly fails to delete, with no error anywhere.
+  //
+  // So a local change always dates itself just past whatever it is changing.
+  // Acting on a record is what gives you the right to supersede it.
+  nextUpdatedAt(prev) {
+    const now = new Date().toISOString();
+    if (!prev || now > prev) return now;
+    return new Date(new Date(prev).getTime() + 1).toISOString();
+  }
+
   todayStr() { return this.ymd(new Date()); }
 
   // Any blank `date`-type field gets committed to today's date at submit time
@@ -4308,7 +4392,30 @@ class Component extends DCLogic {
   // ===== EVENTS =====
   currentEvent() { return this.state.events.find(e => e.id === this.state.currentEventId) || null; }
 
-  eventRecords(eventId) { return this.state.records.filter(r => r.eventId === eventId); }
+  // v3.12: deletes became tombstones so sync can tell "removed here" apart from
+  // "not received there yet". Nothing user-facing may read `state.records`
+  // directly any more — the two helpers below are the only supported readers,
+  // and the failure mode they exist to prevent is a deleted record reappearing
+  // in the export.
+  liveRecords() { return this.state.records.filter(r => !r.deletedAt); }
+
+  eventRecords(eventId) { return this.liveRecords().filter(r => r.eventId === eventId); }
+
+  // Marks rows deleted, writes them back, and returns the new records array.
+  // The tombstone keeps `id`, `eventId` and `updatedAt`; every other field is
+  // dropped, because a deleted record has no business still holding a visitor's
+  // name, phone number and card photo on the tablet.
+  async tombstone(rows) {
+    const stones = new Map();
+    for (const r of rows) {
+      const at = this.nextUpdatedAt(r.updatedAt);
+      const stone = { id: r.id, eventId: r.eventId, deviceId: r.deviceId ?? null,
+        timestamp: r.timestamp, updatedAt: at, deletedAt: at };
+      await this.dbPut('records', stone);
+      stones.set(r.id, stone);
+    }
+    return this.state.records.map(r => stones.get(r.id) || r);
+  }
 
   dateRangeLabel(ev) {
     if (!ev) return '';
@@ -4430,12 +4537,13 @@ class Component extends DCLogic {
   }
 
   async deleteEvent(id) {
-    const doomed = this.state.records.filter(r => r.eventId === id);
-    for (const r of doomed) await this.dbDelete('records', r.id);
+    // The records leave tombstones; the event and its field definitions are
+    // removed outright. Only records sync in the first implementation, so an
+    // event row has nothing to tell a server about (see docs/sync-contract.md).
+    const records = await this.tombstone(this.eventRecords(id));
     for (const g of this.DEF_GROUPS) await this.dbDelete('fieldDefinitions', this.defKey(id, g));
     await this.dbDelete('events', id);
-    this.setState({ events: this.state.events.filter(e => e.id !== id),
-      records: this.state.records.filter(r => r.eventId !== id) });
+    this.setState({ events: this.state.events.filter(e => e.id !== id), records });
     this.showToastMsg('活動已刪除');
   }
 
@@ -4508,8 +4616,10 @@ class Component extends DCLogic {
 
   async upsertFlowRecord(patch) {
     const { currentRecordId, records } = this.state;
+    const now = new Date().toISOString();
     if (currentRecordId) {
-      const updated = records.map(r => r.id === currentRecordId ? { ...r, ...patch } : r);
+      const updated = records.map(r => r.id === currentRecordId
+        ? { ...r, ...patch, updatedAt: this.nextUpdatedAt(r.updatedAt) } : r);
       const rec = updated.find(r => r.id === currentRecordId);
       if (rec) await this.dbPut('records', rec);
       return { records: updated, currentRecordId };
@@ -4518,7 +4628,11 @@ class Component extends DCLogic {
     // record comes into existence, so a flow abandoned midway still carries who
     // was at the table and on which day.
     const record = {
-      id: this.genUUID(), timestamp: new Date().toISOString(), device: this.state.deviceName,
+      // `timestamp` stays the creation time and keeps its existing meaning
+      // (exports and the record list sort by it). `updatedAt` is what sync
+      // compares; they are equal until the first edit.
+      id: this.genUUID(), timestamp: now, updatedAt: now, deletedAt: null,
+      device: this.state.deviceName, deviceId: this.state.deviceId,
       eventId: this.state.currentEventId,
       customerFields: {}, needsFields: {}, companyFields: {},
       staffFields: { greeter: [...this.state.sessionGreeters], visit_date: this.state.sessionDate,
@@ -4527,6 +4641,8 @@ class Component extends DCLogic {
       ...patch,
     };
     await this.dbPut('records', record);
+    // Debounced, so the three writes of one flow collapse into a single push.
+    this.scheduleSyncPush();
     return { records: [record, ...records], currentRecordId: record.id };
   }
 
@@ -4594,11 +4710,13 @@ class Component extends DCLogic {
     const updated = records.map(r => r.id === editingRecordId
       ? { ...r, customerFields: vals, needsFields: { ...needsValues }, companyFields: { ...companyValues },
           staffFields: { ...r.staffFields, visit_date: visitDate || r.staffFields?.visit_date },
-          cardPhoto: this.state.cardPhotoBase64 ?? null }
+          cardPhoto: this.state.cardPhotoBase64 ?? null,
+          updatedAt: this.nextUpdatedAt(r.updatedAt) }
       : r);
     const rec = updated.find(r => r.id === editingRecordId);
     if (rec) await this.dbPut('records', rec);
     this.setState({ ...this.flowResetPatch(), records: updated, ...this.afterRecordEditPatch() });
+    this.scheduleSyncPush();
     this.showToastMsg('紀錄已更新');
   }
 
@@ -5033,7 +5151,7 @@ class Component extends DCLogic {
   // `returnTo` is where finishing or cancelling the edit lands: 'admin' for the
   // 表單管理 records tab, 'browse' for reception's record browser.
   editRecord(id, returnTo = 'admin') {
-    const rec = this.state.records.find(x => x.id === id);
+    const rec = this.liveRecords().find(x => x.id === id);
     if (!rec) return;
     const vals = this.editValuesFor(rec, this.state.customerFields, 'customer');
     const phoneF = this.state.customerFields.find(f => f.type === 'tel');
@@ -5051,20 +5169,203 @@ class Component extends DCLogic {
       recordReturnTo: returnTo });
   }
 
-  async deleteRecord(id) { await this.dbDelete('records', id); this.setState({ records: this.state.records.filter(r => r.id !== id) }); this.showToastMsg('紀錄已刪除'); }
+  async deleteRecord(id) {
+    const rec = this.liveRecords().find(r => r.id === id);
+    if (!rec) return;
+    this.setState({ records: await this.tombstone([rec]) });
+    this.scheduleSyncPush();
+    this.showToastMsg('紀錄已刪除');
+  }
 
   // Scoped to the open event — other events' records must survive.
   async clearAllRecords() {
     const id = this.state.currentEventId;
-    for (const r of this.eventRecords(id)) await this.dbDelete('records', r.id);
-    this.setState({ records: this.state.records.filter(r => r.eventId !== id) });
+    this.setState({ records: await this.tombstone(this.eventRecords(id)) });
+    this.scheduleSyncPush();
     this.showToastMsg('已清除本活動全部紀錄');
   }
 
   async saveSettings() {
     await Promise.all([this.saveConfig('pin', this.state.pin), this.saveConfig('deviceName', this.state.deviceName),
-      this.saveConfig('gdprEn', this.state.gdprEn), this.saveConfig('gdprZh', this.state.gdprZh)]);
+      this.saveConfig('gdprEn', this.state.gdprEn), this.saveConfig('gdprZh', this.state.gdprZh),
+      this.saveConfig('syncUrl', this.state.syncUrl.trim()), this.saveConfig('syncToken', this.state.syncToken.trim())]);
     this.showToastMsg('設定已儲存');
+  }
+
+  // ===== SYNC (v3.13) =====
+  // Records only; photos are v3.14. Protocol and rationale: docs/sync-contract.md.
+  //
+  // iOS has never implemented Background Sync, and the tablets are iPads — so
+  // everything here runs in the foreground, and any request may be cut off by
+  // the show's unreliable Wi-Fi at any moment, including after the server has
+  // written but before the response arrives. That is why pushes are idempotent
+  // by record id: retrying is always safe.
+
+  SYNC_BATCH = 50;
+
+  syncConfigured() { return !!this.state.syncUrl && !!this.state.syncToken; }
+
+  // A record the server has not seen in its current shape. Absent syncedAt
+  // means never sent — which is the right answer for every record that existed
+  // before sync, and for tombstones (tombstone() drops the field).
+  isDirty(r) { return !r.syncedAt || r.updatedAt > r.syncedAt; }
+
+  dirtyRecords() { return this.state.records.filter(r => this.isDirty(r)); }
+
+  bindSyncTriggers() {
+    // No Background Sync on iOS, so these four are the whole story.
+    window.addEventListener('online', () => this.syncNow('online'));
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') this.syncNow('foreground');
+    });
+  }
+
+  // Called after every record write. Debounced, and push-only: getting data off
+  // the tablet promptly is what matters on a flaky network, and a pull in the
+  // middle of a form is exactly what pullAllowed() below refuses.
+  scheduleSyncPush() {
+    clearTimeout(this._syncPushTimer);
+    this._syncPushTimer = setTimeout(() => this.syncNow('record-saved'), 2000);
+  }
+
+  // Pulling is only safe when no record is open. Applying a remote copy over
+  // the record someone is typing into would silently discard their work, and
+  // leave no trace that it happened.
+  //
+  // Skipping individual records instead would be worse: advancing the cursor
+  // past a row that was not applied loses it permanently, and not advancing it
+  // stalls the whole cursor anyway.
+  pullAllowed() {
+    return (this.state.screen === 'events' || this.state.screen === 'eventHome')
+      && !this.state.editingRecordId && !this.state.currentRecordId;
+  }
+
+  syncEndpoint(path) {
+    return this.state.syncUrl.replace(/\/+$/, '') + path;
+  }
+
+  async syncFetch(path, init = {}) {
+    const res = await fetch(this.syncEndpoint(path), {
+      ...init,
+      headers: { 'Authorization': 'Bearer ' + this.state.syncToken, ...(init.headers || {}) },
+    });
+    // 401 is deliberately not lumped in with other failures: a wrong token
+    // needs a person to fix a setting, while a network error just needs another
+    // try later. Telling the user "connection failed" for a bad token sends
+    // them to check the Wi-Fi, which will not help.
+    if (res.status === 401) { const e = new Error('unauthorized'); e.kind = 'auth'; throw e; }
+    if (!res.ok) { const e = new Error('http ' + res.status); e.kind = 'server'; e.status = res.status; throw e; }
+    return res.json();
+  }
+
+  async syncNow(reason = 'manual') {
+    if (!this.syncConfigured()) { this.setState({ syncStatus: 'off', syncError: '' }); return; }
+    if (this._syncing) return;                       // single-flight, never concurrent
+    this._syncing = true;
+    this.setState({ syncStatus: 'running', syncError: '' });
+    try {
+      await this.syncPush();
+      if (this.pullAllowed()) await this.syncPull();
+      this.setState({ syncStatus: 'idle', syncError: '', syncLastAt: new Date().toISOString() });
+    } catch (e) {
+      // Nothing is ever dropped on failure: unsent records keep their old
+      // syncedAt and stay dirty, so the next trigger picks them up again.
+      const msg = e.kind === 'auth' ? '存取權杖錯誤'
+        : e.kind === 'server' ? `伺服器錯誤（${e.status}）`
+        : '無法連線';
+      this.setState({ syncStatus: 'error', syncError: msg });
+    } finally {
+      this._syncing = false;
+    }
+  }
+
+  async syncPush() {
+    const pending = this.dirtyRecords();
+    for (let i = 0; i < pending.length; i += this.SYNC_BATCH) {
+      const batch = pending.slice(i, i + this.SYNC_BATCH);
+      const body = { deviceId: this.state.deviceId, records: batch.map(r => this.forWire(r)) };
+      const out = await this.syncFetch('/records', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      });
+      const now = new Date().toISOString();
+      let records = this.state.records;
+      for (const result of (out.results || [])) {
+        if (result.status === 'accepted') {
+          records = records.map(r => r.id === result.id ? { ...r, syncedAt: now } : r);
+        } else if (result.status === 'superseded' && result.record) {
+          // The server had a newer copy. Take it, and mark it synced — we are
+          // now holding exactly what the server holds.
+          const local = records.find(r => r.id === result.id);
+          const merged = { ...result.record, syncedAt: now };
+          records = records.map(r => r.id === result.id ? merged : r);
+          if (local) await this.dbPut('records', merged);
+        }
+        // 'rejected' is left dirty on purpose: one bad row must not be silently
+        // forgotten, and it will be retried on the next trigger.
+      }
+      for (const r of batch) {
+        const updated = records.find(x => x.id === r.id);
+        if (updated && updated.syncedAt === now) await this.dbPut('records', updated);
+      }
+      this.setState({ records });
+    }
+  }
+
+  // `cardPhoto` never goes in the record JSON — 200–500KB each would make a
+  // batch of 50 enormous, and a failed photo would drag the records with it.
+  // `syncedAt` is local bookkeeping and means nothing to the server.
+  forWire(r) {
+    const { cardPhoto, syncedAt, ...wire } = r;
+    return wire;
+  }
+
+  async syncPull() {
+    for (let guard = 0; guard < 50; guard++) {
+      const since = this.state.syncSeq || 0;
+      const out = await this.syncFetch(`/records?since=${since}&limit=200`);
+      const incoming = out.records || [];
+      if (incoming.length) {
+        const now = new Date().toISOString();
+        let records = this.state.records;
+        for (const remote of incoming) {
+          const local = records.find(r => r.id === remote.id);
+          if (local && !this.remoteWins(remote, local)) continue;
+          const merged = { ...remote, syncedAt: now,
+            // A pull carries no photo, so keep whatever this tablet already has
+            // rather than blanking it.
+            cardPhoto: (local && local.cardPhoto) ?? null };
+          await this.dbPut('records', merged);
+          records = local
+            ? records.map(r => r.id === remote.id ? merged : r)
+            : [merged, ...records];
+        }
+        this.setState({ records });
+      }
+      await this.saveConfig('syncSeq', out.seq);
+      this.setState({ syncSeq: out.seq });
+      if (!out.hasMore) break;
+    }
+  }
+
+  // Same rule as the server's: last write wins on updatedAt, ties broken by
+  // deviceId so both ends pick the same winner without negotiating.
+  remoteWins(remote, local) {
+    if (remote.updatedAt !== local.updatedAt) return remote.updatedAt > local.updatedAt;
+    return String(remote.deviceId || '') > String(local.deviceId || '');
+  }
+
+  // Separate from syncNow so the settings screen can tell "cannot reach the
+  // server" apart from "the token is wrong" — the only self-service diagnosis
+  // available to someone standing in a exhibition hall.
+  async testSyncConnection() {
+    if (!this.syncConfigured()) { this.showToastMsg('請先填寫伺服器網址與存取權杖'); return; }
+    this.setState({ syncTestResult: '測試中…' });
+    try {
+      await this.syncFetch('/records?since=0&limit=1');
+      this.setState({ syncTestResult: '連線成功' });
+    } catch (e) {
+      this.setState({ syncTestResult: e.kind === 'auth' ? '連得上伺服器，但存取權杖錯誤' : '無法連線到伺服器' });
+    }
   }
 
   // ===== RENDER =====
@@ -5318,6 +5619,21 @@ class Component extends DCLogic {
     const showAdminFieldList = showAdmin && (adminTab === 'customer' || adminTab === 'needs' || adminTab === 'company');
     const showAdminRecords = showAdmin && adminTab === 'records';
     const showAdminSettings = showAdmin && adminTab === 'settings';
+
+    // ===== Sync status line =====
+    // The pending count is what reception actually needs to know: it answers
+    // "is anything still only on this tablet?" Time of last success answers
+    // "how stale is the server?" Both, or neither is much use.
+    const pendingCount = this.syncConfigured() ? this.dirtyRecords().length : 0;
+    const lastAt = this.state.syncLastAt
+      ? new Date(this.state.syncLastAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : '';
+    const syncLabel = this.state.syncStatus === 'running' ? '同步中…'
+      : this.state.syncStatus === 'error' ? `同步失敗：${this.state.syncError}` + (pendingCount ? `（待同步 ${pendingCount} 筆）` : '')
+      : pendingCount ? `待同步 ${pendingCount} 筆` + (lastAt ? ` · 上次同步 ${lastAt}` : '')
+      : lastAt ? `已同步 · ${lastAt}` : '尚未同步';
+    const syncColor = this.state.syncStatus === 'error' ? '#B45309'
+      : pendingCount ? '#475569' : '#64748B';
 
     // ===== Event list =====
     const curEvent = this.currentEvent();
@@ -5719,6 +6035,15 @@ class Component extends DCLogic {
       onGdprEnChange: (e) => this.setState({ gdprEn: e.target.value }),
       onGdprZhChange: (e) => this.setState({ gdprZh: e.target.value }),
       onSaveSettings: () => this.saveSettings(),
+      syncUrl: this.state.syncUrl, syncToken: this.state.syncToken,
+      syncTestResult: this.state.syncTestResult,
+      onSyncUrlChange: (e) => this.setState({ syncUrl: e.target.value, syncTestResult: '' }),
+      onSyncTokenChange: (e) => this.setState({ syncToken: e.target.value, syncTestResult: '' }),
+      onTestSync: () => this.testSyncConnection(),
+      // Sync bar (event list only)
+      showSyncBar: this.syncConfigured(),
+      syncLabel, syncColor,
+      onSyncNow: () => this.syncNow('manual'),
       // Field editor
       showFieldEditor, fieldEditorTitle: fieldEditorMode === 'add' ? '新增欄位' : '編輯欄位',
       feNameEn, feNameZh, feType, feRequired, feAllowOther, feShowOptions, feShowAllowOther, feOptions,
