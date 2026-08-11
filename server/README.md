@@ -107,9 +107,18 @@ WantedBy=multi-user.target
 
 | 系統 | 指令 |
 |---|---|
-| Windows | `winget install --id Cloudflare.cloudflared` |
+| Windows | `winget install --id Cloudflare.cloudflared`，裝完**關掉終端機重開**（PATH 不會傳進已開啟的視窗） |
 | macOS | `brew install cloudflared` |
 | Linux | 見 [Cloudflare 的安裝說明](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) |
+
+Windows 上若沒有 winget，或裝完仍找不到指令，直接抓單一執行檔就好：
+
+```powershell
+curl.exe -L -o cloudflared.exe https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe
+.\cloudflared.exe --version
+```
+
+PowerShell 不會執行當前目錄下的檔案，所以要寫 `.\cloudflared.exe` 而不是 `cloudflared.exe`。
 
 **開兩個終端機視窗**，一個跑伺服器、一個跑隧道。不要用 `&` 之類的背景執行寫法——
 那是 Unix shell 專屬的，在 Windows 上不會照預期運作，而且伺服器的輸出你會想看得到。
@@ -122,8 +131,35 @@ node server/index.js --token dev-token
 cloudflared tunnel --url http://localhost:3000
 ```
 
+> **`--url` 後面不要加 `/v1`。** 它指的是隧道要把流量送到哪個**本機伺服器**，
+> 不是某一條路徑；加了會讓路徑被疊兩次，怎麼填都到不了正確的端點。
+>
+> `/v1` 只出現在**平板的設定欄位**裡：`https://<隨機>.trycloudflare.com/v1`。
+
 會給一個隨機的 `https://….trycloudflare.com` 網址。免費、不用帳號，但**每次重啟網址就變**，
 要重新填到每一台平板的設定裡。適合實測一天，不適合當常態。
+
+### 連不上時的排查順序
+
+一次只排除一層，不要靠猜：
+
+```powershell
+# 1. 伺服器本身（另開一個終端機）
+curl.exe -H "Authorization: Bearer dev-token" "http://localhost:3000/v1/records?since=0"
+#    預期 {"records":[],"seq":0,"hasMore":false}；不通就是伺服器沒跑起來
+
+# 2. 隧道（同一台電腦，換成隧道網址）
+curl.exe -H "Authorization: Bearer dev-token" "https://<隨機>.trycloudflare.com/v1/records?since=0"
+#    回一樣的 JSON 才算隧道通；這步失敗就與平板無關
+```
+
+**3. 平板碰得到**：用平板的瀏覽器直接開
+`https://<隨機>.trycloudflare.com/v1/records?since=0`
+
+看到 `{"error":"invalid token"}` **是好消息**——代表平板連得到伺服器，只是瀏覽器不會帶權杖。
+看到 Cloudflare 的錯誤頁或一直轉圈才是真的不通。
+
+**4. 最後才回 App 按「測試連線」。** 權杖要和 `--token` 後面那串一字不差。
 
 ---
 
@@ -146,7 +182,7 @@ cloudflared tunnel --url http://localhost:3000
 # 終端機 1
 node server/index.js --token tabletA-xxxx,tabletB-yyyy
 
-# 終端機 2
+# 終端機 2（--url 後面不要加 /v1，那是平板設定裡才有的）
 cloudflared tunnel --url http://localhost:3000
 # → https://<隨機>.trycloudflare.com
 ```
