@@ -18,10 +18,28 @@ D1、R2 或任何平台原生服務會更短也更省事，但那會把契約綁
 
 ## 跑起來
 
+**從 repo 根目錄執行。** `server/index.js` 是相對路徑，在別的目錄下會得到
+`Cannot find module '…\server\index.js'`。
+
 ```bash
+git clone https://github.com/art20217/exhibition_form.git
+cd exhibition_form
 node server/index.js --token dev-token
 # 同步伺服器：http://localhost:3000/v1
 ```
+
+Windows（PowerShell）除了路徑分隔符之外完全相同：
+
+```powershell
+git clone https://github.com/art20217/exhibition_form.git
+cd exhibition_form
+node server\index.js --token dev-token
+```
+
+> **`server/` 需要 v3.12 以上。** 若 `master` 上還沒有這個目錄，代表對應的 PR 尚未合併，
+> 先合併，或 `git checkout` 到那條功能分支。
+
+不需要 `npm install`——這支伺服器零依賴，只用 Node 內建模組。
 
 | 參數 | 預設 | 說明 |
 |---|---|---|
@@ -85,8 +103,22 @@ WantedBy=multi-user.target
 
 ### 臨時隧道（只為了一次現場實測）
 
-```bash
-node server/index.js --token dev-token &
+先裝 `cloudflared`：
+
+| 系統 | 指令 |
+|---|---|
+| Windows | `winget install --id Cloudflare.cloudflared` |
+| macOS | `brew install cloudflared` |
+| Linux | 見 [Cloudflare 的安裝說明](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) |
+
+**開兩個終端機視窗**，一個跑伺服器、一個跑隧道。不要用 `&` 之類的背景執行寫法——
+那是 Unix shell 專屬的，在 Windows 上不會照預期運作，而且伺服器的輸出你會想看得到。
+
+```
+# 終端機 1（repo 根目錄）
+node server/index.js --token dev-token
+
+# 終端機 2
 cloudflared tunnel --url http://localhost:3000
 ```
 
@@ -103,17 +135,23 @@ cloudflared tunnel --url http://localhost:3000
 確認方式：平板開啟後，**活動列表最底部的版本字串要是 v3.13.0 以上**。
 已安裝主畫面 App 的平板要先點更新橫幅——Service Worker 不會自己接管。
 
-這是最容易漏掉的一步。沒合併就等於什麼都測不到。
+這是最容易漏掉的一步。沒合併就等於什麼都測不到——而且**同一個合併也決定了電腦這端**：
+`server/` 也是隨那次合併才進 `master` 的，沒合併就得先 `git checkout` 到功能分支。
 
-### 電腦上
+### 電腦上：兩個終端機視窗
 
-```bash
+**兩個都要在 repo 根目錄下**（`cd` 進 clone 出來的資料夾），伺服器那行是相對路徑。
+
+```
+# 終端機 1
 node server/index.js --token tabletA-xxxx,tabletB-yyyy
+
+# 終端機 2
 cloudflared tunnel --url http://localhost:3000
 # → https://<隨機>.trycloudflare.com
 ```
 
-**每台平板一組權杖**，不要共用——遺失時才能只撤銷那一台。
+兩個視窗都要保持開著。**每台平板一組權杖**，不要共用——遺失時才能只撤銷那一台。
 
 ### 每台平板上
 
