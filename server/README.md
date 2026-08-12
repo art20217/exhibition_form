@@ -18,10 +18,28 @@ D1、R2 或任何平台原生服務會更短也更省事，但那會把契約綁
 
 ## 跑起來
 
+**從 repo 根目錄執行。** `server/index.js` 是相對路徑，在別的目錄下會得到
+`Cannot find module '…\server\index.js'`。
+
 ```bash
+git clone https://github.com/art20217/exhibition_form.git
+cd exhibition_form
 node server/index.js --token dev-token
 # 同步伺服器：http://localhost:3000/v1
 ```
+
+Windows（PowerShell）除了路徑分隔符之外完全相同：
+
+```powershell
+git clone https://github.com/art20217/exhibition_form.git
+cd exhibition_form
+node server\index.js --token dev-token
+```
+
+> **`server/` 需要 v3.12 以上。** 若 `master` 上還沒有這個目錄，代表對應的 PR 尚未合併，
+> 先合併，或 `git checkout` 到那條功能分支。
+
+不需要 `npm install`——這支伺服器零依賴，只用 Node 內建模組。
 
 | 參數 | 預設 | 說明 |
 |---|---|---|
@@ -85,13 +103,84 @@ WantedBy=multi-user.target
 
 ### 臨時隧道（只為了一次現場實測）
 
-```bash
-node server/index.js --token dev-token &
+先裝 `cloudflared`：
+
+| 系統 | 指令 |
+|---|---|
+| Windows | `winget install --id Cloudflare.cloudflared`，裝完**關掉終端機重開**（PATH 不會傳進已開啟的視窗） |
+| macOS | `brew install cloudflared` |
+| Linux | 見 [Cloudflare 的安裝說明](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) |
+
+Windows 上若沒有 winget，或裝完仍找不到指令，直接抓單一執行檔就好：
+
+```powershell
+curl.exe -L -o cloudflared.exe https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe
+.\cloudflared.exe --version
+```
+
+PowerShell 不會執行當前目錄下的檔案，所以要寫 `.\cloudflared.exe` 而不是 `cloudflared.exe`。
+
+**開兩個終端機視窗**，一個跑伺服器、一個跑隧道。不要用 `&` 之類的背景執行寫法——
+那是 Unix shell 專屬的，在 Windows 上不會照預期運作，而且伺服器的輸出你會想看得到。
+
+```
+# 終端機 1（repo 根目錄）
+node server/index.js --token dev-token
+
+# 終端機 2
 cloudflared tunnel --url http://localhost:3000
 ```
 
-會給一個隨機的 `https://….trycloudflare.com` 網址。免費、不用帳號，但**每次重啟網址就變**，
-要重新填到每一台平板的設定裡。適合實測一天，不適合當常態。
+> **`--url` 後面不要加 `/v1`。** 它指的是隧道要把流量送到哪個**本機伺服器**，
+> 不是某一條路徑；加了會讓路徑被疊兩次，怎麼填都到不了正確的端點。
+>
+> `/v1` 只出現在**平板的設定欄位**裡：`https://<隨機>.trycloudflare.com/v1`。
+
+### 網址在哪裡
+
+**在終端機 2 自己的輸出裡。** `cloudflared` 會刷一堆 log，其中有一段用框線圍起來的區塊：
+
+```
++--------------------------------------------------------------+
+|  Your quick Tunnel has been created! Visit it at ...          |
+|  https://某些-隨機-英文字.trycloudflare.com                     |
++--------------------------------------------------------------+
+```
+
+那個 `.trycloudflare.com` 網址就是。平板要填的是**它加上 `/v1`**。
+
+若只看到錯誤與重試、沒有這個框，代表電腦的對外網路不通，網址還沒產生。
+輸出裡出現 `Registered tunnel connection` 才是連上了。
+
+**別用手打。** 那串是隨機英文單字，打錯一個字母的症狀和同步壞掉一模一樣。
+用任何平板也開得到的方式傳過去（通訊軟體傳給自己、寄信給自己都行），
+貼進 App 之前先在平板瀏覽器開一次 `<網址>/v1/records?since=0` 驗證——
+見下面的排查順序第 3 步。
+
+免費、不用帳號，但**每次重啟網址就變**，要重新填到每一台平板的設定裡。
+所以實測期間那個視窗別關。適合實測一天，不適合當常態。
+
+### 連不上時的排查順序
+
+一次只排除一層，不要靠猜：
+
+```powershell
+# 1. 伺服器本身（另開一個終端機）
+curl.exe -H "Authorization: Bearer dev-token" "http://localhost:3000/v1/records?since=0"
+#    預期 {"records":[],"seq":0,"hasMore":false}；不通就是伺服器沒跑起來
+
+# 2. 隧道（同一台電腦，換成隧道網址）
+curl.exe -H "Authorization: Bearer dev-token" "https://<隨機>.trycloudflare.com/v1/records?since=0"
+#    回一樣的 JSON 才算隧道通；這步失敗就與平板無關
+```
+
+**3. 平板碰得到**：用平板的瀏覽器直接開
+`https://<隨機>.trycloudflare.com/v1/records?since=0`
+
+看到 `{"error":"invalid token"}` **是好消息**——代表平板連得到伺服器，只是瀏覽器不會帶權杖。
+看到 Cloudflare 的錯誤頁或一直轉圈才是真的不通。
+
+**4. 最後才回 App 按「測試連線」。** 權杖要和 `--token` 後面那串一字不差。
 
 ---
 
@@ -103,17 +192,25 @@ cloudflared tunnel --url http://localhost:3000
 確認方式：平板開啟後，**活動列表最底部的版本字串要是 v3.13.0 以上**。
 已安裝主畫面 App 的平板要先點更新橫幅——Service Worker 不會自己接管。
 
-這是最容易漏掉的一步。沒合併就等於什麼都測不到。
+這是最容易漏掉的一步。沒合併就等於什麼都測不到——而且**同一個合併也決定了電腦這端**：
+`server/` 也是隨那次合併才進 `master` 的，沒合併就得先 `git checkout` 到功能分支。
 
-### 電腦上
+### 電腦上：兩個終端機視窗
 
-```bash
+**兩個都要在 repo 根目錄下**（`cd` 進 clone 出來的資料夾），伺服器那行是相對路徑。
+
+```
+# 終端機 1
 node server/index.js --token tabletA-xxxx,tabletB-yyyy
+
+# 終端機 2（--url 後面不要加 /v1，那是平板設定裡才有的）
 cloudflared tunnel --url http://localhost:3000
 # → https://<隨機>.trycloudflare.com
 ```
 
-**每台平板一組權杖**，不要共用——遺失時才能只撤銷那一台。
+兩個視窗都要保持開著。**每台平板一組權杖**，不要共用——遺失時才能只撤銷那一台。
+
+隧道網址印在終端機 2 的輸出裡（見上面「網址在哪裡」），**別用手抄到平板上**。
 
 ### 每台平板上
 

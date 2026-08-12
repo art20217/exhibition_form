@@ -2410,7 +2410,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">
-            v3.13.0 — Offline Exhibition Form
+            v3.14.0 — Offline Exhibition Form
             <sc-if value="{{ swDisabled }}">
               <span data-sw-disabled="" style="display: block; margin-top: 4px; color: #B45309">離線快取已停用，網址加上 ?sw=on 可重新啟用</span>
             </sc-if>
@@ -3582,7 +3582,7 @@ class Component extends DCLogic {
     // status line, nothing on screen.
     syncUrl: '', syncToken: '', syncSeq: 0,
     syncStatus: 'off',      // 'off' | 'running' | 'idle' | 'error'
-    syncError: '', syncLastAt: '', syncTestResult: '',
+    syncError: '', syncLastAt: '', syncTestResult: '', syncPhotoProgress: '',
     gdprEn: 'I consent to the organizer collecting and storing my contact information for the purpose of business follow-up. My data will not be shared with third parties.',
     gdprZh: '本人同意主辦單位蒐集並儲存本人之聯絡資訊，用於後續商業聯繫。本人資料不會提供予第三方。',
     customerFields: [], needsFields: [], companyFields: [], staffFields: [],
@@ -5212,6 +5212,33 @@ class Component extends DCLogic {
 
   dirtyRecords() { return this.state.records.filter(r => this.isDirty(r)); }
 
+  // A content fingerprint of the photo, so an edit that does not touch the
+  // image does not re-upload it. Keying off `updatedAt` instead would resend
+  // 200–500KB every time somebody fixes a typo, on the one network that cannot
+  // afford it.
+  //
+  // FNV-1a plus the length, in plain JS: `crypto.subtle` needs a secure
+  // context, and the field-test setup (tablets against a laptop over the venue
+  // network) does not always have one.
+  photoDigest(dataUrl) {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < dataUrl.length; i++) {
+      h ^= dataUrl.charCodeAt(i);
+      h = Math.imul(h, 0x01000193);
+    }
+    return (h >>> 0).toString(16) + ':' + dataUrl.length;
+  }
+
+  // `syncedAt` is required: photos are keyed by record id, so uploading one for
+  // a record the server has not accepted yet would leave an image with nothing
+  // to belong to. Tombstones drop `cardPhoto`, so deleted records never qualify.
+  photoPending(r) {
+    return !r.deletedAt && !!r.cardPhoto && !!r.syncedAt
+      && r.photoSyncedDigest !== this.photoDigest(r.cardPhoto);
+  }
+
+  pendingPhotos() { return this.state.records.filter(r => this.photoPending(r)); }
+
   bindSyncTriggers() {
     // No Background Sync on iOS, so these four are the whole story.
     window.addEventListener('online', () => this.syncNow('online'));
@@ -5266,17 +5293,66 @@ class Component extends DCLogic {
     try {
       await this.syncPush();
       if (this.pullAllowed()) await this.syncPull();
-      this.setState({ syncStatus: 'idle', syncError: '', syncLastAt: new Date().toISOString() });
+      // Photos last, always. They are the slow part, and a record that reached
+      // the server is worth more than the image attached to it.
+      const morePhotos = await this.syncPhotos();
+      this.setState({ syncStatus: 'idle', syncError: '', syncLastAt: new Date().toISOString(),
+        syncPhotoProgress: '' });
+      // Capped per cycle, so a backlog drains over several passes instead of
+      // holding the single-flight lock for minutes while new records pile up.
+      if (morePhotos) this.scheduleSyncPush();
     } catch (e) {
       // Nothing is ever dropped on failure: unsent records keep their old
       // syncedAt and stay dirty, so the next trigger picks them up again.
       const msg = e.kind === 'auth' ? '存取權杖錯誤'
         : e.kind === 'server' ? `伺服器錯誤（${e.status}）`
         : '無法連線';
-      this.setState({ syncStatus: 'error', syncError: msg });
+      this.setState({ syncStatus: 'error', syncError: msg, syncPhotoProgress: '' });
     } finally {
       this._syncing = false;
     }
+  }
+
+  // Uploads up to PHOTO_BATCH card photos. Returns true if more are waiting.
+  //
+  // A photo failing is not a sync failure: the records are already on the
+  // server, and reporting "同步失敗" for a stalled image would send people
+  // looking for a problem that is not there. The digest simply is not written,
+  // so the next trigger retries this photo and no other state moves.
+  PHOTO_BATCH = 5;
+
+  async syncPhotos() {
+    const queue = this.pendingPhotos();
+    const batch = queue.slice(0, this.PHOTO_BATCH);
+    for (let i = 0; i < batch.length; i++) {
+      const r = batch[i];
+      this.setState({ syncPhotoProgress: `${i + 1}/${queue.length}` });
+      try {
+        const digest = this.photoDigest(r.cardPhoto);
+        await this.syncFetch('/photos/' + encodeURIComponent(r.id), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'image/jpeg' },
+          body: this.dataUrlToBytes(r.cardPhoto),
+        });
+        const merged = { ...(this.state.records.find(x => x.id === r.id) || r), photoSyncedDigest: digest };
+        await this.dbPut('records', merged);
+        this.setState({ records: this.state.records.map(x => x.id === r.id ? merged : x) });
+      } catch (e) {
+        // An expired or wrong token will fail every photo in turn; stop early
+        // rather than hammer the server once per queued image.
+        if (e.kind === 'auth') throw e;
+        console.warn('照片上傳失敗，下次同步再試：' + r.id, e && e.message);
+      }
+    }
+    return queue.length > batch.length;
+  }
+
+  // `cardPhoto` is a data: URL; the endpoint takes raw JPEG bytes.
+  dataUrlToBytes(dataUrl) {
+    const bin = atob(dataUrl.slice(dataUrl.indexOf(',') + 1));
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
   }
 
   async syncPush() {
@@ -5315,7 +5391,7 @@ class Component extends DCLogic {
   // batch of 50 enormous, and a failed photo would drag the records with it.
   // `syncedAt` is local bookkeeping and means nothing to the server.
   forWire(r) {
-    const { cardPhoto, syncedAt, ...wire } = r;
+    const { cardPhoto, syncedAt, photoSyncedDigest, ...wire } = r;
     return wire;
   }
 
@@ -5625,13 +5701,21 @@ class Component extends DCLogic {
     // "is anything still only on this tablet?" Time of last success answers
     // "how stale is the server?" Both, or neither is much use.
     const pendingCount = this.syncConfigured() ? this.dirtyRecords().length : 0;
+    // Photos are counted separately because they behave differently: a record
+    // still waiting means data exists only on this tablet, while a photo still
+    // waiting means the record is already safe and the image is catching up.
+    const pendingPhotoCount = this.syncConfigured() ? this.pendingPhotos().length : 0;
+    const photoNote = pendingPhotoCount ? `　待上傳照片 ${pendingPhotoCount} 張` : '';
     const lastAt = this.state.syncLastAt
       ? new Date(this.state.syncLastAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       : '';
-    const syncLabel = this.state.syncStatus === 'running' ? '同步中…'
+    const syncLabel = this.state.syncStatus === 'running'
+        // A single photo can take seconds on the venue Wi-Fi; without progress
+        // the bar looks frozen and somebody starts pressing things.
+        ? (this.state.syncPhotoProgress ? `上傳照片 ${this.state.syncPhotoProgress}…` : '同步中…')
       : this.state.syncStatus === 'error' ? `同步失敗：${this.state.syncError}` + (pendingCount ? `（待同步 ${pendingCount} 筆）` : '')
-      : pendingCount ? `待同步 ${pendingCount} 筆` + (lastAt ? ` · 上次同步 ${lastAt}` : '')
-      : lastAt ? `已同步 · ${lastAt}` : '尚未同步';
+      : pendingCount ? `待同步 ${pendingCount} 筆` + (lastAt ? ` · 上次同步 ${lastAt}` : '') + photoNote
+      : lastAt ? `已同步 · ${lastAt}` + photoNote : '尚未同步';
     const syncColor = this.state.syncStatus === 'error' ? '#B45309'
       : pendingCount ? '#475569' : '#64748B';
 
