@@ -14,9 +14,11 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 
 ## 這一版有什麼新東西
 
+**v3.14.0** — 名片照片也會同步了（獨立端點、以內容摘要避免重傳）。並修掉一個隱私漏洞：
+刪除紀錄時，伺服器上的照片先前不會跟著消失。
+
 **v3.13.0** — 紀錄的前景同步真的接起來了：推送／拉取、四個觸發點、三種失敗分流，
-外加 [`server/`](server/) 下一支零依賴的參考伺服器。**未設定伺服器時完全沒有動作**；
-名片照片仍未同步。
+外加 [`server/`](server/) 下一支零依賴的參考伺服器。**未設定伺服器時完全沒有動作**。
 
 **v3.12.0** — 同步契約（[`docs/sync-contract.md`](docs/sync-contract.md)）與其所需的資料模型：
 `updatedAt`、墓碑式軟刪除、`deviceId`。
@@ -87,7 +89,7 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 ```bash
 npm ci
 npx playwright-core install chromium   # 首次執行才需要
-npm test                               # 24 支套件，約 7 分鐘
+npm test                               # 25 支套件，約 7.5 分鐘
 npm test -- pin-mobile events          # 只跑名稱含這些字串的套件
 ```
 
@@ -106,7 +108,7 @@ npm test -- pin-mobile events          # 只跑名稱含這些字串的套件
 - **雲端同步需要自備伺服器。** v3.13 起客戶端可同步紀錄，但**正式伺服器尚不存在**——`server/` 下的是參考實作，用於測試與交付規格。未設定伺服器時 app 完全離線運作（[#8](https://github.com/art20217/exhibition_form/issues/8)、[#9](https://github.com/art20217/exhibition_form/issues/9)）。
 - **同步的範圍是「紀錄送達伺服器」，不是「兩台平板互相看得到」。** 活動不同步，所以從別台拉回來的紀錄帶的是原本那台的 `eventId`，接收端沒有對應活動，該筆紀錄會留在資料庫裡卻不出現在任何畫面或匯出。要跨平板互看需要活動同步（契約 v2）。
 - **同步伺服器必須是 https。** App 由 GitHub Pages 以 https 提供，瀏覽器會擋掉對 `http://` 位址的請求，所以「筆電接在展場 Wi-Fi 上」這個做法不通。部署方式見 [`server/README.md`](server/README.md)。
-- **名片照片尚未同步。** 契約已定義端點、參考伺服器也實作了，但客戶端要到 v3.14。
+- **名片照片是單向的。** 平板會把照片上傳到伺服器，但拉取不帶照片，所以另一台平板拉到的紀錄不會有圖。
 - **照片儲存佔用 IndexedDB 空間。** 壓縮後單張約 200～500KB，100 筆含照片約 20～50MB。iPad Safari 的 IndexedDB 配額通常足夠，但建議展後及時匯出並清除。
 - **瀏覽器清除資料會遺失所有紀錄。** 確保平板已啟用螢幕鎖定密碼，避免他人誤操作。
 - **不含 OCR 名片辨識。** 名片照片僅作為存檔，不自動擷取文字。
@@ -188,7 +190,7 @@ exhibition_form/
 ├── tests/                  # 端到端測試（Playwright 驅動 headless Chromium）
 │   ├── helpers.js          #   共用導覽、IndexedDB 讀寫、瀏覽器啟動
 │   ├── run-all.js          #   依序執行全部套件的 runner
-│   └── e2e-*.js            #   24 支套件
+│   └── e2e-*.js            #   25 支套件
 ├── .github/workflows/      # CI：每次 push 與 PR 跑完整測試
 ├── docs/
 │   ├── sync-contract.md    #   同步協定規格（寫給日後實作伺服器的人）

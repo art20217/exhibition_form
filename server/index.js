@@ -85,8 +85,22 @@ function createStore(dir) {
       state.seq += 1;
       state.records[incoming.id] = { ...incoming, _seq: state.seq };
       flush();
+      // A tombstone takes the photo with it. The client drops the photo when it
+      // tombstones a record locally, for the plain reason that a deleted record
+      // has no business still holding a visitor's business card — that reason
+      // does not stop applying at the network boundary. No separate endpoint:
+      // the delete is implied by the record, and an endpoint nobody remembers
+      // to call is how these files end up living forever.
+      if (incoming.deletedAt) this.deletePhoto(incoming.id);
       return { status: 'accepted' };
     },
+
+    deletePhoto(id) {
+      const f = path.join(photoDir, id + '.jpg');
+      if (fs.existsSync(f)) fs.unlinkSync(f);
+    },
+
+    hasPhoto(id) { return fs.existsSync(path.join(photoDir, id + '.jpg')); },
 
     since(seq, limit) {
       const rows = Object.values(state.records)
