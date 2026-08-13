@@ -180,11 +180,13 @@ const BASE = 'http://localhost:8952';
   const row = await page.locator('[data-records-table] tbody tr').first().innerText();
   assert(row.includes('王小明') && row.includes(','), '接待人員欄顯示複選的兩位：' + row.replace(/\n/g, ' | '));
 
-  // v3.5: reception is configured on the event, so the 業務備註欄位 tab is gone.
+  // v3.5 removed the 業務備註欄位 tab (reception is configured on the event) and
+  // v3.15 moved 系統設定 out to its own screen — everything left here is scoped
+  // to one event, which is the point.
   const tabLabels = await page.locator('[data-admin-tabs] button').allInnerTexts();
   assert(JSON.stringify(tabLabels.map(t => t.trim())) === JSON.stringify(
-    ['客戶資料欄位', '客戶需求欄位', '公司背景欄位', '資料紀錄', '系統設定']),
-    '後台恰為五個頁籤，不再有「業務備註欄位」：' + tabLabels.join(' | '));
+    ['客戶資料欄位', '客戶需求欄位', '公司背景欄位', '資料紀錄']),
+    '後台恰為四個頁籤，全都是活動範圍的：' + tabLabels.join(' | '));
   await page.screenshot({ path: path.join(SHOT, '03_tabs.png'), fullPage: true });
 
   // ---- 8. a second event copied from the first, then proven independent ----

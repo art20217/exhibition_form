@@ -156,6 +156,10 @@ async function gotoEvent(page, base, opts) {
 }
 
 // Opens the back office of the event currently open.
+//
+// 系統設定 is no longer one of these tabs — as of v3.15 it lives on its own
+// screen reached from the event list (openSettings below), because it was
+// always device-wide and never event-scoped.
 async function openAdmin(page, tab) {
   await page.locator('button:has(svg circle)').first().click();
   await page.locator('#pin-input').click();
@@ -163,6 +167,14 @@ async function openAdmin(page, tab) {
   await page.getByRole('button', { name: '登入' }).click();
   await page.waitForTimeout(400);
   if (tab) { await page.getByRole('button', { name: tab }).click(); await page.waitForTimeout(500); }
+}
+
+// Opens the device-wide settings screen from the event list. Unlocks manage
+// mode first if it is still locked.
+async function openSettings(page) {
+  if (!(await page.locator('[data-open-settings]').count())) await unlockManage(page);
+  await page.locator('[data-open-settings]').click();
+  await page.waitForTimeout(500);
 }
 
 // Locks the event list back up. Manage mode makes the cards inert (v3.11), so a
@@ -238,5 +250,5 @@ const writeDefs = (page, group, fields) => page.evaluate(([g, v]) => new Promise
 }), [group, fields]);
 
 module.exports = { APP_HTML, launchBrowser, serve, wipeDB, enterEvent, pickCustomerStatus, gotoEvent, openAdmin,
-  unlockManage, lockManage, runFlow, readAll, readDefs, writeDefs,
+  unlockManage, lockManage, openSettings, runFlow, readAll, readDefs, writeDefs,
   startSyncServer, serverRecords, configureSync };

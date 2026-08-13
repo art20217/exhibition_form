@@ -7,7 +7,8 @@ const H = require('./helpers');
 const SHOT = path.join(__dirname, 'shots-adminlayout');
 fs.mkdirSync(SHOT, { recursive: true });
 const BASE = 'http://localhost:8954';
-const TABS = ['客戶資料欄位', '客戶需求欄位', '公司背景欄位', '資料紀錄', '系統設定'];
+// 系統設定 left this screen in v3.15 — it is device-wide, not event-scoped.
+const TABS = ['客戶資料欄位', '客戶需求欄位', '公司背景欄位', '資料紀錄'];
 
 (async () => {
   const server = await H.serve(8954);
