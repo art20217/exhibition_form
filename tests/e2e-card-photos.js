@@ -70,6 +70,17 @@ const TINY_JPEG = Buffer.from(
   await page.locator('[data-entry-customer]').click();
   await page.waitForTimeout(500);
 
+  // ---- 0. the inputs must not carry `capture` ----
+  // Static, because the effect is invisible to everything here: `capture` means
+  // "camera only" on iOS — Safari stops offering 照片圖庫 entirely — while
+  // desktop browsers ignore it and `setInputFiles` bypasses it completely. So a
+  // behavioural assertion is impossible and this is the only guard there is.
+  // A card photographed earlier or sent over by a colleague could not be
+  // attached at all until it was removed (issue #24).
+  const source = fs.readFileSync(H.APP_HTML, 'utf8');
+  assert(!/capture\s*=/.test(source),
+    '名片的檔案輸入沒有 capture 屬性——加上去，事先拍好的名片就完全收不進來');
+
   // ---- 1. two photos, both kept ----
   assert((await photoBlocks().count()) === 0, '一開始沒有任何名片照片');
   await capture('front');

@@ -2419,7 +2419,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">
-            v3.16.0 — Offline Exhibition Form
+            v3.16.1 — Offline Exhibition Form
             <sc-if value="{{ swDisabled }}">
               <span data-sw-disabled="" style="display: block; margin-top: 4px; color: #B45309">離線快取已停用，網址加上 ?sw=on 可重新啟用</span>
             </sc-if>
@@ -2950,7 +2950,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   <div data-form-actions="" style="display: flex; gap: 12px; width: 100%">
                     <label style="flex: 1; height: 48px; background: #FFF; color: #64748B; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-sm); font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center" style-hover="background: #F9FAFB">
                       Retake 重拍
-                      <input type="file" accept="image/*" capture="environment" onchange="{{ ph.onRetake }}" style="display: none">
+                      <input type="file" accept="image/*" onchange="{{ ph.onRetake }}" style="display: none">
                     </label>
                     <button onclick="{{ ph.onRemove }}" data-card-photo-remove="" style="flex: 1; height: 48px; background: #FFF; color: #DC2626; border: 2px solid #FCA5A5; border-radius: 10px; font-size: var(--fs-sm); font-weight: 500; cursor: pointer" style-hover="background: #FEF2F2">Remove 移除</button>
                   </div>
@@ -2960,7 +2960,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                 <label data-add-card-photo="" data-mobile-full="" style="height: 56px; width: 100%; background: #FFF; color: #0055B8; border: 2px dashed #93B4E0; border-radius: 12px; font-size: var(--fs-sm); font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px" style-hover="background: #F0F6FF; border-color: #0055B8">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                   {{ addCardPhotoLabel }}
-                  <input type="file" accept="image/*" capture="environment" onchange="{{ onCardFileSelected }}" style="display: none">
+                  <input type="file" accept="image/*" onchange="{{ onCardFileSelected }}" style="display: none">
                 </label>
               </sc-if>
               <sc-if value="{{ cardPhotoHint }}">
@@ -3662,6 +3662,10 @@ class Component extends DCLogic {
     // and with it the app behaves exactly as it did before: no requests, no
     // status line, nothing on screen.
     syncUrl: '', syncToken: '', syncSeq: 0, syncEventSeq: 0,
+    // Set when the server 404s the event endpoints: it predates contract v2.
+    // Session-only on purpose — pointing at a newer server should not need a
+    // stored flag cleared.
+    syncEventsUnsupported: false,
     syncStatus: 'off',      // 'off' | 'running' | 'idle' | 'error'
     syncError: '', syncLastAt: '', syncTestResult: '', syncPhotoProgress: '',
     gdprEn: 'I consent to the organizer collecting and storing my contact information for the purpose of business follow-up. My data will not be shared with third parties.',
@@ -5238,6 +5242,17 @@ class Component extends DCLogic {
   // IndexedDB quota.
   MAX_CARD_PHOTOS = 4;
 
+  // The file inputs carry `accept="image/*"` and deliberately **no `capture`**.
+  //
+  // On iOS, `capture` does not mean "default to the camera" — it means "camera
+  // only". Safari stops offering 照片圖庫／瀏覽 at all, so a card photographed
+  // earlier, scanned, or sent over by a colleague could never be attached
+  // (issue #24). Desktop browsers ignore the attribute entirely, and
+  // `setInputFiles` bypasses it, which is why nothing here caught it: the whole
+  // effect exists only on a real iPad.
+  //
+  // Cost of removing it: taking a photo is now one extra tap through the system
+  // sheet. Worth it against a path that was completely unreachable.
   async handleCardFileSelected(e, replaceId) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -5804,8 +5819,41 @@ class Component extends DCLogic {
     // try later. Telling the user "connection failed" for a bad token sends
     // them to check the Wi-Fi, which will not help.
     if (res.status === 401) { const e = new Error('unauthorized'); e.kind = 'auth'; throw e; }
-    if (!res.ok) { const e = new Error('http ' + res.status); e.kind = 'server'; e.status = res.status; throw e; }
+    // The endpoint travels with the error. "伺服器錯誤（404）" on its own is
+    // unlocalisable — it cost an evening working out *which* request 404'd, and
+    // the answer ("the server is older than the app") was one line away.
+    if (!res.ok) {
+      const e = new Error('http ' + res.status);
+      e.kind = 'server';
+      e.status = res.status;
+      e.endpoint = (init.method || 'GET') + ' ' + String(path).split('?')[0];
+      throw e;
+    }
     return res.json();
+  }
+
+  // Runs the event half of a sync, and swallows *only* a 404 — the one status
+  // that means "this server does not implement that endpoint".
+  //
+  // Everything else still throws: a 500 on events is a broken server and must
+  // be reported. Once seen, the flag stops this tablet retrying events for the
+  // rest of the session (it will not grow the endpoint while running), and the
+  // status line says so — degrading is fine, degrading quietly is not.
+  //
+  // Cleared whenever the server setting changes, so pointing at a newer server
+  // starts syncing events again without a reload.
+  async withoutMissingEvents(run) {
+    if (this.state.syncEventsUnsupported) return;
+    try {
+      await run();
+    } catch (e) {
+      if (e.kind === 'server' && e.status === 404) {
+        console.warn('伺服器沒有活動端點（契約 v2），本次工作階段改為只同步紀錄：' + (e.endpoint || ''));
+        this.setState({ syncEventsUnsupported: true });
+        return;
+      }
+      throw e;
+    }
   }
 
   async syncNow(reason = 'manual') {
@@ -5817,8 +5865,17 @@ class Component extends DCLogic {
       // Events first, in both directions. A record whose event has not arrived
       // yet belongs to nothing the receiving tablet can show — which was
       // exactly the situation before v3.15.
-      await this.syncPushEvents();
-      if (this.pullAllowed()) await this.syncPullEvents();
+      //
+      // …but only if this server has the endpoint. A 404 here means the server
+      // predates contract v2, and letting that abort the cycle takes the
+      // records down with it — which is backwards: the records are the data,
+      // the events are metadata about it, and records-only is exactly how
+      // v3.13/v3.14 worked. The company's own server will be built in stages
+      // too, so this is not a one-off.
+      await this.withoutMissingEvents(async () => {
+        await this.syncPushEvents();
+        if (this.pullAllowed()) await this.syncPullEvents();
+      });
       await this.syncPush();
       if (this.pullAllowed()) await this.syncPull();
       // Photos last, always. They are the slow part, and a record that reached
@@ -5833,7 +5890,7 @@ class Component extends DCLogic {
       // Nothing is ever dropped on failure: unsent records keep their old
       // syncedAt and stay dirty, so the next trigger picks them up again.
       const msg = e.kind === 'auth' ? '存取權杖錯誤'
-        : e.kind === 'server' ? `伺服器錯誤（${e.status}）`
+        : e.kind === 'server' ? `伺服器錯誤（${e.status}${e.endpoint ? ' ' + e.endpoint : ''}）`
         : '無法連線';
       this.setState({ syncStatus: 'error', syncError: msg, syncPhotoProgress: '' });
     } finally {
@@ -6066,15 +6123,48 @@ class Component extends DCLogic {
   // Separate from syncNow so the settings screen can tell "cannot reach the
   // server" apart from "the token is wrong" — the only self-service diagnosis
   // available to someone standing in a exhibition hall.
+  // Probes every endpoint a sync cycle actually uses, not just the first one.
+  //
+  // Until v3.16.1 this checked `GET /records` alone and reported 「連線成功」,
+  // which is how a server that was missing `/v1/events` entirely passed the
+  // one self-service diagnostic there is — while every sync failed with an
+  // unexplained 404 (issue #25). A check that only covers the endpoint that
+  // happens to work is worse than no check: it actively points away from the
+  // problem.
+  //
+  // The photo endpoint is deliberately not probed: the only way to test it is
+  // to PUT an image, and a diagnostic must not write data.
+  SYNC_PROBES = [
+    { label: '紀錄', path: '/records?since=0&limit=1' },
+    { label: '活動', path: '/events?since=0&limit=1' },
+  ];
+
   async testSyncConnection() {
     if (!this.syncConfigured()) { this.showToastMsg('請先填寫伺服器網址與存取權杖'); return; }
     this.setState({ syncTestResult: '測試中…' });
-    try {
-      await this.syncFetch('/records?since=0&limit=1');
-      this.setState({ syncTestResult: '連線成功' });
-    } catch (e) {
-      this.setState({ syncTestResult: e.kind === 'auth' ? '連得上伺服器，但存取權杖錯誤' : '無法連線到伺服器' });
+    const results = [];
+    for (const probe of this.SYNC_PROBES) {
+      try {
+        await this.syncFetch(probe.path);
+        results.push({ ...probe, ok: true });
+      } catch (e) {
+        // A wrong token fails every probe identically, so say it once and stop
+        // rather than printing the same thing per endpoint.
+        if (e.kind === 'auth') { this.setState({ syncTestResult: '連得上伺服器，但存取權杖錯誤' }); return; }
+        if (e.kind !== 'server') { this.setState({ syncTestResult: '無法連線到伺服器' }); return; }
+        results.push({ ...probe, ok: false, status: e.status });
+      }
     }
+    const bad = results.filter(r => !r.ok);
+    if (!bad.length) { this.setState({ syncTestResult: '連線成功（紀錄、活動端點都在）' }); return; }
+    const detail = results.map(r => r.label + (r.ok ? ' ✓' : ` ✗ ${r.status}`)).join('　');
+    // 404 has a specific meaning worth spelling out — the reader is standing at
+    // a booth, not reading the contract.
+    const missing = bad.every(r => r.status === 404)
+      ? `　此伺服器缺少${bad.map(r => r.label).join('、')}端點，版本可能較舊（需契約 v2 以上）`
+      : '';
+    this.setState({ syncTestResult: detail + missing,
+      syncEventsUnsupported: bad.some(r => r.label === '活動' && r.status === 404) });
   }
 
   // ===== RENDER =====
@@ -6415,6 +6505,10 @@ class Component extends DCLogic {
     // waiting means the record is already safe and the image is catching up.
     const pendingPhotoCount = this.syncConfigured() ? this.pendingPhotos().length : 0;
     const photoNote = pendingPhotoCount ? `　待上傳照片 ${pendingPhotoCount} 張` : '';
+    // Degrading is acceptable; degrading silently is not. Records are still
+    // reaching the server, so this rides along with the success text rather
+    // than turning the bar into a failure.
+    const eventNote = this.state.syncEventsUnsupported ? '　（此伺服器不支援活動同步）' : '';
     const lastAt = this.state.syncLastAt
       ? new Date(this.state.syncLastAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       : '';
@@ -6423,8 +6517,8 @@ class Component extends DCLogic {
         // the bar looks frozen and somebody starts pressing things.
         ? (this.state.syncPhotoProgress ? `上傳照片 ${this.state.syncPhotoProgress}…` : '同步中…')
       : this.state.syncStatus === 'error' ? `同步失敗：${this.state.syncError}` + (pendingCount ? `（待同步 ${pendingCount} 筆）` : '')
-      : pendingCount ? `待同步 ${pendingCount} 筆` + (lastAt ? ` · 上次同步 ${lastAt}` : '') + photoNote
-      : lastAt ? `已同步 · ${lastAt}` + photoNote : '尚未同步';
+      : pendingCount ? `待同步 ${pendingCount} 筆` + (lastAt ? ` · 上次同步 ${lastAt}` : '') + photoNote + eventNote
+      : lastAt ? `已同步 · ${lastAt}` + photoNote + eventNote : '尚未同步';
     const syncColor = this.state.syncStatus === 'error' ? '#B45309'
       : pendingCount ? '#475569' : '#64748B';
 
@@ -6605,7 +6699,11 @@ class Component extends DCLogic {
       }),
     }));
     const canAddCardPhoto = this.state.cardPhotos.length < this.MAX_CARD_PHOTOS;
-    const addCardPhotoLabel = this.state.cardPhotos.length === 0 ? 'Capture 拍攝名片' : '＋ 加拍一張';
+    // "拍攝或選擇" rather than "拍攝": the file inputs deliberately carry no
+    // `capture` attribute (see the note on handleCardFileSelected), so the album
+    // is a real option and the label should say so.
+    const addCardPhotoLabel = this.state.cardPhotos.length === 0
+      ? 'Add Card 拍攝或選擇名片' : '＋ 再加一張';
     const cardPhotoHint = this.state.cardPhotos.length === 0;
 
     // Admin field lists (shared block across the four group tabs)
@@ -6870,8 +6968,10 @@ class Component extends DCLogic {
       onSaveSettings: () => this.saveSettings(),
       syncUrl: this.state.syncUrl, syncToken: this.state.syncToken,
       syncTestResult: this.state.syncTestResult,
-      onSyncUrlChange: (e) => this.setState({ syncUrl: e.target.value, syncTestResult: '' }),
-      onSyncTokenChange: (e) => this.setState({ syncToken: e.target.value, syncTestResult: '' }),
+      onSyncUrlChange: (e) => this.setState({ syncUrl: e.target.value, syncTestResult: '',
+        syncEventsUnsupported: false }),
+      onSyncTokenChange: (e) => this.setState({ syncToken: e.target.value, syncTestResult: '',
+        syncEventsUnsupported: false }),
       onTestSync: () => this.testSyncConnection(),
       // Sync bar (event list only)
       showSyncBar: this.syncConfigured(),

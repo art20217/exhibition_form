@@ -162,7 +162,11 @@ cloudflared tunnel --url http://localhost:3000
 
 ### 連不上時的排查順序
 
-一次只排除一層，不要靠猜：
+一次只排除一層，不要靠猜。
+
+**第 0 步：先看伺服器自己的輸出。** 它會逐筆印出狀態碼、方法與路徑，例如
+`404 POST /v1/events  ← 失敗`——直接告訴你是哪一個端點在失敗。大多數情況這一步就結案了，
+下面幾步是它沒印出東西（請求根本沒到）時才需要的。
 
 ```powershell
 # 1. 伺服器本身（另開一個終端機）
@@ -185,6 +189,17 @@ curl.exe -H "Authorization: Bearer dev-token" "https://<隨機>.trycloudflare.co
 ---
 
 ## 現場實測（一次性）
+
+### 前置：兩邊都要是新版
+
+**平板會自己更新，電腦不會。** 平板從 GitHub Pages 拿版本，PR 一合併就是新版；
+而這個資料夾裡的 `server/index.js` 只有在你 `git pull` 之後才會變。兩邊脫節時，
+app 會去打伺服器還沒有的端點——[#25](https://github.com/art20217/exhibition_form/issues/25)
+就是這樣來的，症狀是「測試連線成功，但同步 404」。
+
+**所以每次實測前，先在 repo 根目錄 `git pull`。**
+
+伺服器現在會把每個請求印出來（`404 POST /v1/events  ← 失敗`），版本不合時一眼就看得到。
 
 ### 前置：確認平板上真的是新版
 
