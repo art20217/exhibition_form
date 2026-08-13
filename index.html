@@ -2419,7 +2419,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">
-            v3.15.0 — Offline Exhibition Form
+            v3.16.0 — Offline Exhibition Form
             <sc-if value="{{ swDisabled }}">
               <span data-sw-disabled="" style="display: block; margin-top: 4px; color: #B45309">離線快取已停用，網址加上 ?sw=on 可重新啟用</span>
             </sc-if>
@@ -2555,11 +2555,19 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
           <sc-if value="{{ field.isTel }}">
             <div data-mobile-stack="" style="display: flex; gap: 8px">
-              <sc-raw-select value="{{ field.countryCode }}" onchange="{{ field.onCountryCodeChange }}" style="width: 140px; height: 48px; padding: 0 8px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
-                <sc-for list="{{ countryCodes }}" as="cc">
-                  <option value="{{ cc.value }}">{{ cc.label }}</option>
-                </sc-for>
-              </sc-raw-select>
+              <div data-cc-combo="" style="position: relative; width: 210px; flex-shrink: 0">
+                <input type="text" value="{{ field.ccValue }}" oninput="{{ field.onCcInput }}" onfocus="{{ field.onCcFocus }}" onblur="{{ field.onCcBlur }}" placeholder="搜尋國碼" autocomplete="off" data-cc-input="" style="width: 100%; height: 48px; padding: 0 12px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
+                <sc-if value="{{ field.ccOpen }}">
+                  <div data-cc-list="" style="position: absolute; z-index: 20; left: 0; min-width: 100%; width: max-content; max-width: 320px; top: 52px; max-height: 260px; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #FFF; border: 1px solid #D1D5DB; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12)">
+                    <sc-for list="{{ field.ccMatches }}" as="cc">
+                      <button type="button" data-cc-opt="" onclick="{{ cc.onPick }}" style="display: block; width: 100%; text-align: left; padding: 12px 14px; border: none; background: transparent; font-size: var(--fs-body); color: #1A1A2E; cursor: pointer; white-space: nowrap" style-hover="background: #F0F6FF">{{ cc.label }}</button>
+                    </sc-for>
+                    <sc-if value="{{ field.ccNoMatch }}">
+                      <div style="padding: 12px 14px; font-size: var(--fs-sm); color: #94A3B8">找不到相符的國碼</div>
+                    </sc-if>
+                  </div>
+                </sc-if>
+              </div>
               <input type="tel" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="flex: 1; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
             </div>
           </sc-if>
@@ -2788,6 +2796,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             <span style="color: rgba(255,255,255,0.8); font-size: var(--fs-sm); line-height: 1.3">{{ customerFormTitleZh }}</span>
           </span>
           <sc-if value="{{ showStepChip }}"><span style="color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.15); font-size: var(--fs-xs); padding: 3px 10px; border-radius: 999px; white-space: nowrap; flex-shrink: 0">{{ customerStepLabel }}</span></sc-if>
+          <sc-if value="{{ showContactChip }}"><span data-contact-chip="" style="color: #FFF; background: rgba(255,255,255,0.28); font-size: var(--fs-xs); padding: 3px 10px; border-radius: 999px; white-space: nowrap; flex-shrink: 0">{{ contactChipLabel }}</span></sc-if>
         </div>
         <button onclick="{{ onCustomerBack }}" style="color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.15); border: none; padding: 8px 14px; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25); color: #FFF">{{ customerBackLabel }}</button>
       </div>
@@ -2827,11 +2836,19 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               </sc-if>
               <sc-if value="{{ field.isTel }}">
                 <div data-mobile-stack="" style="display: flex; gap: 8px">
-                  <sc-raw-select value="{{ field.countryCode }}" onchange="{{ field.onCountryCodeChange }}" style="width: 140px; height: 48px; padding: 0 8px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
-                    <sc-for list="{{ countryCodes }}" as="cc">
-                      <option value="{{ cc.value }}">{{ cc.label }}</option>
-                    </sc-for>
-                  </sc-raw-select>
+                  <div data-cc-combo="" style="position: relative; width: 210px; flex-shrink: 0">
+                    <input type="text" value="{{ field.ccValue }}" oninput="{{ field.onCcInput }}" onfocus="{{ field.onCcFocus }}" onblur="{{ field.onCcBlur }}" placeholder="搜尋國碼" autocomplete="off" data-cc-input="" style="width: 100%; height: 48px; padding: 0 12px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
+                    <sc-if value="{{ field.ccOpen }}">
+                      <div data-cc-list="" style="position: absolute; z-index: 20; left: 0; min-width: 100%; width: max-content; max-width: 320px; top: 52px; max-height: 260px; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #FFF; border: 1px solid #D1D5DB; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12)">
+                        <sc-for list="{{ field.ccMatches }}" as="cc">
+                          <button type="button" data-cc-opt="" onclick="{{ cc.onPick }}" style="display: block; width: 100%; text-align: left; padding: 12px 14px; border: none; background: transparent; font-size: var(--fs-body); color: #1A1A2E; cursor: pointer; white-space: nowrap" style-hover="background: #F0F6FF">{{ cc.label }}</button>
+                        </sc-for>
+                        <sc-if value="{{ field.ccNoMatch }}">
+                          <div style="padding: 12px 14px; font-size: var(--fs-sm); color: #94A3B8">找不到相符的國碼</div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+                  </div>
                   <input type="tel" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="flex: 1; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
                 </div>
               </sc-if>
@@ -2923,27 +2940,33 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               <span style="display: block; font-size: var(--fs-h2); font-weight: 700; line-height: 1.25; color: #1A1A2E">Business Card</span>
               <span style="display: block; font-size: var(--fs-body); font-weight: 400; color: #64748B; line-height: 1.4; margin-top: 2px">名片拍照</span>
             </label>
-            <sc-if value="{{ showCaptureButtons }}">
-              <label data-mobile-full="" style="height: 56px; width: 100%; background: #FFF; color: #0055B8; border: 2px dashed #93B4E0; border-radius: 12px; font-size: var(--fs-sm); font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px" style-hover="background: #F0F6FF; border-color: #0055B8">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-                Capture 拍攝名片
-                <input type="file" accept="image/*" capture="environment" onchange="{{ onCardFileSelected }}" style="display: none">
-              </label>
-            </sc-if>
-            <sc-if value="{{ showPhotoPreview }}">
-              <div style="width: 100%; display: flex; flex-direction: column; gap: 12px">
-                <div style="width: 100%; border-radius: 12px; overflow: hidden; border: 2px solid #E2E8F0; background: #000">
-                  {{ cardPhotoPreviewImg }}
+            <div style="width: 100%; display: flex; flex-direction: column; gap: 16px">
+              <sc-for list="{{ cardPhotoItems }}" as="ph">
+                <div data-card-photo="" style="width: 100%; display: flex; flex-direction: column; gap: 8px">
+                  <div style="font-size: var(--fs-sm); color: #64748B">名片照片 {{ ph.num }}</div>
+                  <div style="width: 100%; border-radius: 12px; overflow: hidden; border: 2px solid #E2E8F0; background: #000">
+                    {{ ph.img }}
+                  </div>
+                  <div data-form-actions="" style="display: flex; gap: 12px; width: 100%">
+                    <label style="flex: 1; height: 48px; background: #FFF; color: #64748B; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-sm); font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center" style-hover="background: #F9FAFB">
+                      Retake 重拍
+                      <input type="file" accept="image/*" capture="environment" onchange="{{ ph.onRetake }}" style="display: none">
+                    </label>
+                    <button onclick="{{ ph.onRemove }}" data-card-photo-remove="" style="flex: 1; height: 48px; background: #FFF; color: #DC2626; border: 2px solid #FCA5A5; border-radius: 10px; font-size: var(--fs-sm); font-weight: 500; cursor: pointer" style-hover="background: #FEF2F2">Remove 移除</button>
+                  </div>
                 </div>
-                <div data-form-actions="" style="display: flex; gap: 12px; width: 100%">
-                  <label style="flex: 1; height: 48px; background: #FFF; color: #64748B; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-sm); font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center" style-hover="background: #F9FAFB">
-                    Retake 重拍
-                    <input type="file" accept="image/*" capture="environment" onchange="{{ onCardFileSelected }}" style="display: none">
-                  </label>
-                  <button onclick="{{ onRemoveCardPhoto }}" style="flex: 1; height: 48px; background: #FFF; color: #DC2626; border: 2px solid #FCA5A5; border-radius: 10px; font-size: var(--fs-sm); font-weight: 500; cursor: pointer" style-hover="background: #FEF2F2">Remove 移除</button>
-                </div>
-              </div>
-            </sc-if>
+              </sc-for>
+              <sc-if value="{{ canAddCardPhoto }}">
+                <label data-add-card-photo="" data-mobile-full="" style="height: 56px; width: 100%; background: #FFF; color: #0055B8; border: 2px dashed #93B4E0; border-radius: 12px; font-size: var(--fs-sm); font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px" style-hover="background: #F0F6FF; border-color: #0055B8">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                  {{ addCardPhotoLabel }}
+                  <input type="file" accept="image/*" capture="environment" onchange="{{ onCardFileSelected }}" style="display: none">
+                </label>
+              </sc-if>
+              <sc-if value="{{ cardPhotoHint }}">
+                <div style="font-size: var(--fs-sm); color: #94A3B8">名片正反面都可以拍，最多 {{ maxCardPhotos }} 張。</div>
+              </sc-if>
+            </div>
           </div>
 
           <div style="margin-top: 8px; padding: 1.25rem; background: #F8FAFC; border-radius: 12px; border: 1px solid #E2E8F0">
@@ -2958,7 +2981,10 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               <div style="color: #DC2626; font-size: var(--fs-sm); margin-top: 8px; margin-left: 32px">You must agree to the data collection terms. 您必須同意資料蒐集條款。</div>
             </sc-if>
           </div>
-          <div style="margin-top: 1.75rem; padding-bottom: 2.5rem">
+          <div style="margin-top: 1.75rem; padding-bottom: 2.5rem; display: flex; flex-direction: column; gap: 12px">
+            <sc-if value="{{ showAddContact }}">
+              <button onclick="{{ onAddContact }}" data-add-contact="" style="width: 100%; height: 56px; background: #FFF; color: #0055B8; border: 2px solid #93B4E0; border-radius: 12px; font-size: var(--fs-body); font-weight: 600; cursor: pointer; transition: all 0.15s" style-hover="background: #F0F6FF; border-color: #0055B8" style-active="transform: scale(0.98)">＋ 增加聯絡人（同一組客戶）</button>
+            </sc-if>
             <button onclick="{{ onCustomerSubmit }}" style="width: 100%; height: 56px; background: #0055B8; color: #FFF; border: none; border-radius: 12px; font-size: var(--fs-body); font-weight: 600; cursor: pointer; transition: all 0.15s" style-hover="background: #004494" style-active="transform: scale(0.98)">{{ customerSubmitLabel }}</button>
           </div>
         </div>
@@ -2993,11 +3019,19 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               </sc-if>
               <sc-if value="{{ field.isTel }}">
                 <div data-mobile-stack="" style="display: flex; gap: 8px">
-                  <sc-raw-select value="{{ field.countryCode }}" onchange="{{ field.onCountryCodeChange }}" style="width: 140px; height: 48px; padding: 0 8px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
-                    <sc-for list="{{ countryCodes }}" as="cc">
-                      <option value="{{ cc.value }}">{{ cc.label }}</option>
-                    </sc-for>
-                  </sc-raw-select>
+                  <div data-cc-combo="" style="position: relative; width: 210px; flex-shrink: 0">
+                    <input type="text" value="{{ field.ccValue }}" oninput="{{ field.onCcInput }}" onfocus="{{ field.onCcFocus }}" onblur="{{ field.onCcBlur }}" placeholder="搜尋國碼" autocomplete="off" data-cc-input="" style="width: 100%; height: 48px; padding: 0 12px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
+                    <sc-if value="{{ field.ccOpen }}">
+                      <div data-cc-list="" style="position: absolute; z-index: 20; left: 0; min-width: 100%; width: max-content; max-width: 320px; top: 52px; max-height: 260px; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #FFF; border: 1px solid #D1D5DB; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12)">
+                        <sc-for list="{{ field.ccMatches }}" as="cc">
+                          <button type="button" data-cc-opt="" onclick="{{ cc.onPick }}" style="display: block; width: 100%; text-align: left; padding: 12px 14px; border: none; background: transparent; font-size: var(--fs-body); color: #1A1A2E; cursor: pointer; white-space: nowrap" style-hover="background: #F0F6FF">{{ cc.label }}</button>
+                        </sc-for>
+                        <sc-if value="{{ field.ccNoMatch }}">
+                          <div style="padding: 12px 14px; font-size: var(--fs-sm); color: #94A3B8">找不到相符的國碼</div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+                  </div>
                   <input type="tel" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="flex: 1; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
                 </div>
               </sc-if>
@@ -3116,11 +3150,19 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               </sc-if>
               <sc-if value="{{ field.isTel }}">
                 <div data-mobile-stack="" style="display: flex; gap: 8px">
-                  <sc-raw-select value="{{ field.countryCode }}" onchange="{{ field.onCountryCodeChange }}" style="width: 140px; height: 48px; padding: 0 8px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
-                    <sc-for list="{{ countryCodes }}" as="cc">
-                      <option value="{{ cc.value }}">{{ cc.label }}</option>
-                    </sc-for>
-                  </sc-raw-select>
+                  <div data-cc-combo="" style="position: relative; width: 210px; flex-shrink: 0">
+                    <input type="text" value="{{ field.ccValue }}" oninput="{{ field.onCcInput }}" onfocus="{{ field.onCcFocus }}" onblur="{{ field.onCcBlur }}" placeholder="搜尋國碼" autocomplete="off" data-cc-input="" style="width: 100%; height: 48px; padding: 0 12px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
+                    <sc-if value="{{ field.ccOpen }}">
+                      <div data-cc-list="" style="position: absolute; z-index: 20; left: 0; min-width: 100%; width: max-content; max-width: 320px; top: 52px; max-height: 260px; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #FFF; border: 1px solid #D1D5DB; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12)">
+                        <sc-for list="{{ field.ccMatches }}" as="cc">
+                          <button type="button" data-cc-opt="" onclick="{{ cc.onPick }}" style="display: block; width: 100%; text-align: left; padding: 12px 14px; border: none; background: transparent; font-size: var(--fs-body); color: #1A1A2E; cursor: pointer; white-space: nowrap" style-hover="background: #F0F6FF">{{ cc.label }}</button>
+                        </sc-for>
+                        <sc-if value="{{ field.ccNoMatch }}">
+                          <div style="padding: 12px 14px; font-size: var(--fs-sm); color: #94A3B8">找不到相符的國碼</div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+                  </div>
                   <input type="tel" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="flex: 1; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
                 </div>
               </sc-if>
@@ -3220,6 +3262,9 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
       </div>
       <div style="font-size: 1.75rem; font-weight: 700; color: #1A1A2E; margin-bottom: 8px; text-align: center">Thank you! 感謝您的填寫！</div>
       <div style="font-size: 1rem; color: #64748B; text-align: center; line-height: 1.7">Please return the tablet to our staff.<br>請將平板交還給工作人員。</div>
+      <sc-if value="{{ showHandoffCount }}">
+        <div data-handoff-count="" style="margin-top: 20px; font-size: 0.875rem; color: #94A3B8; text-align: center">{{ handoffCountLabel }}</div>
+      </sc-if>
       <button onclick="{{ onHandoffDone }}" style="position: absolute; bottom: 28px; right: 28px; height: 44px; padding: 0 20px; background: transparent; color: #94A3B8; border: 1px solid #E2E8F0; border-radius: 10px; font-size: 0.875rem; cursor: pointer; display: flex; align-items: center; gap: 8px" style-hover="background: #F8FAFC; color: #475569">
         Done 完成，返回 →
       </button>
@@ -3339,7 +3384,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                       <sc-raw-td style="padding: 10px 14px">
                         <div style="display: flex; gap: 8px; align-items: center">
                           <sc-if value="{{ row.hasPhoto }}">
-                            <button onclick="{{ row.onViewPhoto }}" style="color: #0055B8; background: none; border: none; cursor: pointer; font-size: 0.8125rem; padding: 4px 8px; border-radius: 4px" style-hover="background: #F0F6FF">📷</button>
+                            <button onclick="{{ row.onViewPhoto }}" data-view-photo="" style="color: #0055B8; background: none; border: none; cursor: pointer; font-size: 0.8125rem; padding: 4px 8px; border-radius: 4px; white-space: nowrap" style-hover="background: #F0F6FF">📷{{ row.photoBadge }}</button>
                           </sc-if>
                           <button onclick="{{ row.onEdit }}" style="color: #0055B8; background: none; border: none; cursor: pointer; font-size: 0.8125rem; padding: 4px 8px; border-radius: 4px" style-hover="background: #F0F6FF">編輯</button>
                           <button onclick="{{ row.onDelete }}" style="color: #DC2626; background: none; border: none; cursor: pointer; font-size: 0.8125rem; padding: 4px 8px; border-radius: 4px" style-hover="background: #FEF2F2">刪除</button>
@@ -3361,7 +3406,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end;flex-wrap:wrap">
                     <button onclick="{{ mrow.onEdit }}" style="color:#0055B8;background:none;border:1px solid #BFDBFE;cursor:pointer;font-size:0.8125rem;padding:6px 14px;border-radius:6px" style-hover="background:#F0F6FF">編輯</button>
                     <sc-if value="{{ mrow.hasPhoto }}">
-                      <button onclick="{{ mrow.onViewPhoto }}" style="color:#0055B8;background:none;border:1px solid #BFDBFE;cursor:pointer;font-size:0.8125rem;padding:6px 14px;border-radius:6px" style-hover="background:#F0F6FF">照片</button>
+                      <button onclick="{{ mrow.onViewPhoto }}" data-view-photo="" style="color:#0055B8;background:none;border:1px solid #BFDBFE;cursor:pointer;font-size:0.8125rem;padding:6px 14px;border-radius:6px" style-hover="background:#F0F6FF">照片{{ mrow.photoBadge }}</button>
                     </sc-if>
                     <button onclick="{{ mrow.onDelete }}" style="color:#DC2626;background:none;border:1px solid #FCA5A5;cursor:pointer;font-size:0.8125rem;padding:6px 14px;border-radius:6px" style-hover="background:#FEF2F2">刪除</button>
                   </div>
@@ -3642,11 +3687,16 @@ class Component extends DCLogic {
     confirmOpen: false, confirmStage: 1, confirmTitle: '', confirmMessage: '',
     confirmTypeToConfirm: false, confirmTypedValue: '', confirmActionLabel: '確定刪除', confirmSingle: false,
     showToast: false, toastMessage: '',
-    // Card photo (staff page)
-    cardPhotoPreviewSrc: null,
-    cardPhotoBase64: null,
+    // Business card photos, in capture order. Each is { id, dataUrl }: the id
+    // is what the server files the image under, so removing the first of three
+    // photos cannot renumber the other two out from under it.
+    cardPhotos: [],
+    // Contacts already written in this flow (增加聯絡人). They are finished,
+    // independent records; the list exists only so the shared answers still to
+    // come can be copied onto them.
+    flowSiblingIds: [],
     // Photo lightbox
-    showPhotoLightbox: false, lightboxPhotoSrc: '',
+    showPhotoLightbox: false, lightboxPhotos: [],
     // Export
     exporting: false,
     dbReady: false,
@@ -3838,12 +3888,13 @@ class Component extends DCLogic {
 
   async loadAllData() {
     const [pinD, devD, devIdD, gdprEnD, gdprZhD, mig35D, mig36D, mig38D, mig310D, mig312D, mig315D,
-      syncUrlD, syncTokenD, syncSeqD, syncEventSeqD] = await Promise.all([
+      mig316D, syncUrlD, syncTokenD, syncSeqD, syncEventSeqD] = await Promise.all([
       this.dbGet('config','pin'), this.dbGet('config','deviceName'), this.dbGet('config','deviceId'),
       this.dbGet('config','gdprEn'), this.dbGet('config','gdprZh'),
       this.dbGet('config','migratedTo35'), this.dbGet('config','migratedTo36'),
       this.dbGet('config','migratedTo38'), this.dbGet('config','migratedTo310'),
       this.dbGet('config','migratedTo312'), this.dbGet('config','migratedTo315'),
+      this.dbGet('config','migratedTo316'),
       this.dbGet('config','syncUrl'), this.dbGet('config','syncToken'), this.dbGet('config','syncSeq'),
       this.dbGet('config','syncEventSeq'),
     ]);
@@ -3878,6 +3929,7 @@ class Component extends DCLogic {
     if (!mig310D?.value) await this.migrateTo310(events);
     if (!mig312D?.value) records = await this.migrateTo312(records);
     if (!mig315D?.value) events = await this.migrateTo315(events, deviceId);
+    if (!mig316D?.value) records = await this.migrateTo316(records);
 
 
     this.setState({
@@ -3913,6 +3965,30 @@ class Component extends DCLogic {
       out.push(patched);
     }
     await this.saveConfig('migratedTo315', true);
+    return out;
+  }
+
+  // v3.16: one card photo per record becomes a list, because business cards
+  // have a back and this app does no OCR — an un-photographed side is data we
+  // simply never collected.
+  //
+  // The migrated photo deliberately takes the record's own id as its photo id.
+  // Photos are filed on the server under their photo id, and until now that id
+  // *was* the record id — reusing it means the stored digest still matches and
+  // **no already-uploaded photo is re-sent**. Minting a fresh uuid here would
+  // re-upload every card on the next sync, over exhibition Wi-Fi.
+  async migrateTo316(records) {
+    const out = [];
+    for (const r of records) {
+      if (!('cardPhoto' in r) && r.cardPhotos) { out.push(r); continue; }
+      const { cardPhoto, photoSyncedDigest, ...rest } = r;
+      const patched = { ...rest,
+        cardPhotos: cardPhoto ? [{ id: r.id, dataUrl: cardPhoto }] : (r.cardPhotos || []),
+        photoSyncedDigests: cardPhoto && photoSyncedDigest ? { [r.id]: photoSyncedDigest } : {} };
+      await this.dbPut('records', patched);
+      out.push(patched);
+    }
+    await this.saveConfig('migratedTo316', true);
     return out;
   }
 
@@ -4450,22 +4526,254 @@ class Component extends DCLogic {
     return changed ? { ...values, ...patch } : values;
   }
 
-  getCountryCodes() {
-    return [
-      {value:'+886',label:'+886 TW'},{value:'+86',label:'+86 CN'},{value:'+1',label:'+1 US/CA'},
-      {value:'+44',label:'+44 UK'},{value:'+49',label:'+49 DE'},{value:'+81',label:'+81 JP'},
-      {value:'+82',label:'+82 KR'},{value:'+66',label:'+66 TH'},{value:'+91',label:'+91 IN'},
-      {value:'+7',label:'+7 RU'},{value:'+20',label:'+20 EG'},{value:'+27',label:'+27 ZA'},
-      {value:'+30',label:'+30 GR'},{value:'+31',label:'+31 NL'},{value:'+33',label:'+33 FR'},
-      {value:'+34',label:'+34 ES'},{value:'+39',label:'+39 IT'},{value:'+41',label:'+41 CH'},
-      {value:'+43',label:'+43 AT'},{value:'+46',label:'+46 SE'},{value:'+47',label:'+47 NO'},
-      {value:'+48',label:'+48 PL'},{value:'+52',label:'+52 MX'},{value:'+55',label:'+55 BR'},
-      {value:'+60',label:'+60 MY'},{value:'+61',label:'+61 AU'},{value:'+62',label:'+62 ID'},
-      {value:'+63',label:'+63 PH'},{value:'+64',label:'+64 NZ'},{value:'+65',label:'+65 SG'},
-      {value:'+84',label:'+84 VN'},{value:'+90',label:'+90 TR'},{value:'+852',label:'+852 HK'},
-      {value:'+853',label:'+853 MO'},{value:'+971',label:'+971 UAE'},
-    ];
-  }
+  // Full E.164 list, generated by tools/make-calling-codes.js (issue #15). The
+  // previous hand-written 35 entries meant a visitor from anywhere else had no
+  // right answer to pick. Country names come from Intl.DisplayNames, the same
+  // source as the v3.8 nationality list, so the two never disagree about what a
+  // country is called.
+  CALLING_CODES = [
+    { code: '+886', iso: 'TW', en: "Taiwan", zh: "台灣" },
+    { code: '+86', iso: 'CN', en: "China", zh: "中國" },
+    { code: '+852', iso: 'HK', en: "Hong Kong SAR China", zh: "中國香港特別行政區" },
+    { code: '+853', iso: 'MO', en: "Macao SAR China", zh: "中國澳門特別行政區" },
+    { code: '+81', iso: 'JP', en: "Japan", zh: "日本" },
+    { code: '+82', iso: 'KR', en: "South Korea", zh: "南韓" },
+    { code: '+1', iso: 'US', en: "United States", zh: "美國" },
+    { code: '+1', iso: 'CA', en: "Canada", zh: "加拿大" },
+    { code: '+44', iso: 'GB', en: "United Kingdom", zh: "英國" },
+    { code: '+49', iso: 'DE', en: "Germany", zh: "德國" },
+    { code: '+33', iso: 'FR', en: "France", zh: "法國" },
+    { code: '+39', iso: 'IT', en: "Italy", zh: "義大利" },
+    { code: '+31', iso: 'NL', en: "Netherlands", zh: "荷蘭" },
+    { code: '+34', iso: 'ES', en: "Spain", zh: "西班牙" },
+    { code: '+61', iso: 'AU', en: "Australia", zh: "澳洲" },
+    { code: '+64', iso: 'NZ', en: "New Zealand", zh: "紐西蘭" },
+    { code: '+65', iso: 'SG', en: "Singapore", zh: "新加坡" },
+    { code: '+60', iso: 'MY', en: "Malaysia", zh: "馬來西亞" },
+    { code: '+66', iso: 'TH', en: "Thailand", zh: "泰國" },
+    { code: '+84', iso: 'VN', en: "Vietnam", zh: "越南" },
+    { code: '+63', iso: 'PH', en: "Philippines", zh: "菲律賓" },
+    { code: '+62', iso: 'ID', en: "Indonesia", zh: "印尼" },
+    { code: '+91', iso: 'IN', en: "India", zh: "印度" },
+    { code: '+90', iso: 'TR', en: "Türkiye", zh: "土耳其" },
+    { code: '+55', iso: 'BR', en: "Brazil", zh: "巴西" },
+    { code: '+52', iso: 'MX', en: "Mexico", zh: "墨西哥" },
+    { code: '+93', iso: 'AF', en: "Afghanistan", zh: "阿富汗" },
+    { code: '+358', iso: 'AX', en: "Åland Islands", zh: "奧蘭群島" },
+    { code: '+355', iso: 'AL', en: "Albania", zh: "阿爾巴尼亞" },
+    { code: '+213', iso: 'DZ', en: "Algeria", zh: "阿爾及利亞" },
+    { code: '+1', iso: 'AS', en: "American Samoa", zh: "美屬薩摩亞" },
+    { code: '+376', iso: 'AD', en: "Andorra", zh: "安道爾" },
+    { code: '+244', iso: 'AO', en: "Angola", zh: "安哥拉" },
+    { code: '+1', iso: 'AI', en: "Anguilla", zh: "安奎拉" },
+    { code: '+1', iso: 'AG', en: "Antigua & Barbuda", zh: "安地卡及巴布達" },
+    { code: '+54', iso: 'AR', en: "Argentina", zh: "阿根廷" },
+    { code: '+374', iso: 'AM', en: "Armenia", zh: "亞美尼亞" },
+    { code: '+297', iso: 'AW', en: "Aruba", zh: "荷屬阿魯巴" },
+    { code: '+247', iso: 'AC', en: "Ascension Island", zh: "阿森松島" },
+    { code: '+43', iso: 'AT', en: "Austria", zh: "奧地利" },
+    { code: '+994', iso: 'AZ', en: "Azerbaijan", zh: "亞塞拜然" },
+    { code: '+1', iso: 'BS', en: "Bahamas", zh: "巴哈馬" },
+    { code: '+973', iso: 'BH', en: "Bahrain", zh: "巴林" },
+    { code: '+880', iso: 'BD', en: "Bangladesh", zh: "孟加拉" },
+    { code: '+1', iso: 'BB', en: "Barbados", zh: "巴貝多" },
+    { code: '+375', iso: 'BY', en: "Belarus", zh: "白俄羅斯" },
+    { code: '+32', iso: 'BE', en: "Belgium", zh: "比利時" },
+    { code: '+501', iso: 'BZ', en: "Belize", zh: "貝里斯" },
+    { code: '+229', iso: 'BJ', en: "Benin", zh: "貝南" },
+    { code: '+1', iso: 'BM', en: "Bermuda", zh: "百慕達" },
+    { code: '+975', iso: 'BT', en: "Bhutan", zh: "不丹" },
+    { code: '+591', iso: 'BO', en: "Bolivia", zh: "玻利維亞" },
+    { code: '+387', iso: 'BA', en: "Bosnia & Herzegovina", zh: "波士尼亞與赫塞哥維納" },
+    { code: '+267', iso: 'BW', en: "Botswana", zh: "波札那" },
+    { code: '+246', iso: 'IO', en: "British Indian Ocean Territory", zh: "英屬印度洋領地" },
+    { code: '+1', iso: 'VG', en: "British Virgin Islands", zh: "英屬維京群島" },
+    { code: '+673', iso: 'BN', en: "Brunei", zh: "汶萊" },
+    { code: '+359', iso: 'BG', en: "Bulgaria", zh: "保加利亞" },
+    { code: '+226', iso: 'BF', en: "Burkina Faso", zh: "布吉納法索" },
+    { code: '+257', iso: 'BI', en: "Burundi", zh: "蒲隆地" },
+    { code: '+855', iso: 'KH', en: "Cambodia", zh: "柬埔寨" },
+    { code: '+237', iso: 'CM', en: "Cameroon", zh: "喀麥隆" },
+    { code: '+238', iso: 'CV', en: "Cape Verde", zh: "維德角" },
+    { code: '+599', iso: 'BQ', en: "Caribbean Netherlands", zh: "荷蘭加勒比區" },
+    { code: '+1', iso: 'KY', en: "Cayman Islands", zh: "開曼群島" },
+    { code: '+236', iso: 'CF', en: "Central African Republic", zh: "中非共和國" },
+    { code: '+235', iso: 'TD', en: "Chad", zh: "查德" },
+    { code: '+56', iso: 'CL', en: "Chile", zh: "智利" },
+    { code: '+57', iso: 'CO', en: "Colombia", zh: "哥倫比亞" },
+    { code: '+269', iso: 'KM', en: "Comoros", zh: "葛摩" },
+    { code: '+242', iso: 'CG', en: "Congo - Brazzaville", zh: "剛果（布拉薩）" },
+    { code: '+243', iso: 'CD', en: "Congo - Kinshasa", zh: "剛果（金夏沙）" },
+    { code: '+682', iso: 'CK', en: "Cook Islands", zh: "庫克群島" },
+    { code: '+506', iso: 'CR', en: "Costa Rica", zh: "哥斯大黎加" },
+    { code: '+225', iso: 'CI', en: "Côte d’Ivoire", zh: "象牙海岸" },
+    { code: '+385', iso: 'HR', en: "Croatia", zh: "克羅埃西亞" },
+    { code: '+53', iso: 'CU', en: "Cuba", zh: "古巴" },
+    { code: '+599', iso: 'CW', en: "Curaçao", zh: "庫拉索" },
+    { code: '+357', iso: 'CY', en: "Cyprus", zh: "賽普勒斯" },
+    { code: '+420', iso: 'CZ', en: "Czechia", zh: "捷克" },
+    { code: '+45', iso: 'DK', en: "Denmark", zh: "丹麥" },
+    { code: '+253', iso: 'DJ', en: "Djibouti", zh: "吉布地" },
+    { code: '+1', iso: 'DM', en: "Dominica", zh: "多米尼克" },
+    { code: '+1', iso: 'DO', en: "Dominican Republic", zh: "多明尼加共和國" },
+    { code: '+593', iso: 'EC', en: "Ecuador", zh: "厄瓜多" },
+    { code: '+20', iso: 'EG', en: "Egypt", zh: "埃及" },
+    { code: '+503', iso: 'SV', en: "El Salvador", zh: "薩爾瓦多" },
+    { code: '+240', iso: 'GQ', en: "Equatorial Guinea", zh: "赤道幾內亞" },
+    { code: '+291', iso: 'ER', en: "Eritrea", zh: "厄利垂亞" },
+    { code: '+372', iso: 'EE', en: "Estonia", zh: "愛沙尼亞" },
+    { code: '+268', iso: 'SZ', en: "Eswatini", zh: "史瓦帝尼" },
+    { code: '+251', iso: 'ET', en: "Ethiopia", zh: "衣索比亞" },
+    { code: '+500', iso: 'FK', en: "Falkland Islands", zh: "福克蘭群島" },
+    { code: '+298', iso: 'FO', en: "Faroe Islands", zh: "法羅群島" },
+    { code: '+679', iso: 'FJ', en: "Fiji", zh: "斐濟" },
+    { code: '+358', iso: 'FI', en: "Finland", zh: "芬蘭" },
+    { code: '+594', iso: 'GF', en: "French Guiana", zh: "法屬圭亞那" },
+    { code: '+689', iso: 'PF', en: "French Polynesia", zh: "法屬玻里尼西亞" },
+    { code: '+241', iso: 'GA', en: "Gabon", zh: "加彭" },
+    { code: '+220', iso: 'GM', en: "Gambia", zh: "甘比亞" },
+    { code: '+995', iso: 'GE', en: "Georgia", zh: "喬治亞" },
+    { code: '+233', iso: 'GH', en: "Ghana", zh: "迦納" },
+    { code: '+350', iso: 'GI', en: "Gibraltar", zh: "直布羅陀" },
+    { code: '+30', iso: 'GR', en: "Greece", zh: "希臘" },
+    { code: '+299', iso: 'GL', en: "Greenland", zh: "格陵蘭" },
+    { code: '+1', iso: 'GD', en: "Grenada", zh: "格瑞那達" },
+    { code: '+590', iso: 'GP', en: "Guadeloupe", zh: "瓜地洛普" },
+    { code: '+1', iso: 'GU', en: "Guam", zh: "關島" },
+    { code: '+502', iso: 'GT', en: "Guatemala", zh: "瓜地馬拉" },
+    { code: '+44', iso: 'GG', en: "Guernsey", zh: "根息" },
+    { code: '+224', iso: 'GN', en: "Guinea", zh: "幾內亞" },
+    { code: '+245', iso: 'GW', en: "Guinea-Bissau", zh: "幾內亞比索" },
+    { code: '+592', iso: 'GY', en: "Guyana", zh: "蓋亞那" },
+    { code: '+509', iso: 'HT', en: "Haiti", zh: "海地" },
+    { code: '+504', iso: 'HN', en: "Honduras", zh: "宏都拉斯" },
+    { code: '+36', iso: 'HU', en: "Hungary", zh: "匈牙利" },
+    { code: '+354', iso: 'IS', en: "Iceland", zh: "冰島" },
+    { code: '+98', iso: 'IR', en: "Iran", zh: "伊朗" },
+    { code: '+964', iso: 'IQ', en: "Iraq", zh: "伊拉克" },
+    { code: '+353', iso: 'IE', en: "Ireland", zh: "愛爾蘭" },
+    { code: '+44', iso: 'IM', en: "Isle of Man", zh: "曼島" },
+    { code: '+972', iso: 'IL', en: "Israel", zh: "以色列" },
+    { code: '+1', iso: 'JM', en: "Jamaica", zh: "牙買加" },
+    { code: '+44', iso: 'JE', en: "Jersey", zh: "澤西島" },
+    { code: '+962', iso: 'JO', en: "Jordan", zh: "約旦" },
+    { code: '+7', iso: 'KZ', en: "Kazakhstan", zh: "哈薩克" },
+    { code: '+254', iso: 'KE', en: "Kenya", zh: "肯亞" },
+    { code: '+686', iso: 'KI', en: "Kiribati", zh: "吉里巴斯" },
+    { code: '+383', iso: 'XK', en: "Kosovo", zh: "科索沃" },
+    { code: '+965', iso: 'KW', en: "Kuwait", zh: "科威特" },
+    { code: '+996', iso: 'KG', en: "Kyrgyzstan", zh: "吉爾吉斯" },
+    { code: '+856', iso: 'LA', en: "Laos", zh: "寮國" },
+    { code: '+371', iso: 'LV', en: "Latvia", zh: "拉脫維亞" },
+    { code: '+961', iso: 'LB', en: "Lebanon", zh: "黎巴嫩" },
+    { code: '+266', iso: 'LS', en: "Lesotho", zh: "賴索托" },
+    { code: '+231', iso: 'LR', en: "Liberia", zh: "賴比瑞亞" },
+    { code: '+218', iso: 'LY', en: "Libya", zh: "利比亞" },
+    { code: '+423', iso: 'LI', en: "Liechtenstein", zh: "列支敦斯登" },
+    { code: '+370', iso: 'LT', en: "Lithuania", zh: "立陶宛" },
+    { code: '+352', iso: 'LU', en: "Luxembourg", zh: "盧森堡" },
+    { code: '+261', iso: 'MG', en: "Madagascar", zh: "馬達加斯加" },
+    { code: '+265', iso: 'MW', en: "Malawi", zh: "馬拉威" },
+    { code: '+960', iso: 'MV', en: "Maldives", zh: "馬爾地夫" },
+    { code: '+223', iso: 'ML', en: "Mali", zh: "馬利" },
+    { code: '+356', iso: 'MT', en: "Malta", zh: "馬爾他" },
+    { code: '+692', iso: 'MH', en: "Marshall Islands", zh: "馬紹爾群島" },
+    { code: '+596', iso: 'MQ', en: "Martinique", zh: "馬丁尼克" },
+    { code: '+222', iso: 'MR', en: "Mauritania", zh: "茅利塔尼亞" },
+    { code: '+230', iso: 'MU', en: "Mauritius", zh: "模里西斯" },
+    { code: '+262', iso: 'YT', en: "Mayotte", zh: "馬約特島" },
+    { code: '+691', iso: 'FM', en: "Micronesia", zh: "密克羅尼西亞" },
+    { code: '+373', iso: 'MD', en: "Moldova", zh: "摩爾多瓦" },
+    { code: '+377', iso: 'MC', en: "Monaco", zh: "摩納哥" },
+    { code: '+976', iso: 'MN', en: "Mongolia", zh: "蒙古" },
+    { code: '+382', iso: 'ME', en: "Montenegro", zh: "蒙特內哥羅" },
+    { code: '+1', iso: 'MS', en: "Montserrat", zh: "蒙哲臘" },
+    { code: '+212', iso: 'MA', en: "Morocco", zh: "摩洛哥" },
+    { code: '+258', iso: 'MZ', en: "Mozambique", zh: "莫三比克" },
+    { code: '+95', iso: 'MM', en: "Myanmar (Burma)", zh: "緬甸" },
+    { code: '+264', iso: 'NA', en: "Namibia", zh: "納米比亞" },
+    { code: '+674', iso: 'NR', en: "Nauru", zh: "諾魯" },
+    { code: '+977', iso: 'NP', en: "Nepal", zh: "尼泊爾" },
+    { code: '+687', iso: 'NC', en: "New Caledonia", zh: "新喀里多尼亞" },
+    { code: '+505', iso: 'NI', en: "Nicaragua", zh: "尼加拉瓜" },
+    { code: '+227', iso: 'NE', en: "Niger", zh: "尼日" },
+    { code: '+234', iso: 'NG', en: "Nigeria", zh: "奈及利亞" },
+    { code: '+683', iso: 'NU', en: "Niue", zh: "紐埃島" },
+    { code: '+672', iso: 'NF', en: "Norfolk Island", zh: "諾福克島" },
+    { code: '+850', iso: 'KP', en: "North Korea", zh: "北韓" },
+    { code: '+389', iso: 'MK', en: "North Macedonia", zh: "北馬其頓" },
+    { code: '+1', iso: 'MP', en: "Northern Mariana Islands", zh: "北馬利安納群島" },
+    { code: '+47', iso: 'NO', en: "Norway", zh: "挪威" },
+    { code: '+968', iso: 'OM', en: "Oman", zh: "阿曼" },
+    { code: '+92', iso: 'PK', en: "Pakistan", zh: "巴基斯坦" },
+    { code: '+680', iso: 'PW', en: "Palau", zh: "帛琉" },
+    { code: '+970', iso: 'PS', en: "Palestinian Territories", zh: "巴勒斯坦自治區" },
+    { code: '+507', iso: 'PA', en: "Panama", zh: "巴拿馬" },
+    { code: '+675', iso: 'PG', en: "Papua New Guinea", zh: "巴布亞紐幾內亞" },
+    { code: '+595', iso: 'PY', en: "Paraguay", zh: "巴拉圭" },
+    { code: '+51', iso: 'PE', en: "Peru", zh: "秘魯" },
+    { code: '+48', iso: 'PL', en: "Poland", zh: "波蘭" },
+    { code: '+351', iso: 'PT', en: "Portugal", zh: "葡萄牙" },
+    { code: '+1', iso: 'PR', en: "Puerto Rico", zh: "波多黎各" },
+    { code: '+974', iso: 'QA', en: "Qatar", zh: "卡達" },
+    { code: '+262', iso: 'RE', en: "Réunion", zh: "留尼旺" },
+    { code: '+40', iso: 'RO', en: "Romania", zh: "羅馬尼亞" },
+    { code: '+7', iso: 'RU', en: "Russia", zh: "俄羅斯" },
+    { code: '+250', iso: 'RW', en: "Rwanda", zh: "盧安達" },
+    { code: '+685', iso: 'WS', en: "Samoa", zh: "薩摩亞" },
+    { code: '+378', iso: 'SM', en: "San Marino", zh: "聖馬利諾" },
+    { code: '+239', iso: 'ST', en: "São Tomé & Príncipe", zh: "聖多美普林西比" },
+    { code: '+966', iso: 'SA', en: "Saudi Arabia", zh: "沙烏地阿拉伯" },
+    { code: '+221', iso: 'SN', en: "Senegal", zh: "塞內加爾" },
+    { code: '+381', iso: 'RS', en: "Serbia", zh: "塞爾維亞" },
+    { code: '+248', iso: 'SC', en: "Seychelles", zh: "塞席爾" },
+    { code: '+232', iso: 'SL', en: "Sierra Leone", zh: "獅子山" },
+    { code: '+1', iso: 'SX', en: "Sint Maarten", zh: "荷屬聖馬丁" },
+    { code: '+421', iso: 'SK', en: "Slovakia", zh: "斯洛伐克" },
+    { code: '+386', iso: 'SI', en: "Slovenia", zh: "斯洛維尼亞" },
+    { code: '+677', iso: 'SB', en: "Solomon Islands", zh: "索羅門群島" },
+    { code: '+252', iso: 'SO', en: "Somalia", zh: "索馬利亞" },
+    { code: '+27', iso: 'ZA', en: "South Africa", zh: "南非" },
+    { code: '+211', iso: 'SS', en: "South Sudan", zh: "南蘇丹" },
+    { code: '+94', iso: 'LK', en: "Sri Lanka", zh: "斯里蘭卡" },
+    { code: '+590', iso: 'BL', en: "St. Barthélemy", zh: "聖巴瑟米" },
+    { code: '+290', iso: 'SH', en: "St. Helena", zh: "聖赫勒拿島" },
+    { code: '+1', iso: 'KN', en: "St. Kitts & Nevis", zh: "聖克里斯多福及尼維斯" },
+    { code: '+1', iso: 'LC', en: "St. Lucia", zh: "聖露西亞" },
+    { code: '+590', iso: 'MF', en: "St. Martin", zh: "法屬聖馬丁" },
+    { code: '+508', iso: 'PM', en: "St. Pierre & Miquelon", zh: "聖皮埃與密克隆群島" },
+    { code: '+1', iso: 'VC', en: "St. Vincent & Grenadines", zh: "聖文森及格瑞那丁" },
+    { code: '+249', iso: 'SD', en: "Sudan", zh: "蘇丹" },
+    { code: '+597', iso: 'SR', en: "Suriname", zh: "蘇利南" },
+    { code: '+47', iso: 'SJ', en: "Svalbard & Jan Mayen", zh: "挪威屬斯瓦巴及尖棉" },
+    { code: '+46', iso: 'SE', en: "Sweden", zh: "瑞典" },
+    { code: '+41', iso: 'CH', en: "Switzerland", zh: "瑞士" },
+    { code: '+963', iso: 'SY', en: "Syria", zh: "敘利亞" },
+    { code: '+992', iso: 'TJ', en: "Tajikistan", zh: "塔吉克" },
+    { code: '+255', iso: 'TZ', en: "Tanzania", zh: "坦尚尼亞" },
+    { code: '+670', iso: 'TL', en: "Timor-Leste", zh: "東帝汶" },
+    { code: '+228', iso: 'TG', en: "Togo", zh: "多哥" },
+    { code: '+690', iso: 'TK', en: "Tokelau", zh: "托克勞群島" },
+    { code: '+676', iso: 'TO', en: "Tonga", zh: "東加" },
+    { code: '+1', iso: 'TT', en: "Trinidad & Tobago", zh: "千里達及托巴哥" },
+    { code: '+216', iso: 'TN', en: "Tunisia", zh: "突尼西亞" },
+    { code: '+993', iso: 'TM', en: "Turkmenistan", zh: "土庫曼" },
+    { code: '+1', iso: 'TC', en: "Turks & Caicos Islands", zh: "土克斯及開科斯群島" },
+    { code: '+688', iso: 'TV', en: "Tuvalu", zh: "吐瓦魯" },
+    { code: '+1', iso: 'VI', en: "U.S. Virgin Islands", zh: "美屬維京群島" },
+    { code: '+256', iso: 'UG', en: "Uganda", zh: "烏干達" },
+    { code: '+380', iso: 'UA', en: "Ukraine", zh: "烏克蘭" },
+    { code: '+971', iso: 'AE', en: "United Arab Emirates", zh: "阿拉伯聯合大公國" },
+    { code: '+598', iso: 'UY', en: "Uruguay", zh: "烏拉圭" },
+    { code: '+998', iso: 'UZ', en: "Uzbekistan", zh: "烏茲別克" },
+    { code: '+678', iso: 'VU', en: "Vanuatu", zh: "萬那杜" },
+    { code: '+39', iso: 'VA', en: "Vatican City", zh: "梵蒂岡" },
+    { code: '+58', iso: 'VE', en: "Venezuela", zh: "委內瑞拉" },
+    { code: '+681', iso: 'WF', en: "Wallis & Futuna", zh: "瓦利斯群島和富圖那群島" },
+    { code: '+967', iso: 'YE', en: "Yemen", zh: "葉門" },
+    { code: '+260', iso: 'ZM', en: "Zambia", zh: "尚比亞" },
+    { code: '+263', iso: 'ZW', en: "Zimbabwe", zh: "辛巴威" },
+  ];
 
   // ===== EVENTS =====
   // v3.15: events sync, so deleting one had to become a tombstone — a hard
@@ -4686,7 +4994,7 @@ class Component extends DCLogic {
       formValues: {}, formErrors: {}, needsValues: {}, needsErrors: {}, companyValues: {}, companyErrors: {},
       gdprChecked: false, gdprError: false,
       selectedCountryCode: '+886', currentRecordId: null, editingRecordId: null,
-      cardPhotoPreviewSrc: null, cardPhotoBase64: null,
+      cardPhotos: [], flowSiblingIds: [],
     };
   }
   // The event page gates both entries, but guard here too: this is the single
@@ -4752,16 +5060,76 @@ class Component extends DCLogic {
       id: this.genUUID(), timestamp: now, updatedAt: now, deletedAt: null,
       device: this.state.deviceName, deviceId: this.state.deviceId,
       eventId: this.state.currentEventId,
-      customerFields: {}, needsFields: {}, companyFields: {},
+      // Seeded from the shared answers already given in this flow. Usually
+      // empty — but when the flow started from 客戶需求 the customer form is
+      // the *last* step, so a second contact added there is created after the
+      // needs and company pages are already done, and would otherwise be born
+      // blank on everything the group answered together.
+      customerFields: {}, needsFields: { ...this.state.needsValues }, companyFields: { ...this.state.companyValues },
       staffFields: { greeter: [...this.state.sessionGreeters], visit_date: this.state.sessionDate,
         customer_status: this.state.sessionCustomerStatus },
-      gdprConsent: false, cardPhoto: null,
+      gdprConsent: false, cardPhotos: [],
       ...patch,
     };
     await this.dbPut('records', record);
     // Debounced, so the three writes of one flow collapse into a single push.
     this.scheduleSyncPush();
     return { records: [record, ...records], currentRecordId: record.id };
+  }
+
+  // Groups every contact of one visit answers together. Applied to the record
+  // in hand *and* to the contacts already parked in flowSiblingIds — the whole
+  // point of the loop is that these are answered once.
+  async patchFlowGroup(patch) {
+    const first = await this.upsertFlowRecord(patch);
+    const siblings = this.state.flowSiblingIds;
+    if (!siblings.length) return first;
+    let records = first.records;
+    for (const id of siblings) {
+      records = records.map(r => r.id === id
+        ? { ...r, ...patch, updatedAt: this.nextUpdatedAt(r.updatedAt) } : r);
+      const rec = records.find(r => r.id === id);
+      if (rec) await this.dbPut('records', rec);
+    }
+    this.scheduleSyncPush();
+    return { ...first, records };
+  }
+
+  // 增加聯絡人: one company often sends two or three people. Filling the whole
+  // form again for each — including the ten company-background fields — is the
+  // slow part, so the customer page loops instead: this contact is written,
+  // the page comes back blank, and everything answered after the loop applies
+  // to all of them.
+  //
+  // The records stay completely independent. Nothing links them and nothing in
+  // the admin list says they arrived together, which is what was asked for:
+  // downstream they are simply two leads.
+  async addContact() {
+    const { customerFields, gdprChecked } = this.state;
+    const formValues = this.applyDateDefaults(customerFields, this.state.formValues);
+    const errors = this.validateGroup(customerFields, formValues);
+    if (!gdprChecked || Object.keys(errors).length > 0) {
+      this.setState({ formValues, formErrors: errors, gdprError: !gdprChecked });
+      return;
+    }
+    const vals = this.withPhoneCC(formValues);
+    const patch = await this.upsertFlowRecord({ customerFields: vals, gdprConsent: true,
+      cardPhotos: [...this.state.cardPhotos] });
+    // Company carries over — same firm, and retyping it is exactly the waste
+    // this feature exists to remove. Everything else is cleared: an email or a
+    // phone number left behind from the previous person would be wrong in a way
+    // nobody can spot later. Consent is per person, so the box is unticked too.
+    const companyF = customerFields.find(f => f.id === 'company');
+    const kept = companyF && formValues[companyF.id] ? { [companyF.id]: formValues[companyF.id] } : {};
+    this.setState({
+      records: patch.records,
+      flowSiblingIds: [...this.state.flowSiblingIds, patch.currentRecordId],
+      currentRecordId: null,
+      formValues: kept, formErrors: {},
+      cardPhotos: [], gdprChecked: false, gdprError: false,
+      selectedCountryCode: '+886',
+    });
+    this.showToastMsg(`已新增第 ${this.state.flowSiblingIds.length + 1} 位聯絡人，請填下一位`);
   }
 
   async submitCustomerForm() {
@@ -4775,10 +5143,10 @@ class Component extends DCLogic {
     }
     const vals = this.withPhoneCC(formValues);
     // The business card is captured on this form as of v3.3, so it is written
-    // here. cardPhotoBase64 is the single source of truth for the photo while
-    // a flow is in progress (editRecord preloads it), hence a plain assignment.
+    // here. state.cardPhotos is the single source of truth for the photos while
+    // a flow is in progress (editRecord preloads them), hence a plain assignment.
     const patch = await this.upsertFlowRecord({ customerFields: vals, gdprConsent: true,
-      cardPhoto: this.state.cardPhotoBase64 ?? null });
+      cardPhotos: [...this.state.cardPhotos] });
     // quickMode skips Company Profile, so the two forms hand straight to each
     // other — but only in the direction firstChoice set. Customer is the last
     // step when the flow started from needs.
@@ -4793,7 +5161,7 @@ class Component extends DCLogic {
     const needsValues = this.applyDateDefaults(needsFields, this.state.needsValues);
     const errors = this.validateGroup(needsFields, needsValues);
     if (Object.keys(errors).length > 0) { this.setState({ needsValues, needsErrors: errors }); return; }
-    const patch = await this.upsertFlowRecord({ needsFields: { ...needsValues } });
+    const patch = await this.patchFlowGroup({ needsFields: { ...needsValues } });
     const next = quickMode
       ? (firstChoice === 'needs' ? 'customerForm' : 'handoff')
       : (firstChoice === 'needs' ? 'companyForm' : 'handoff');
@@ -4805,7 +5173,7 @@ class Component extends DCLogic {
     const companyValues = this.applyDateDefaults(companyFields, this.state.companyValues);
     const errors = this.validateGroup(companyFields, companyValues);
     if (Object.keys(errors).length > 0) { this.setState({ companyValues, companyErrors: errors }); return; }
-    const patch = await this.upsertFlowRecord({ companyFields: { ...companyValues } });
+    const patch = await this.patchFlowGroup({ companyFields: { ...companyValues } });
     this.setState({ ...patch, companyValues, companyErrors: {}, screen: firstChoice === 'data' ? 'needsForm' : 'customerForm' });
   }
 
@@ -4828,7 +5196,7 @@ class Component extends DCLogic {
     const updated = records.map(r => r.id === editingRecordId
       ? { ...r, customerFields: vals, needsFields: { ...needsValues }, companyFields: { ...companyValues },
           staffFields: { ...r.staffFields, visit_date: visitDate || r.staffFields?.visit_date },
-          cardPhoto: this.state.cardPhotoBase64 ?? null,
+          cardPhotos: [...this.state.cardPhotos],
           updatedAt: this.nextUpdatedAt(r.updatedAt) }
       : r);
     const rec = updated.find(r => r.id === editingRecordId);
@@ -4863,11 +5231,32 @@ class Component extends DCLogic {
     });
   }
 
-  async handleCardFileSelected(e) {
+  // Business cards have two sides, and the reverse regularly carries the
+  // product line, the address, or a second number. This app does no OCR, so the
+  // image *is* the data — a side we cannot photograph is a side we do not
+  // collect. The cap is storage, not meaning: 200–500KB each against an iPad's
+  // IndexedDB quota.
+  MAX_CARD_PHOTOS = 4;
+
+  async handleCardFileSelected(e, replaceId) {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Safari keeps the chosen file on the input, so re-picking the same image
+    // would not fire change again. Clearing it costs nothing and removes a
+    // "the second capture did nothing" report that would be hard to reproduce.
+    e.target.value = '';
     const dataUrl = await this.compressImage(file);
-    this.setState({ cardPhotoPreviewSrc: dataUrl, cardPhotoBase64: dataUrl });
+    const photos = this.state.cardPhotos;
+    if (replaceId) {
+      this.setState({ cardPhotos: photos.map(p => p.id === replaceId ? { ...p, dataUrl } : p) });
+      return;
+    }
+    if (photos.length >= this.MAX_CARD_PHOTOS) return;
+    this.setState({ cardPhotos: [...photos, { id: this.genUUID(), dataUrl }] });
+  }
+
+  removeCardPhoto(id) {
+    this.setState({ cardPhotos: this.state.cardPhotos.filter(p => p.id !== id) });
   }
 
   // ===== EXPORT XLSX+ZIP =====
@@ -5015,11 +5404,15 @@ class Component extends DCLogic {
         const num = String(idx + 1).padStart(3, '0');
         const company = this.sanitizeFilename(r.customerFields?.company);
         const name = this.sanitizeFilename(r.customerFields?.name);
-        const photoFn = r.cardPhoto ? `${num}_${company}_${name}.jpg` : '';
+        // Numbered even when there is only one, so a downstream script never
+        // has to handle two naming schemes.
+        const photos = r.cardPhotos || [];
+        const photoNames = photos.map((_, i) => `${num}_${company}_${name}_${i + 1}.jpg`);
+        const photoFn = photoNames.join('; ');
 
-        if (r.cardPhoto) {
-          photoFiles.push({ name: 'cards/' + photoFn, data: window.ExportLib.base64ToUint8Array(r.cardPhoto) });
-        }
+        photos.forEach((p, i) => {
+          photoFiles.push({ name: 'cards/' + photoNames[i], data: window.ExportLib.base64ToUint8Array(p.dataUrl) });
+        });
 
         rows.push([
           r.id, r.timestamp, r.device || '', ev?.name || '', r.language || '',
@@ -5280,8 +5673,8 @@ class Component extends DCLogic {
     this.setState({ screen: 'customerForm', formValues: vals, formErrors: {}, needsValues: needsVals, needsErrors: {},
       companyValues: companyVals, companyErrors: {},
       // The business card lives on the customer form as of v3.3, so preload the
-      // saved photo — otherwise re-submitting an edited record would wipe it.
-      cardPhotoPreviewSrc: rec.cardPhoto ?? null, cardPhotoBase64: rec.cardPhoto ?? null,
+      // saved photos — otherwise re-submitting an edited record would wipe them.
+      cardPhotos: [...(rec.cardPhotos || [])],
       gdprChecked: true, gdprError: false, selectedCountryCode: cc, editingRecordId: id,
       editVisitDate: rec.staffFields?.visit_date || '',
       recordReturnTo: returnTo });
@@ -5347,15 +5740,27 @@ class Component extends DCLogic {
     return (h >>> 0).toString(16) + ':' + dataUrl.length;
   }
 
-  // `syncedAt` is required: photos are keyed by record id, so uploading one for
-  // a record the server has not accepted yet would leave an image with nothing
-  // to belong to. Tombstones drop `cardPhoto`, so deleted records never qualify.
-  photoPending(r) {
-    return !r.deletedAt && !!r.cardPhoto && !!r.syncedAt
-      && r.photoSyncedDigest !== this.photoDigest(r.cardPhoto);
+  // `syncedAt` is required: a photo belongs to a record, so uploading one for a
+  // record the server has not accepted yet would leave an image with nothing to
+  // belong to. Tombstones drop `cardPhotos`, so deleted records never qualify.
+  //
+  // The queue is one entry per *photo*, not per record — a record with four
+  // cards is four uploads, and one of them failing must not re-send the other
+  // three.
+  photoPendingFor(r, p) {
+    return !r.deletedAt && !!r.syncedAt
+      && (r.photoSyncedDigests || {})[p.id] !== this.photoDigest(p.dataUrl);
   }
 
-  pendingPhotos() { return this.state.records.filter(r => this.photoPending(r)); }
+  pendingPhotos() {
+    const out = [];
+    for (const r of this.state.records) {
+      for (const p of (r.cardPhotos || [])) {
+        if (this.photoPendingFor(r, p)) out.push({ record: r, photo: p });
+      }
+    }
+    return out;
+  }
 
   bindSyncTriggers() {
     // No Background Sync on iOS, so these four are the whole story.
@@ -5448,29 +5853,32 @@ class Component extends DCLogic {
     const queue = this.pendingPhotos();
     const batch = queue.slice(0, this.PHOTO_BATCH);
     for (let i = 0; i < batch.length; i++) {
-      const r = batch[i];
+      const { record, photo } = batch[i];
       this.setState({ syncPhotoProgress: `${i + 1}/${queue.length}` });
       try {
-        const digest = this.photoDigest(r.cardPhoto);
-        await this.syncFetch('/photos/' + encodeURIComponent(r.id), {
+        const digest = this.photoDigest(photo.dataUrl);
+        // Filed under the photo's own id, not the record's. Removing the first
+        // of three photos must not renumber the other two on the server.
+        await this.syncFetch('/photos/' + encodeURIComponent(photo.id), {
           method: 'PUT',
           headers: { 'Content-Type': 'image/jpeg' },
-          body: this.dataUrlToBytes(r.cardPhoto),
+          body: this.dataUrlToBytes(photo.dataUrl),
         });
-        const merged = { ...(this.state.records.find(x => x.id === r.id) || r), photoSyncedDigest: digest };
+        const cur = this.state.records.find(x => x.id === record.id) || record;
+        const merged = { ...cur, photoSyncedDigests: { ...(cur.photoSyncedDigests || {}), [photo.id]: digest } };
         await this.dbPut('records', merged);
-        this.setState({ records: this.state.records.map(x => x.id === r.id ? merged : x) });
+        this.setState({ records: this.state.records.map(x => x.id === record.id ? merged : x) });
       } catch (e) {
         // An expired or wrong token will fail every photo in turn; stop early
         // rather than hammer the server once per queued image.
         if (e.kind === 'auth') throw e;
-        console.warn('照片上傳失敗，下次同步再試：' + r.id, e && e.message);
+        console.warn('照片上傳失敗，下次同步再試：' + photo.id, e && e.message);
       }
     }
     return queue.length > batch.length;
   }
 
-  // `cardPhoto` is a data: URL; the endpoint takes raw JPEG bytes.
+  // A stored photo is a data: URL; the endpoint takes raw JPEG bytes.
   dataUrlToBytes(dataUrl) {
     const bin = atob(dataUrl.slice(dataUrl.indexOf(',') + 1));
     const out = new Uint8Array(bin.length);
@@ -5603,12 +6011,20 @@ class Component extends DCLogic {
     }
   }
 
-  // `cardPhoto` never goes in the record JSON — 200–500KB each would make a
+  // `cardPhotos` never goes in the record JSON — 200–500KB each would make a
   // batch of 50 enormous, and a failed photo would drag the records with it.
-  // `syncedAt` is local bookkeeping and means nothing to the server.
+  // `syncedAt` and the digests are local bookkeeping, meaningless to the server.
+  //
+  // What does go is `photoIds`: the server prunes any image filed under this
+  // record that the record no longer lists, so removing a photo on the tablet
+  // removes it on the server too. Deletion stays expressed by the record
+  // itself — the same reason v3.14 refused to add a delete endpoint, since an
+  // endpoint someone has to remember to call is how these files end up living
+  // forever.
   forWire(r) {
-    const { cardPhoto, syncedAt, photoSyncedDigest, ...wire } = r;
-    return wire;
+    const { cardPhotos, syncedAt, photoSyncedDigests, ...wire } = r;
+    if (r.deletedAt) return wire;
+    return { ...wire, photoIds: (cardPhotos || []).map(p => p.id) };
   }
 
   async syncPull() {
@@ -5623,9 +6039,10 @@ class Component extends DCLogic {
           const local = records.find(r => r.id === remote.id);
           if (local && !this.remoteWins(remote, local)) continue;
           const merged = { ...remote, syncedAt: now,
-            // A pull carries no photo, so keep whatever this tablet already has
-            // rather than blanking it.
-            cardPhoto: (local && local.cardPhoto) ?? null };
+            // A pull carries no photos, so keep whatever this tablet already
+            // has rather than blanking them.
+            cardPhotos: (local && local.cardPhotos) || [],
+            photoSyncedDigests: (local && local.photoSyncedDigests) || {} };
           await this.dbPut('records', merged);
           records = local
             ? records.map(r => r.id === remote.id ? merged : r)
@@ -5685,6 +6102,62 @@ class Component extends DCLogic {
 
   // Maps a field definition to template props. `store`/`errStore` name the
   // state keys holding this group's values/errors so closures stay correct.
+  // Label for one calling code: "+886 Taiwan 台灣". The code leads because it
+  // is what the user is choosing; the names are how they find it.
+  ccLabel(c) { return c.code + ' ' + c.en + (c.zh ? ' ' + c.zh : ''); }
+
+  ccByCode(code) { return this.CALLING_CODES.find(c => c.code === code) || null; }
+
+  // The searchable country-code box. Mirrors the 國籍 combobox, minus free
+  // text — see the note at its call site.
+  countryCodeCombo(key) {
+    const code = this.state.selectedCountryCode;
+    const open = this.state.comboOpenId === key;
+    const q = (open ? this.state.comboQuery : '').trim().toLowerCase();
+    // A bare "886" or "+886" should find Taiwan, and so should "tai" or "台".
+    const matches = this.CALLING_CODES
+      .filter(c => !q
+        || c.code.replace('+', '').startsWith(q.replace('+', ''))
+        || c.en.toLowerCase().includes(q)
+        || (c.zh && c.zh.includes(q))
+        || c.iso.toLowerCase() === q)
+      .slice(0, 60)
+      .map(c => ({
+        label: this.ccLabel(c),
+        onPick: () => {
+          clearTimeout(this._ccBlurTimer);
+          this.setState({ selectedCountryCode: c.code, comboOpenId: null, comboQuery: '' });
+        },
+      }));
+    const hit = this.ccByCode(code);
+    return {
+      ccOpen: open,
+      ccMatches: matches,
+      ccNoMatch: open && matches.length === 0,
+      ccValue: open ? this.state.comboQuery : (hit ? this.ccLabel(hit) : code),
+      onCcFocus: () => this.setState({ comboOpenId: key, comboQuery: '' }),
+      onCcInput: (e) => this.setState({ comboOpenId: key, comboQuery: e.target.value }),
+      // Deferred so the option's click lands before the list unmounts — the
+      // same race, and the same reason, as the 國籍 combobox.
+      onCcBlur: (e) => {
+        const typed = e.target.value.trim();
+        clearTimeout(this._ccBlurTimer);
+        this._ccBlurTimer = setTimeout(() => {
+          const norm = typed.toLowerCase();
+          const found = this.CALLING_CODES.find(c =>
+            this.ccLabel(c).toLowerCase() === norm
+            || c.code === typed || c.code === '+' + typed.replace('+', '')
+            || c.en.toLowerCase() === norm || c.zh === typed
+            || c.iso.toLowerCase() === norm);
+          // No match keeps the previous code rather than storing the typed
+          // text: this value is prefixed onto the phone number.
+          this.setState({ comboOpenId: null, comboQuery: '',
+            selectedCountryCode: found ? found.code : code });
+        }, 150);
+      },
+    };
+  }
+
   mapFormField(f, store, errStore, palette) {
     const values = this.state[store];
     const errors = errStore ? this.state[errStore] : {};
@@ -5796,6 +6269,18 @@ class Component extends DCLogic {
       onClick: () => setValue(n === ratingValue ? '' : n),
     })) : [];
 
+    // ===== phone country code =====
+    // Same combobox as 國籍 (issue #15: "國碼可以比照辦理"), and for the same
+    // reason — a full E.164 list is 241 entries, which is a scroll, not a menu.
+    // It reuses the shared comboOpenId/comboQuery state under its own key, so
+    // opening this one closes any other.
+    //
+    // One deliberate difference: this box does *not* accept free text. The
+    // nationality field stores whatever a visitor calls their country, but this
+    // value is prefixed onto the phone number itself — "TW 0912…" is not a
+    // phone number, and nothing downstream could tell it apart from a real one.
+    // An unrecognised entry therefore reverts on blur.
+
     // Combobox plumbing. The input shows the typed query while open and the
     // committed value while closed; whatever is in the box on blur becomes the
     // value, which is what lets an off-list country through.
@@ -5887,8 +6372,7 @@ class Component extends DCLogic {
           this.setState({ comboOpenId: null, comboQuery: '' });
         }, 150);
       } : undefined,
-      countryCode: isTel ? this.state.selectedCountryCode : undefined,
-      onCountryCodeChange: isTel ? (e) => this.setState({ selectedCountryCode: e.target.value }) : undefined,
+      ...(isTel ? this.countryCodeCombo(comboKey + '.cc') : {}),
       error: !!errors[f.id], errorMsg: errors[f.id] || '',
       onInput: (e) => setValue(e.target.value),
     };
@@ -5905,6 +6389,13 @@ class Component extends DCLogic {
     const showNeedsForm = screen === 'needsForm';
     const showCompanyForm = screen === 'companyForm';
     const showHandoff = screen === 'handoff';
+    // Only when the loop was actually used. On the ordinary one-visitor flow
+    // this line would be noise on a screen the visitor is looking at; when two
+    // or three contacts went in, it is the one confirmation the receptionist
+    // gets that they all landed.
+    const handoffCount = this.state.flowSiblingIds.length + 1;
+    const showHandoffCount = showHandoff && handoffCount > 1;
+    const handoffCountLabel = `已建立 ${handoffCount} 筆紀錄`;
     const showAdmin = screen === 'admin';
     const showBrowse = screen === 'browse';
 
@@ -6065,6 +6556,12 @@ class Component extends DCLogic {
     const companySubmitLabel = 'Next 下一步 →';
     const companyStepLabel = '2 / 3';
     const showStepChip = !editing;
+    // 增加聯絡人 is a new-visit action: editing one saved record is not a flow,
+    // and looping there would silently create records the user never asked for.
+    const showAddContact = !editing;
+    const contactsAdded = this.state.flowSiblingIds.length;
+    const showContactChip = !editing && contactsAdded > 0;
+    const contactChipLabel = `已新增 ${contactsAdded} 位聯絡人`;
 
     const bluePalette = { checkedBg: '#F0F6FF', checkedBorder: '#0055B8', checkedText: '#0055B8' };
 
@@ -6094,12 +6591,22 @@ class Component extends DCLogic {
 
     const needsFormFields = needsSorted.map(f => this.mapFormField(f, 'needsValues', 'needsErrors', bluePalette));
     const companyFormFields = companySorted.map(f => this.mapFormField(f, 'companyValues', 'companyErrors', bluePalette));
-    // Business card capture (on the customer form since v3.3)
-    const showCaptureButtons = !this.state.cardPhotoPreviewSrc;
-    const showPhotoPreview = !!this.state.cardPhotoPreviewSrc;
-    const cardPhotoPreviewImg = this.state.cardPhotoPreviewSrc
-      ? React.createElement('img', { src: this.state.cardPhotoPreviewSrc, style: { width: '100%', maxHeight: '320px', objectFit: 'contain', display: 'block' } })
-      : null;
+    // Business card capture (on the customer form since v3.3, multiple since v3.16)
+    const cardPhotoItems = this.state.cardPhotos.map((p, i) => ({
+      num: String(i + 1),
+      img: React.createElement('img', { src: p.dataUrl, style: { width: '100%', maxHeight: '320px', objectFit: 'contain', display: 'block' } }),
+      onRetake: (e) => this.handleCardFileSelected(e, p.id),
+      // Two stages, like every other delete in the app. Losing a card photo is
+      // not recoverable — the original went home in someone's pocket.
+      onRemove: () => this.askConfirm({
+        title: '移除名片照片？',
+        message: `即將移除第 ${i + 1} 張名片照片。若此紀錄先前已存檔，儲存後照片也會一併刪除。`,
+        onConfirm: () => this.removeCardPhoto(p.id),
+      }),
+    }));
+    const canAddCardPhoto = this.state.cardPhotos.length < this.MAX_CARD_PHOTOS;
+    const addCardPhotoLabel = this.state.cardPhotos.length === 0 ? 'Capture 拍攝名片' : '＋ 加拍一張';
+    const cardPhotoHint = this.state.cardPhotos.length === 0;
 
     // Admin field lists (shared block across the four group tabs)
     const listTitles = { customer: '客戶資料欄位', needs: '客戶需求欄位', company: '公司背景資料欄位' };
@@ -6126,7 +6633,7 @@ class Component extends DCLogic {
     // Records — always scoped to the event that is open.
     const eventRecords = this.eventRecords(currentEventId);
     const recordCount = eventRecords.length;
-    const photoCount = eventRecords.filter(r => r.cardPhoto).length;
+    const photoCount = eventRecords.filter(r => (r.cardPhotos || []).length).length;
     const recordStats = `已蒐集 ${recordCount} 筆紀錄，其中 ${photoCount} 筆含名片照片`;
     const recordCols = this.recordListFields();
     // # / 時間 / 操作 get fixed widths; the field columns are left unsized so
@@ -6155,10 +6662,12 @@ class Component extends DCLogic {
         return val !== '' && val != null ? ((e.f.nameZh || e.f.nameEn) + '：' + val) : '';
       }).filter(Boolean);
       const who = [r.customerFields?.name, r.customerFields?.company].filter(Boolean).join(' / ');
-      return { cells, hasPhoto: !!r.cardPhoto,
+      const photos = r.cardPhotos || [];
+      return { cells, hasPhoto: photos.length > 0,
+        photoBadge: photos.length > 1 ? ' ×' + photos.length : '',
         num: String(i+1), time: new Date(r.timestamp).toLocaleString(),
         summary: summaryParts.join('\n'),
-        onViewPhoto: () => this.setState({ showPhotoLightbox: true, lightboxPhotoSrc: r.cardPhoto }),
+        onViewPhoto: () => this.setState({ showPhotoLightbox: true, lightboxPhotos: photos }),
         onEdit: () => this.editRecord(r.id),
         onDelete: () => this.askConfirm({
           title: '刪除這筆紀錄？',
@@ -6224,6 +6733,7 @@ class Component extends DCLogic {
 
     return {
       showEvents, showEventHome, showCustomerForm, showNeedsForm, showCompanyForm, showHandoff, showAdmin,
+      showHandoffCount, handoffCountLabel,
       showPinDialog, pinValue, pinError,
       onClosePinDialog: () => this.setState({ showPinDialog: false, pinValue: '', pinError: false }),
       onPinInput: (e) => this.setState({ pinValue: e.target.value.replace(/\D/g,'').slice(0,4), pinError: false }),
@@ -6288,7 +6798,9 @@ class Component extends DCLogic {
       onExitBrowse: () => this.setState({ screen: 'eventHome', browseQuery: '' }),
       // Customer info form
       customerFormTitle, customerFormTitleZh, customerBackLabel, customerSubmitLabel, customerStepLabel, showStepChip,
-      customerFormFields, countryCodes: this.getCountryCodes(),
+      showAddContact, showContactChip, contactChipLabel,
+      onAddContact: () => this.addContact(),
+      customerFormFields,
       showEditVisitDate: editing,
       editVisitDate: this.state.editVisitDate,
       onEditVisitDate: (e) => this.setState({ editVisitDate: e.target.value }),
@@ -6325,13 +6837,9 @@ class Component extends DCLogic {
       // Handoff
       onHandoffDone: () => this.goHome(),
       // Business card capture (customer form)
-      showCaptureButtons, showPhotoPreview, cardPhotoPreviewImg,
+      cardPhotoItems, canAddCardPhoto, addCardPhotoLabel, cardPhotoHint,
+      maxCardPhotos: String(this.MAX_CARD_PHOTOS),
       onCardFileSelected: (e) => this.handleCardFileSelected(e),
-      onRemoveCardPhoto: () => this.askConfirm({
-        title: '移除名片照片？',
-        message: '即將移除這張名片照片。若此紀錄先前已存檔，儲存後照片也會一併刪除。',
-        onConfirm: () => this.setState({ cardPhotoPreviewSrc: null, cardPhotoBase64: null }),
-      }),
       // Admin
       adminTabs, showAdminFieldList, showAdminRecords, showSettings,
       fieldsEditable, fieldsReadOnly: !fieldsEditable, ownerLabel,
@@ -6401,9 +6909,16 @@ class Component extends DCLogic {
       onConfirmCancel: () => this.closeConfirm(),
       // Photo lightbox
       showPhotoLightbox: this.state.showPhotoLightbox,
-      lightboxPhotoImg: this.state.lightboxPhotoSrc
-        ? React.createElement('img', { src: this.state.lightboxPhotoSrc, style: { maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain', borderRadius: '8px' } })
-        : null,
+      // Every photo of the record, stacked and scrollable. A record can hold up
+      // to four now, and a lightbox that shows only the first would quietly hide
+      // the back of the card — the side people photograph *because* it has
+      // something on it.
+      lightboxPhotoImg: React.createElement('div',
+        { style: { maxWidth: '90vw', maxHeight: '90vh', overflowY: 'auto', display: 'flex',
+                   flexDirection: 'column', gap: '12px', alignItems: 'center' } },
+        this.state.lightboxPhotos.map((p, i) => React.createElement('img',
+          { key: p.id || i, src: p.dataUrl,
+            style: { maxWidth: '90vw', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px' } }))),
       onClosePhotoLightbox: () => this.setState({ showPhotoLightbox: false }),
       // Toast
       showToast: this.state.showToast, toastMessage: this.state.toastMessage,

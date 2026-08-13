@@ -1,4 +1,4 @@
-// v3.14: business card photos reach the server.
+// v3.14: business card photos reach the server. v3.16: several per record.
 //
 // Photos are the one payload that makes the venue's unreliable Wi-Fi bite —
 // 200–500KB each against records measured in kilobytes. So the interesting
@@ -39,7 +39,12 @@ const TINY_JPEG = Buffer.from(
     errors.push(m.text());
   });
 
+  // Photos are filed under their own id as of v3.16, not the record's — so a
+  // record with two cards has two files, and removing one cannot renumber the
+  // other.
   const photoPath = (id) => path.join(sync.dataDir, 'photos', id + '.jpg');
+  const photoIds = (recId) => page.evaluate((id) =>
+    (window.__app.state.records.find(r => r.id === id).cardPhotos || []).map(p => p.id), recId);
   const syncAndWait = async () => {
     await page.evaluate(() => window.__app.syncNow('test'));
     await page.waitForFunction(() => window.__app.state.syncStatus !== 'running', { timeout: 20000 })
@@ -74,29 +79,32 @@ const TINY_JPEG = Buffer.from(
 
   const recId = await page.evaluate(() => window.__app.state.records[0].id);
   const hasLocalPhoto = await page.evaluate(() =>
-    (window.__app.state.records[0].cardPhoto || '').startsWith('data:image/jpeg'));
+    ((window.__app.state.records[0].cardPhotos || [])[0]?.dataUrl || '').startsWith('data:image/jpeg'));
   assert(hasLocalPhoto, '名片照已存進紀錄（走過真正的壓縮流程）');
+  const [photoId] = await photoIds(recId);
 
   // ---- 1. it reaches the server as a real JPEG ----
   let st = await syncAndWait();
   assert(st.status === 'idle', `同步成功（${st.status} ${st.error}）`);
-  assert(fs.existsSync(photoPath(recId)), '伺服器上出現 photos/<id>.jpg');
-  const bytes = fs.readFileSync(photoPath(recId));
+  assert(fs.existsSync(photoPath(photoId)), '伺服器上出現 photos/<照片 id>.jpg');
+  const bytes = fs.readFileSync(photoPath(photoId));
   assert(bytes.length > 0 && bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF,
     `檔案是真的 JPEG（${bytes.length} bytes，magic ${bytes.slice(0, 3).toString('hex')}）`);
   assert(st.photos === 0, '上傳後待上傳張數歸零');
 
   const onServer = await H.serverRecords(sync);
-  assert(onServer.length === 1 && onServer[0].cardPhoto === undefined,
-    '紀錄本身仍不帶 cardPhoto——照片走獨立端點');
-  assert(onServer[0].photoSyncedDigest === undefined,
-    'photoSyncedDigest 是本機記帳，不上傳');
+  assert(onServer.length === 1 && onServer[0].cardPhotos === undefined,
+    '紀錄本身仍不帶 cardPhotos——照片走獨立端點');
+  assert(onServer[0].photoSyncedDigests === undefined,
+    'photoSyncedDigests 是本機記帳，不上傳');
+  assert(Array.isArray(onServer[0].photoIds) && onServer[0].photoIds[0] === photoId,
+    '但 photoIds 有送——伺服器靠它知道該留哪幾張');
 
   // ---- 2. syncing again does not re-upload ----
-  const mtime1 = fs.statSync(photoPath(recId)).mtimeMs;
+  const mtime1 = fs.statSync(photoPath(photoId)).mtimeMs;
   await new Promise(r => setTimeout(r, 1100));       // coarse mtime resolution
   await syncAndWait();
-  assert(fs.statSync(photoPath(recId)).mtimeMs === mtime1,
+  assert(fs.statSync(photoPath(photoId)).mtimeMs === mtime1,
     '再次同步沒有重傳（mtime 未變）');
 
   // ---- 3. …and neither does a text-only edit ----
@@ -115,7 +123,7 @@ const TINY_JPEG = Buffer.from(
   st = await syncAndWait();
   const server2 = await H.serverRecords(sync);
   assert(server2[0].customerFields.name === '王大明', '文字修改有送到伺服器');
-  assert(fs.statSync(photoPath(recId)).mtimeMs === mtime1,
+  assert(fs.statSync(photoPath(photoId)).mtimeMs === mtime1,
     '只改文字時照片沒有重傳——內容摘要就是為了這件事');
 
   // ---- 4. replacing the photo does re-upload ----
@@ -128,19 +136,21 @@ const TINY_JPEG = Buffer.from(
     ctx.fillStyle = '#c0ffee'; ctx.fillRect(0, 0, 8, 8);
     const url = canvas.toDataURL('image/jpeg', 0.8);
     const recs = app.state.records.map(r => r.id === id
-      ? { ...r, cardPhoto: url, updatedAt: app.nextUpdatedAt(r.updatedAt) } : r);
+      ? { ...r, cardPhotos: r.cardPhotos.map((p, i) => i === 0 ? { ...p, dataUrl: url } : p),
+          updatedAt: app.nextUpdatedAt(r.updatedAt) } : r);
     app.setState({ records: recs });
     return app.dbPut('records', recs.find(r => r.id === id));
   }, recId);
   await new Promise(r => setTimeout(r, 1100));
   await syncAndWait();
-  const bytes2 = fs.readFileSync(photoPath(recId));
+  const bytes2 = fs.readFileSync(photoPath(photoId));
   assert(bytes2.length !== bytes.length || !bytes2.equals(bytes),
     `換照片後伺服器上的檔案跟著換（${bytes.length} → ${bytes2.length} bytes）`);
 
   // ---- 5. a record the server has not accepted keeps its photo at home ----
   const wouldUpload = await page.evaluate(() =>
-    window.__app.photoPending({ id: 'x', cardPhoto: 'data:image/jpeg;base64,AAA', syncedAt: null }));
+    window.__app.photoPendingFor({ id: 'x', syncedAt: null },
+      { id: 'p1', dataUrl: 'data:image/jpeg;base64,AAA' }));
   assert(wouldUpload === false, '尚未同步的紀錄不會先傳照片——否則伺服器收到孤兒圖檔');
 
   // ---- 6. deleting the record deletes the photo on the server ----
@@ -149,7 +159,7 @@ const TINY_JPEG = Buffer.from(
   await page.evaluate((id) => window.__app.deleteRecord(id), recId);
   await page.waitForTimeout(400);
   st = await syncAndWait();
-  assert(!fs.existsSync(photoPath(recId)),
+  assert(!fs.existsSync(photoPath(photoId)),
     '刪除紀錄後伺服器上的照片一併消失');
   await page.screenshot({ path: path.join(SHOT, '01_after_delete.png'), fullPage: true });
 
@@ -172,7 +182,7 @@ const TINY_JPEG = Buffer.from(
   const offlineId = await page.evaluate(() =>
     window.__app.state.records.find(r => r.customerFields?.name === '離線客戶').id);
   const keptPhoto = await page.evaluate((id) =>
-    !!window.__app.state.records.find(r => r.id === id).cardPhoto, offlineId);
+    (window.__app.state.records.find(r => r.id === id).cardPhotos || []).length > 0, offlineId);
   assert(keptPhoto, '連不上時照片仍在平板上，沒有被丟掉');
 
   // ---- …and completes once the server is back ----
@@ -182,7 +192,8 @@ const TINY_JPEG = Buffer.from(
   await page.waitForTimeout(1600);
   st = await syncAndWait();
   assert(st.status === 'idle', `伺服器回來後恢復（${st.status} ${st.error}）`);
-  assert(fs.existsSync(photoPath(offlineId)), '離線期間拍的照片補傳成功');
+  const [offlinePhotoId] = await photoIds(offlineId);
+  assert(fs.existsSync(photoPath(offlinePhotoId)), '離線期間拍的照片補傳成功');
   assert(st.photos === 0, `待上傳張數歸零（實際 ${st.photos}）`);
 
   assert(errors.length === 0, '無 console error：' + errors.join(' | '));
