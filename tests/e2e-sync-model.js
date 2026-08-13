@@ -80,17 +80,21 @@ const ISO = /^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/;
 
   // Renaming the device must not disturb the sync identity — the label is
   // free text and two tablets can easily end up with the same one.
-  await H.enterEvent(page);
-  await H.openAdmin(page, '系統設定');
+  await H.openSettings(page);
   const nameBox = page.locator('input[type="text"]').first();
   await nameBox.fill('展場平板 A');
-  await page.getByRole('button', { name: /儲存/ }).first().click();
+  await page.getByRole('button', { name: /儲存設定/ }).first().click();
   await page.waitForTimeout(600);
   assert((await config('deviceId')) === devId, '改裝置名稱不影響 deviceId');
+  await page.getByRole('button', { name: '← 活動列表' }).click();
+  await page.waitForTimeout(500);
+  await H.lockManage(page);
+  await H.enterEvent(page);
 
   // ---- 3. editing moves updatedAt but not timestamp ----
-  await page.getByRole('button', { name: '資料紀錄' }).click();
-  await page.waitForTimeout(500);
+  // Settings is its own screen since v3.15, so getting here needs the admin
+  // panel opened explicitly rather than a tab switch.
+  await H.openAdmin(page, '資料紀錄');
   // Rows sort newest-first, so .first() would be the other record — target the
   // row by its name.
   await page.locator('tr', { hasText: '王小明' }).getByRole('button', { name: '編輯' }).click();

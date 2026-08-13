@@ -2346,7 +2346,10 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
              card when there are only one or two events. -->
         <div style="max-width: 760px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column">
           <sc-if value="{{ manageMode }}">
-            <button onclick="{{ onAddEvent }}" data-add-event="" style="width: 100%; height: 52px; margin-bottom: 20px; background: #0055B8; color: #FFF; border: none; border-radius: 12px; font-size: var(--fs-body); font-weight: 600; cursor: pointer" style-hover="background: #004494">＋ 新增活動</button>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap">
+              <button onclick="{{ onAddEvent }}" data-add-event="" style="flex: 1; min-width: 200px; height: 52px; background: #0055B8; color: #FFF; border: none; border-radius: 12px; font-size: var(--fs-body); font-weight: 600; cursor: pointer" style-hover="background: #004494">＋ 新增活動</button>
+              <button onclick="{{ onOpenSettings }}" data-open-settings="" style="height: 52px; padding: 0 20px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 12px; font-size: var(--fs-body); cursor: pointer; flex-shrink: 0" style-hover="background: #F0F6FF">系統設定</button>
+            </div>
           </sc-if>
 
           <sc-if value="{{ hasActiveEvents }}">
@@ -3358,8 +3361,26 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </div>
         </sc-if>
 
-        <!-- TAB: Settings -->
-        <sc-if value="{{ showAdminSettings }}">
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===== SETTINGS =====
+       Device-wide, and reached from the event list rather than from inside an
+       event. It always was global — the banner below says so — but it used to
+       live behind 表單管理, so changing a device name meant first walking into
+       some arbitrary exhibition. -->
+  <sc-if value="{{ showSettings }}">
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.3s ease">
+      <div data-page-header="" style="background: #0055B8; padding: 1rem 1.5rem; display: flex; align-items: center; gap: 12px; flex-shrink: 0">
+        <button onclick="{{ onExitSettings }}" data-settings-back="" style="color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.15); border: none; padding: 8px 12px; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25); color: #FFF">← 活動列表</button>
+        <span data-page-title="" style="display: flex; flex-direction: column; min-width: 0">
+          <span style="color: #FFF; font-size: var(--fs-page); font-weight: 600; line-height: 1.25">Settings</span>
+          <span style="color: rgba(255,255,255,0.8); font-size: var(--fs-sm); line-height: 1.3">系統設定</span>
+        </span>
+      </div>
+      <div data-mobile-pad="" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 1.5rem">
           <div data-admin-panel="" style="max-width: var(--admin-w); margin: 0 auto; display: flex; flex-direction: column; gap: 20px">
             <div style="background: #F0F6FF; border: 1px solid #BFDBFE; border-radius: 10px; padding: 12px 20px; font-size: 0.875rem; color: #1E40AF">此頁設定適用於所有活動。表單欄位與資料紀錄則各活動獨立。</div>
             <div style="background: #FFF; border-radius: 10px; padding: 20px; border: 1px solid #E2E8F0">
@@ -3397,8 +3418,6 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               <button onclick="{{ onSaveSettings }}" style="width: 100%; height: 48px; background: #0055B8; color: #FFF; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer" style-hover="background: #004494">儲存設定</button>
             </div>
           </div>
-        </sc-if>
-        </div>
       </div>
     </div>
   </sc-if>
@@ -5694,7 +5713,9 @@ class Component extends DCLogic {
 
     const showAdminFieldList = showAdmin && (adminTab === 'customer' || adminTab === 'needs' || adminTab === 'company');
     const showAdminRecords = showAdmin && adminTab === 'records';
-    const showAdminSettings = showAdmin && adminTab === 'settings';
+    // Its own screen since v3.15, reached from the event list — it was never
+    // event-scoped, only event-gated.
+    const showSettings = screen === 'settings';
 
     // ===== Sync status line =====
     // The pending count is what reception actually needs to know: it answers
@@ -5798,7 +5819,7 @@ class Component extends DCLogic {
     });
     const adminTabs = [
       mkTab('customer', '客戶資料欄位'), mkTab('needs', '客戶需求欄位'), mkTab('company', '公司背景欄位'),
-      mkTab('records', '資料紀錄'), mkTab('settings', '系統設定'),
+      mkTab('records', '資料紀錄'),
     ];
 
     // Form labels. Company Profile always sits at step 2; whichever of
@@ -6095,7 +6116,9 @@ class Component extends DCLogic {
         onConfirm: () => this.setState({ cardPhotoPreviewSrc: null, cardPhotoBase64: null }),
       }),
       // Admin
-      adminTabs, showAdminFieldList, showAdminRecords, showAdminSettings,
+      adminTabs, showAdminFieldList, showAdminRecords, showSettings,
+      onExitSettings: () => this.setState({ screen: 'events', eventsManageMode: true }),
+      onOpenSettings: () => this.setState({ screen: 'settings' }),
       adminListTitle, adminFields, adminEventName: curEvent?.name ?? '',
       onExitAdmin: () => this.setState({ ...this.flowResetPatch(), screen: 'eventHome' }),
       onAddField: () => this.openFieldEditor('add', listTarget),

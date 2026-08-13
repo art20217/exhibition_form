@@ -121,18 +121,12 @@ const fieldBlock = (page, labelText) => page.locator('label', { hasText: labelTe
     await assert(!adminText.includes(en), `後台無英文殘留：${en}`);
   }
   await assert(adminText.includes('後台管理') && adminText.includes('＋ 新增欄位'), '後台顯示中文介面');
-  for (const tab of ['客戶資料欄位', '客戶需求欄位', '公司背景欄位', '資料紀錄', '系統設定']) {
+  for (const tab of ['客戶資料欄位', '客戶需求欄位', '公司背景欄位', '資料紀錄']) {
     await assert(adminText.includes(tab), `頁籤中文化：${tab}`);
   }
-
-  await page.getByRole('button', { name: '系統設定' }).click();
-  await page.waitForTimeout(300);
-  await shot(page, 'admin-settings');
-  adminText = await page.locator('body').innerText();
-  for (const en of ['Device Name', 'Admin PIN', 'Save Settings', 'GDPR Consent (English)']) {
-    await assert(!adminText.includes(en), `設定頁無英文殘留：${en}`);
-  }
-  await assert(adminText.includes('裝置名稱') && adminText.includes('儲存設定'), '設定頁中文化');
+  // v3.15: 系統設定 is no longer a tab here. Its own Chinese-only check lives in
+  // e2e-settings-move.js, on the screen it actually occupies now.
+  await assert(!adminText.includes('系統設定'), '系統設定已不在表單管理的頁籤中');
 
   await page.getByRole('button', { name: '客戶資料欄位' }).click();
   await page.waitForTimeout(300);
