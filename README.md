@@ -57,6 +57,7 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 | 系統有哪些功能 | **[Wiki — 功能總覽](https://github.com/art20217/exhibition_form/wiki)** |
 | 版本沿革、資料遷移 | [CHANGELOG.md](CHANGELOG.md) |
 | 同步協定（給實作伺服器的人） | [docs/sync-contract.md](docs/sync-contract.md) |
+| 實機驗證清單（本機測不到的那些） | [docs/device-verification.md](docs/device-verification.md) |
 | 後續規劃、技術債 | [Issues](https://github.com/art20217/exhibition_form/issues) |
 | 技術架構、改程式碼要注意什麼 | 本文件以下的內容 |
 
@@ -211,6 +212,7 @@ exhibition_form/
 ├── .github/workflows/      # CI：每次 push 與 PR 跑完整測試
 ├── docs/
 │   ├── sync-contract.md    #   同步協定規格（寫給日後實作伺服器的人）
+│   ├── device-verification.md  #   實機驗證清單（headless 測不到的行為）
 │   └── wiki/               #   Wiki 頁面的原始檔（正本在 GitHub Wiki，見下方說明）
 ├── server/                 # 同步伺服器的參考實作（零依賴 Node，非正式服務）
 ├── package.json
