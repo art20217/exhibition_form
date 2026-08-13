@@ -15,7 +15,8 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 ## 這一版有什麼新東西
 
 **v3.16.0** — 名片可以拍多張（正反面，最多 4 張）；客戶資料頁新增「增加聯絡人」，
-同一家公司來好幾位時共同的答案只填一次，送出後仍是各自獨立的紀錄。
+同一家公司來好幾位時共同的答案只填一次，送出後仍是各自獨立的紀錄；
+電話國碼改成完整的 E.164 清單並比照國籍做成可搜尋選單（[#15](https://github.com/art20217/exhibition_form/issues/15)）。
 
 **v3.15.0** — 活動與欄位定義也會同步了（契約 v2），**兩台平板終於看得到彼此的紀錄**；
 欄位由一台裝置擁有，其他平板唯讀、可一層確認接管。系統設定搬出「表單管理」，
@@ -96,7 +97,7 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 ```bash
 npm ci
 npx playwright-core install chromium   # 首次執行才需要
-npm test                               # 30 支套件，約 8 分鐘
+npm test                               # 31 支套件，約 8.5 分鐘
 npm test -- pin-mobile events          # 只跑名稱含這些字串的套件
 ```
 
@@ -202,10 +203,11 @@ exhibition_form/
 ├── manifest.webmanifest    # PWA manifest（standalone）
 ├── icons/                  # 主畫面圖示（由 tools/make-icons.js 產生）
 ├── tools/make-icons.js     #   圖示產生器，僅在圖案變更時重跑
+│   └── make-calling-codes.js  #   國碼清單產生器（--check 比對內嵌版本）
 ├── tests/                  # 端到端測試（Playwright 驅動 headless Chromium）
 │   ├── helpers.js          #   共用導覽、IndexedDB 讀寫、瀏覽器啟動
 │   ├── run-all.js          #   依序執行全部套件的 runner
-│   └── e2e-*.js            #   30 支套件
+│   └── e2e-*.js            #   31 支套件
 ├── .github/workflows/      # CI：每次 push 與 PR 跑完整測試
 ├── docs/
 │   ├── sync-contract.md    #   同步協定規格（寫給日後實作伺服器的人）

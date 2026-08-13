@@ -2555,11 +2555,19 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
           <sc-if value="{{ field.isTel }}">
             <div data-mobile-stack="" style="display: flex; gap: 8px">
-              <sc-raw-select value="{{ field.countryCode }}" onchange="{{ field.onCountryCodeChange }}" style="width: 140px; height: 48px; padding: 0 8px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
-                <sc-for list="{{ countryCodes }}" as="cc">
-                  <option value="{{ cc.value }}">{{ cc.label }}</option>
-                </sc-for>
-              </sc-raw-select>
+              <div data-cc-combo="" style="position: relative; width: 210px; flex-shrink: 0">
+                <input type="text" value="{{ field.ccValue }}" oninput="{{ field.onCcInput }}" onfocus="{{ field.onCcFocus }}" onblur="{{ field.onCcBlur }}" placeholder="搜尋國碼" autocomplete="off" data-cc-input="" style="width: 100%; height: 48px; padding: 0 12px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
+                <sc-if value="{{ field.ccOpen }}">
+                  <div data-cc-list="" style="position: absolute; z-index: 20; left: 0; min-width: 100%; width: max-content; max-width: 320px; top: 52px; max-height: 260px; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #FFF; border: 1px solid #D1D5DB; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12)">
+                    <sc-for list="{{ field.ccMatches }}" as="cc">
+                      <button type="button" data-cc-opt="" onclick="{{ cc.onPick }}" style="display: block; width: 100%; text-align: left; padding: 12px 14px; border: none; background: transparent; font-size: var(--fs-body); color: #1A1A2E; cursor: pointer; white-space: nowrap" style-hover="background: #F0F6FF">{{ cc.label }}</button>
+                    </sc-for>
+                    <sc-if value="{{ field.ccNoMatch }}">
+                      <div style="padding: 12px 14px; font-size: var(--fs-sm); color: #94A3B8">找不到相符的國碼</div>
+                    </sc-if>
+                  </div>
+                </sc-if>
+              </div>
               <input type="tel" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="flex: 1; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
             </div>
           </sc-if>
@@ -2828,11 +2836,19 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               </sc-if>
               <sc-if value="{{ field.isTel }}">
                 <div data-mobile-stack="" style="display: flex; gap: 8px">
-                  <sc-raw-select value="{{ field.countryCode }}" onchange="{{ field.onCountryCodeChange }}" style="width: 140px; height: 48px; padding: 0 8px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
-                    <sc-for list="{{ countryCodes }}" as="cc">
-                      <option value="{{ cc.value }}">{{ cc.label }}</option>
-                    </sc-for>
-                  </sc-raw-select>
+                  <div data-cc-combo="" style="position: relative; width: 210px; flex-shrink: 0">
+                    <input type="text" value="{{ field.ccValue }}" oninput="{{ field.onCcInput }}" onfocus="{{ field.onCcFocus }}" onblur="{{ field.onCcBlur }}" placeholder="搜尋國碼" autocomplete="off" data-cc-input="" style="width: 100%; height: 48px; padding: 0 12px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
+                    <sc-if value="{{ field.ccOpen }}">
+                      <div data-cc-list="" style="position: absolute; z-index: 20; left: 0; min-width: 100%; width: max-content; max-width: 320px; top: 52px; max-height: 260px; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #FFF; border: 1px solid #D1D5DB; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12)">
+                        <sc-for list="{{ field.ccMatches }}" as="cc">
+                          <button type="button" data-cc-opt="" onclick="{{ cc.onPick }}" style="display: block; width: 100%; text-align: left; padding: 12px 14px; border: none; background: transparent; font-size: var(--fs-body); color: #1A1A2E; cursor: pointer; white-space: nowrap" style-hover="background: #F0F6FF">{{ cc.label }}</button>
+                        </sc-for>
+                        <sc-if value="{{ field.ccNoMatch }}">
+                          <div style="padding: 12px 14px; font-size: var(--fs-sm); color: #94A3B8">找不到相符的國碼</div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+                  </div>
                   <input type="tel" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="flex: 1; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
                 </div>
               </sc-if>
@@ -3003,11 +3019,19 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               </sc-if>
               <sc-if value="{{ field.isTel }}">
                 <div data-mobile-stack="" style="display: flex; gap: 8px">
-                  <sc-raw-select value="{{ field.countryCode }}" onchange="{{ field.onCountryCodeChange }}" style="width: 140px; height: 48px; padding: 0 8px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
-                    <sc-for list="{{ countryCodes }}" as="cc">
-                      <option value="{{ cc.value }}">{{ cc.label }}</option>
-                    </sc-for>
-                  </sc-raw-select>
+                  <div data-cc-combo="" style="position: relative; width: 210px; flex-shrink: 0">
+                    <input type="text" value="{{ field.ccValue }}" oninput="{{ field.onCcInput }}" onfocus="{{ field.onCcFocus }}" onblur="{{ field.onCcBlur }}" placeholder="搜尋國碼" autocomplete="off" data-cc-input="" style="width: 100%; height: 48px; padding: 0 12px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
+                    <sc-if value="{{ field.ccOpen }}">
+                      <div data-cc-list="" style="position: absolute; z-index: 20; left: 0; min-width: 100%; width: max-content; max-width: 320px; top: 52px; max-height: 260px; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #FFF; border: 1px solid #D1D5DB; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12)">
+                        <sc-for list="{{ field.ccMatches }}" as="cc">
+                          <button type="button" data-cc-opt="" onclick="{{ cc.onPick }}" style="display: block; width: 100%; text-align: left; padding: 12px 14px; border: none; background: transparent; font-size: var(--fs-body); color: #1A1A2E; cursor: pointer; white-space: nowrap" style-hover="background: #F0F6FF">{{ cc.label }}</button>
+                        </sc-for>
+                        <sc-if value="{{ field.ccNoMatch }}">
+                          <div style="padding: 12px 14px; font-size: var(--fs-sm); color: #94A3B8">找不到相符的國碼</div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+                  </div>
                   <input type="tel" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="flex: 1; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
                 </div>
               </sc-if>
@@ -3126,11 +3150,19 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               </sc-if>
               <sc-if value="{{ field.isTel }}">
                 <div data-mobile-stack="" style="display: flex; gap: 8px">
-                  <sc-raw-select value="{{ field.countryCode }}" onchange="{{ field.onCountryCodeChange }}" style="width: 140px; height: 48px; padding: 0 8px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
-                    <sc-for list="{{ countryCodes }}" as="cc">
-                      <option value="{{ cc.value }}">{{ cc.label }}</option>
-                    </sc-for>
-                  </sc-raw-select>
+                  <div data-cc-combo="" style="position: relative; width: 210px; flex-shrink: 0">
+                    <input type="text" value="{{ field.ccValue }}" oninput="{{ field.onCcInput }}" onfocus="{{ field.onCcFocus }}" onblur="{{ field.onCcBlur }}" placeholder="搜尋國碼" autocomplete="off" data-cc-input="" style="width: 100%; height: 48px; padding: 0 12px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
+                    <sc-if value="{{ field.ccOpen }}">
+                      <div data-cc-list="" style="position: absolute; z-index: 20; left: 0; min-width: 100%; width: max-content; max-width: 320px; top: 52px; max-height: 260px; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #FFF; border: 1px solid #D1D5DB; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12)">
+                        <sc-for list="{{ field.ccMatches }}" as="cc">
+                          <button type="button" data-cc-opt="" onclick="{{ cc.onPick }}" style="display: block; width: 100%; text-align: left; padding: 12px 14px; border: none; background: transparent; font-size: var(--fs-body); color: #1A1A2E; cursor: pointer; white-space: nowrap" style-hover="background: #F0F6FF">{{ cc.label }}</button>
+                        </sc-for>
+                        <sc-if value="{{ field.ccNoMatch }}">
+                          <div style="padding: 12px 14px; font-size: var(--fs-sm); color: #94A3B8">找不到相符的國碼</div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+                  </div>
                   <input type="tel" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="flex: 1; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
                 </div>
               </sc-if>
@@ -4494,22 +4526,254 @@ class Component extends DCLogic {
     return changed ? { ...values, ...patch } : values;
   }
 
-  getCountryCodes() {
-    return [
-      {value:'+886',label:'+886 TW'},{value:'+86',label:'+86 CN'},{value:'+1',label:'+1 US/CA'},
-      {value:'+44',label:'+44 UK'},{value:'+49',label:'+49 DE'},{value:'+81',label:'+81 JP'},
-      {value:'+82',label:'+82 KR'},{value:'+66',label:'+66 TH'},{value:'+91',label:'+91 IN'},
-      {value:'+7',label:'+7 RU'},{value:'+20',label:'+20 EG'},{value:'+27',label:'+27 ZA'},
-      {value:'+30',label:'+30 GR'},{value:'+31',label:'+31 NL'},{value:'+33',label:'+33 FR'},
-      {value:'+34',label:'+34 ES'},{value:'+39',label:'+39 IT'},{value:'+41',label:'+41 CH'},
-      {value:'+43',label:'+43 AT'},{value:'+46',label:'+46 SE'},{value:'+47',label:'+47 NO'},
-      {value:'+48',label:'+48 PL'},{value:'+52',label:'+52 MX'},{value:'+55',label:'+55 BR'},
-      {value:'+60',label:'+60 MY'},{value:'+61',label:'+61 AU'},{value:'+62',label:'+62 ID'},
-      {value:'+63',label:'+63 PH'},{value:'+64',label:'+64 NZ'},{value:'+65',label:'+65 SG'},
-      {value:'+84',label:'+84 VN'},{value:'+90',label:'+90 TR'},{value:'+852',label:'+852 HK'},
-      {value:'+853',label:'+853 MO'},{value:'+971',label:'+971 UAE'},
-    ];
-  }
+  // Full E.164 list, generated by tools/make-calling-codes.js (issue #15). The
+  // previous hand-written 35 entries meant a visitor from anywhere else had no
+  // right answer to pick. Country names come from Intl.DisplayNames, the same
+  // source as the v3.8 nationality list, so the two never disagree about what a
+  // country is called.
+  CALLING_CODES = [
+    { code: '+886', iso: 'TW', en: "Taiwan", zh: "台灣" },
+    { code: '+86', iso: 'CN', en: "China", zh: "中國" },
+    { code: '+852', iso: 'HK', en: "Hong Kong SAR China", zh: "中國香港特別行政區" },
+    { code: '+853', iso: 'MO', en: "Macao SAR China", zh: "中國澳門特別行政區" },
+    { code: '+81', iso: 'JP', en: "Japan", zh: "日本" },
+    { code: '+82', iso: 'KR', en: "South Korea", zh: "南韓" },
+    { code: '+1', iso: 'US', en: "United States", zh: "美國" },
+    { code: '+1', iso: 'CA', en: "Canada", zh: "加拿大" },
+    { code: '+44', iso: 'GB', en: "United Kingdom", zh: "英國" },
+    { code: '+49', iso: 'DE', en: "Germany", zh: "德國" },
+    { code: '+33', iso: 'FR', en: "France", zh: "法國" },
+    { code: '+39', iso: 'IT', en: "Italy", zh: "義大利" },
+    { code: '+31', iso: 'NL', en: "Netherlands", zh: "荷蘭" },
+    { code: '+34', iso: 'ES', en: "Spain", zh: "西班牙" },
+    { code: '+61', iso: 'AU', en: "Australia", zh: "澳洲" },
+    { code: '+64', iso: 'NZ', en: "New Zealand", zh: "紐西蘭" },
+    { code: '+65', iso: 'SG', en: "Singapore", zh: "新加坡" },
+    { code: '+60', iso: 'MY', en: "Malaysia", zh: "馬來西亞" },
+    { code: '+66', iso: 'TH', en: "Thailand", zh: "泰國" },
+    { code: '+84', iso: 'VN', en: "Vietnam", zh: "越南" },
+    { code: '+63', iso: 'PH', en: "Philippines", zh: "菲律賓" },
+    { code: '+62', iso: 'ID', en: "Indonesia", zh: "印尼" },
+    { code: '+91', iso: 'IN', en: "India", zh: "印度" },
+    { code: '+90', iso: 'TR', en: "Türkiye", zh: "土耳其" },
+    { code: '+55', iso: 'BR', en: "Brazil", zh: "巴西" },
+    { code: '+52', iso: 'MX', en: "Mexico", zh: "墨西哥" },
+    { code: '+93', iso: 'AF', en: "Afghanistan", zh: "阿富汗" },
+    { code: '+358', iso: 'AX', en: "Åland Islands", zh: "奧蘭群島" },
+    { code: '+355', iso: 'AL', en: "Albania", zh: "阿爾巴尼亞" },
+    { code: '+213', iso: 'DZ', en: "Algeria", zh: "阿爾及利亞" },
+    { code: '+1', iso: 'AS', en: "American Samoa", zh: "美屬薩摩亞" },
+    { code: '+376', iso: 'AD', en: "Andorra", zh: "安道爾" },
+    { code: '+244', iso: 'AO', en: "Angola", zh: "安哥拉" },
+    { code: '+1', iso: 'AI', en: "Anguilla", zh: "安奎拉" },
+    { code: '+1', iso: 'AG', en: "Antigua & Barbuda", zh: "安地卡及巴布達" },
+    { code: '+54', iso: 'AR', en: "Argentina", zh: "阿根廷" },
+    { code: '+374', iso: 'AM', en: "Armenia", zh: "亞美尼亞" },
+    { code: '+297', iso: 'AW', en: "Aruba", zh: "荷屬阿魯巴" },
+    { code: '+247', iso: 'AC', en: "Ascension Island", zh: "阿森松島" },
+    { code: '+43', iso: 'AT', en: "Austria", zh: "奧地利" },
+    { code: '+994', iso: 'AZ', en: "Azerbaijan", zh: "亞塞拜然" },
+    { code: '+1', iso: 'BS', en: "Bahamas", zh: "巴哈馬" },
+    { code: '+973', iso: 'BH', en: "Bahrain", zh: "巴林" },
+    { code: '+880', iso: 'BD', en: "Bangladesh", zh: "孟加拉" },
+    { code: '+1', iso: 'BB', en: "Barbados", zh: "巴貝多" },
+    { code: '+375', iso: 'BY', en: "Belarus", zh: "白俄羅斯" },
+    { code: '+32', iso: 'BE', en: "Belgium", zh: "比利時" },
+    { code: '+501', iso: 'BZ', en: "Belize", zh: "貝里斯" },
+    { code: '+229', iso: 'BJ', en: "Benin", zh: "貝南" },
+    { code: '+1', iso: 'BM', en: "Bermuda", zh: "百慕達" },
+    { code: '+975', iso: 'BT', en: "Bhutan", zh: "不丹" },
+    { code: '+591', iso: 'BO', en: "Bolivia", zh: "玻利維亞" },
+    { code: '+387', iso: 'BA', en: "Bosnia & Herzegovina", zh: "波士尼亞與赫塞哥維納" },
+    { code: '+267', iso: 'BW', en: "Botswana", zh: "波札那" },
+    { code: '+246', iso: 'IO', en: "British Indian Ocean Territory", zh: "英屬印度洋領地" },
+    { code: '+1', iso: 'VG', en: "British Virgin Islands", zh: "英屬維京群島" },
+    { code: '+673', iso: 'BN', en: "Brunei", zh: "汶萊" },
+    { code: '+359', iso: 'BG', en: "Bulgaria", zh: "保加利亞" },
+    { code: '+226', iso: 'BF', en: "Burkina Faso", zh: "布吉納法索" },
+    { code: '+257', iso: 'BI', en: "Burundi", zh: "蒲隆地" },
+    { code: '+855', iso: 'KH', en: "Cambodia", zh: "柬埔寨" },
+    { code: '+237', iso: 'CM', en: "Cameroon", zh: "喀麥隆" },
+    { code: '+238', iso: 'CV', en: "Cape Verde", zh: "維德角" },
+    { code: '+599', iso: 'BQ', en: "Caribbean Netherlands", zh: "荷蘭加勒比區" },
+    { code: '+1', iso: 'KY', en: "Cayman Islands", zh: "開曼群島" },
+    { code: '+236', iso: 'CF', en: "Central African Republic", zh: "中非共和國" },
+    { code: '+235', iso: 'TD', en: "Chad", zh: "查德" },
+    { code: '+56', iso: 'CL', en: "Chile", zh: "智利" },
+    { code: '+57', iso: 'CO', en: "Colombia", zh: "哥倫比亞" },
+    { code: '+269', iso: 'KM', en: "Comoros", zh: "葛摩" },
+    { code: '+242', iso: 'CG', en: "Congo - Brazzaville", zh: "剛果（布拉薩）" },
+    { code: '+243', iso: 'CD', en: "Congo - Kinshasa", zh: "剛果（金夏沙）" },
+    { code: '+682', iso: 'CK', en: "Cook Islands", zh: "庫克群島" },
+    { code: '+506', iso: 'CR', en: "Costa Rica", zh: "哥斯大黎加" },
+    { code: '+225', iso: 'CI', en: "Côte d’Ivoire", zh: "象牙海岸" },
+    { code: '+385', iso: 'HR', en: "Croatia", zh: "克羅埃西亞" },
+    { code: '+53', iso: 'CU', en: "Cuba", zh: "古巴" },
+    { code: '+599', iso: 'CW', en: "Curaçao", zh: "庫拉索" },
+    { code: '+357', iso: 'CY', en: "Cyprus", zh: "賽普勒斯" },
+    { code: '+420', iso: 'CZ', en: "Czechia", zh: "捷克" },
+    { code: '+45', iso: 'DK', en: "Denmark", zh: "丹麥" },
+    { code: '+253', iso: 'DJ', en: "Djibouti", zh: "吉布地" },
+    { code: '+1', iso: 'DM', en: "Dominica", zh: "多米尼克" },
+    { code: '+1', iso: 'DO', en: "Dominican Republic", zh: "多明尼加共和國" },
+    { code: '+593', iso: 'EC', en: "Ecuador", zh: "厄瓜多" },
+    { code: '+20', iso: 'EG', en: "Egypt", zh: "埃及" },
+    { code: '+503', iso: 'SV', en: "El Salvador", zh: "薩爾瓦多" },
+    { code: '+240', iso: 'GQ', en: "Equatorial Guinea", zh: "赤道幾內亞" },
+    { code: '+291', iso: 'ER', en: "Eritrea", zh: "厄利垂亞" },
+    { code: '+372', iso: 'EE', en: "Estonia", zh: "愛沙尼亞" },
+    { code: '+268', iso: 'SZ', en: "Eswatini", zh: "史瓦帝尼" },
+    { code: '+251', iso: 'ET', en: "Ethiopia", zh: "衣索比亞" },
+    { code: '+500', iso: 'FK', en: "Falkland Islands", zh: "福克蘭群島" },
+    { code: '+298', iso: 'FO', en: "Faroe Islands", zh: "法羅群島" },
+    { code: '+679', iso: 'FJ', en: "Fiji", zh: "斐濟" },
+    { code: '+358', iso: 'FI', en: "Finland", zh: "芬蘭" },
+    { code: '+594', iso: 'GF', en: "French Guiana", zh: "法屬圭亞那" },
+    { code: '+689', iso: 'PF', en: "French Polynesia", zh: "法屬玻里尼西亞" },
+    { code: '+241', iso: 'GA', en: "Gabon", zh: "加彭" },
+    { code: '+220', iso: 'GM', en: "Gambia", zh: "甘比亞" },
+    { code: '+995', iso: 'GE', en: "Georgia", zh: "喬治亞" },
+    { code: '+233', iso: 'GH', en: "Ghana", zh: "迦納" },
+    { code: '+350', iso: 'GI', en: "Gibraltar", zh: "直布羅陀" },
+    { code: '+30', iso: 'GR', en: "Greece", zh: "希臘" },
+    { code: '+299', iso: 'GL', en: "Greenland", zh: "格陵蘭" },
+    { code: '+1', iso: 'GD', en: "Grenada", zh: "格瑞那達" },
+    { code: '+590', iso: 'GP', en: "Guadeloupe", zh: "瓜地洛普" },
+    { code: '+1', iso: 'GU', en: "Guam", zh: "關島" },
+    { code: '+502', iso: 'GT', en: "Guatemala", zh: "瓜地馬拉" },
+    { code: '+44', iso: 'GG', en: "Guernsey", zh: "根息" },
+    { code: '+224', iso: 'GN', en: "Guinea", zh: "幾內亞" },
+    { code: '+245', iso: 'GW', en: "Guinea-Bissau", zh: "幾內亞比索" },
+    { code: '+592', iso: 'GY', en: "Guyana", zh: "蓋亞那" },
+    { code: '+509', iso: 'HT', en: "Haiti", zh: "海地" },
+    { code: '+504', iso: 'HN', en: "Honduras", zh: "宏都拉斯" },
+    { code: '+36', iso: 'HU', en: "Hungary", zh: "匈牙利" },
+    { code: '+354', iso: 'IS', en: "Iceland", zh: "冰島" },
+    { code: '+98', iso: 'IR', en: "Iran", zh: "伊朗" },
+    { code: '+964', iso: 'IQ', en: "Iraq", zh: "伊拉克" },
+    { code: '+353', iso: 'IE', en: "Ireland", zh: "愛爾蘭" },
+    { code: '+44', iso: 'IM', en: "Isle of Man", zh: "曼島" },
+    { code: '+972', iso: 'IL', en: "Israel", zh: "以色列" },
+    { code: '+1', iso: 'JM', en: "Jamaica", zh: "牙買加" },
+    { code: '+44', iso: 'JE', en: "Jersey", zh: "澤西島" },
+    { code: '+962', iso: 'JO', en: "Jordan", zh: "約旦" },
+    { code: '+7', iso: 'KZ', en: "Kazakhstan", zh: "哈薩克" },
+    { code: '+254', iso: 'KE', en: "Kenya", zh: "肯亞" },
+    { code: '+686', iso: 'KI', en: "Kiribati", zh: "吉里巴斯" },
+    { code: '+383', iso: 'XK', en: "Kosovo", zh: "科索沃" },
+    { code: '+965', iso: 'KW', en: "Kuwait", zh: "科威特" },
+    { code: '+996', iso: 'KG', en: "Kyrgyzstan", zh: "吉爾吉斯" },
+    { code: '+856', iso: 'LA', en: "Laos", zh: "寮國" },
+    { code: '+371', iso: 'LV', en: "Latvia", zh: "拉脫維亞" },
+    { code: '+961', iso: 'LB', en: "Lebanon", zh: "黎巴嫩" },
+    { code: '+266', iso: 'LS', en: "Lesotho", zh: "賴索托" },
+    { code: '+231', iso: 'LR', en: "Liberia", zh: "賴比瑞亞" },
+    { code: '+218', iso: 'LY', en: "Libya", zh: "利比亞" },
+    { code: '+423', iso: 'LI', en: "Liechtenstein", zh: "列支敦斯登" },
+    { code: '+370', iso: 'LT', en: "Lithuania", zh: "立陶宛" },
+    { code: '+352', iso: 'LU', en: "Luxembourg", zh: "盧森堡" },
+    { code: '+261', iso: 'MG', en: "Madagascar", zh: "馬達加斯加" },
+    { code: '+265', iso: 'MW', en: "Malawi", zh: "馬拉威" },
+    { code: '+960', iso: 'MV', en: "Maldives", zh: "馬爾地夫" },
+    { code: '+223', iso: 'ML', en: "Mali", zh: "馬利" },
+    { code: '+356', iso: 'MT', en: "Malta", zh: "馬爾他" },
+    { code: '+692', iso: 'MH', en: "Marshall Islands", zh: "馬紹爾群島" },
+    { code: '+596', iso: 'MQ', en: "Martinique", zh: "馬丁尼克" },
+    { code: '+222', iso: 'MR', en: "Mauritania", zh: "茅利塔尼亞" },
+    { code: '+230', iso: 'MU', en: "Mauritius", zh: "模里西斯" },
+    { code: '+262', iso: 'YT', en: "Mayotte", zh: "馬約特島" },
+    { code: '+691', iso: 'FM', en: "Micronesia", zh: "密克羅尼西亞" },
+    { code: '+373', iso: 'MD', en: "Moldova", zh: "摩爾多瓦" },
+    { code: '+377', iso: 'MC', en: "Monaco", zh: "摩納哥" },
+    { code: '+976', iso: 'MN', en: "Mongolia", zh: "蒙古" },
+    { code: '+382', iso: 'ME', en: "Montenegro", zh: "蒙特內哥羅" },
+    { code: '+1', iso: 'MS', en: "Montserrat", zh: "蒙哲臘" },
+    { code: '+212', iso: 'MA', en: "Morocco", zh: "摩洛哥" },
+    { code: '+258', iso: 'MZ', en: "Mozambique", zh: "莫三比克" },
+    { code: '+95', iso: 'MM', en: "Myanmar (Burma)", zh: "緬甸" },
+    { code: '+264', iso: 'NA', en: "Namibia", zh: "納米比亞" },
+    { code: '+674', iso: 'NR', en: "Nauru", zh: "諾魯" },
+    { code: '+977', iso: 'NP', en: "Nepal", zh: "尼泊爾" },
+    { code: '+687', iso: 'NC', en: "New Caledonia", zh: "新喀里多尼亞" },
+    { code: '+505', iso: 'NI', en: "Nicaragua", zh: "尼加拉瓜" },
+    { code: '+227', iso: 'NE', en: "Niger", zh: "尼日" },
+    { code: '+234', iso: 'NG', en: "Nigeria", zh: "奈及利亞" },
+    { code: '+683', iso: 'NU', en: "Niue", zh: "紐埃島" },
+    { code: '+672', iso: 'NF', en: "Norfolk Island", zh: "諾福克島" },
+    { code: '+850', iso: 'KP', en: "North Korea", zh: "北韓" },
+    { code: '+389', iso: 'MK', en: "North Macedonia", zh: "北馬其頓" },
+    { code: '+1', iso: 'MP', en: "Northern Mariana Islands", zh: "北馬利安納群島" },
+    { code: '+47', iso: 'NO', en: "Norway", zh: "挪威" },
+    { code: '+968', iso: 'OM', en: "Oman", zh: "阿曼" },
+    { code: '+92', iso: 'PK', en: "Pakistan", zh: "巴基斯坦" },
+    { code: '+680', iso: 'PW', en: "Palau", zh: "帛琉" },
+    { code: '+970', iso: 'PS', en: "Palestinian Territories", zh: "巴勒斯坦自治區" },
+    { code: '+507', iso: 'PA', en: "Panama", zh: "巴拿馬" },
+    { code: '+675', iso: 'PG', en: "Papua New Guinea", zh: "巴布亞紐幾內亞" },
+    { code: '+595', iso: 'PY', en: "Paraguay", zh: "巴拉圭" },
+    { code: '+51', iso: 'PE', en: "Peru", zh: "秘魯" },
+    { code: '+48', iso: 'PL', en: "Poland", zh: "波蘭" },
+    { code: '+351', iso: 'PT', en: "Portugal", zh: "葡萄牙" },
+    { code: '+1', iso: 'PR', en: "Puerto Rico", zh: "波多黎各" },
+    { code: '+974', iso: 'QA', en: "Qatar", zh: "卡達" },
+    { code: '+262', iso: 'RE', en: "Réunion", zh: "留尼旺" },
+    { code: '+40', iso: 'RO', en: "Romania", zh: "羅馬尼亞" },
+    { code: '+7', iso: 'RU', en: "Russia", zh: "俄羅斯" },
+    { code: '+250', iso: 'RW', en: "Rwanda", zh: "盧安達" },
+    { code: '+685', iso: 'WS', en: "Samoa", zh: "薩摩亞" },
+    { code: '+378', iso: 'SM', en: "San Marino", zh: "聖馬利諾" },
+    { code: '+239', iso: 'ST', en: "São Tomé & Príncipe", zh: "聖多美普林西比" },
+    { code: '+966', iso: 'SA', en: "Saudi Arabia", zh: "沙烏地阿拉伯" },
+    { code: '+221', iso: 'SN', en: "Senegal", zh: "塞內加爾" },
+    { code: '+381', iso: 'RS', en: "Serbia", zh: "塞爾維亞" },
+    { code: '+248', iso: 'SC', en: "Seychelles", zh: "塞席爾" },
+    { code: '+232', iso: 'SL', en: "Sierra Leone", zh: "獅子山" },
+    { code: '+1', iso: 'SX', en: "Sint Maarten", zh: "荷屬聖馬丁" },
+    { code: '+421', iso: 'SK', en: "Slovakia", zh: "斯洛伐克" },
+    { code: '+386', iso: 'SI', en: "Slovenia", zh: "斯洛維尼亞" },
+    { code: '+677', iso: 'SB', en: "Solomon Islands", zh: "索羅門群島" },
+    { code: '+252', iso: 'SO', en: "Somalia", zh: "索馬利亞" },
+    { code: '+27', iso: 'ZA', en: "South Africa", zh: "南非" },
+    { code: '+211', iso: 'SS', en: "South Sudan", zh: "南蘇丹" },
+    { code: '+94', iso: 'LK', en: "Sri Lanka", zh: "斯里蘭卡" },
+    { code: '+590', iso: 'BL', en: "St. Barthélemy", zh: "聖巴瑟米" },
+    { code: '+290', iso: 'SH', en: "St. Helena", zh: "聖赫勒拿島" },
+    { code: '+1', iso: 'KN', en: "St. Kitts & Nevis", zh: "聖克里斯多福及尼維斯" },
+    { code: '+1', iso: 'LC', en: "St. Lucia", zh: "聖露西亞" },
+    { code: '+590', iso: 'MF', en: "St. Martin", zh: "法屬聖馬丁" },
+    { code: '+508', iso: 'PM', en: "St. Pierre & Miquelon", zh: "聖皮埃與密克隆群島" },
+    { code: '+1', iso: 'VC', en: "St. Vincent & Grenadines", zh: "聖文森及格瑞那丁" },
+    { code: '+249', iso: 'SD', en: "Sudan", zh: "蘇丹" },
+    { code: '+597', iso: 'SR', en: "Suriname", zh: "蘇利南" },
+    { code: '+47', iso: 'SJ', en: "Svalbard & Jan Mayen", zh: "挪威屬斯瓦巴及尖棉" },
+    { code: '+46', iso: 'SE', en: "Sweden", zh: "瑞典" },
+    { code: '+41', iso: 'CH', en: "Switzerland", zh: "瑞士" },
+    { code: '+963', iso: 'SY', en: "Syria", zh: "敘利亞" },
+    { code: '+992', iso: 'TJ', en: "Tajikistan", zh: "塔吉克" },
+    { code: '+255', iso: 'TZ', en: "Tanzania", zh: "坦尚尼亞" },
+    { code: '+670', iso: 'TL', en: "Timor-Leste", zh: "東帝汶" },
+    { code: '+228', iso: 'TG', en: "Togo", zh: "多哥" },
+    { code: '+690', iso: 'TK', en: "Tokelau", zh: "托克勞群島" },
+    { code: '+676', iso: 'TO', en: "Tonga", zh: "東加" },
+    { code: '+1', iso: 'TT', en: "Trinidad & Tobago", zh: "千里達及托巴哥" },
+    { code: '+216', iso: 'TN', en: "Tunisia", zh: "突尼西亞" },
+    { code: '+993', iso: 'TM', en: "Turkmenistan", zh: "土庫曼" },
+    { code: '+1', iso: 'TC', en: "Turks & Caicos Islands", zh: "土克斯及開科斯群島" },
+    { code: '+688', iso: 'TV', en: "Tuvalu", zh: "吐瓦魯" },
+    { code: '+1', iso: 'VI', en: "U.S. Virgin Islands", zh: "美屬維京群島" },
+    { code: '+256', iso: 'UG', en: "Uganda", zh: "烏干達" },
+    { code: '+380', iso: 'UA', en: "Ukraine", zh: "烏克蘭" },
+    { code: '+971', iso: 'AE', en: "United Arab Emirates", zh: "阿拉伯聯合大公國" },
+    { code: '+598', iso: 'UY', en: "Uruguay", zh: "烏拉圭" },
+    { code: '+998', iso: 'UZ', en: "Uzbekistan", zh: "烏茲別克" },
+    { code: '+678', iso: 'VU', en: "Vanuatu", zh: "萬那杜" },
+    { code: '+39', iso: 'VA', en: "Vatican City", zh: "梵蒂岡" },
+    { code: '+58', iso: 'VE', en: "Venezuela", zh: "委內瑞拉" },
+    { code: '+681', iso: 'WF', en: "Wallis & Futuna", zh: "瓦利斯群島和富圖那群島" },
+    { code: '+967', iso: 'YE', en: "Yemen", zh: "葉門" },
+    { code: '+260', iso: 'ZM', en: "Zambia", zh: "尚比亞" },
+    { code: '+263', iso: 'ZW', en: "Zimbabwe", zh: "辛巴威" },
+  ];
 
   // ===== EVENTS =====
   // v3.15: events sync, so deleting one had to become a tombstone — a hard
@@ -5838,6 +6102,62 @@ class Component extends DCLogic {
 
   // Maps a field definition to template props. `store`/`errStore` name the
   // state keys holding this group's values/errors so closures stay correct.
+  // Label for one calling code: "+886 Taiwan 台灣". The code leads because it
+  // is what the user is choosing; the names are how they find it.
+  ccLabel(c) { return c.code + ' ' + c.en + (c.zh ? ' ' + c.zh : ''); }
+
+  ccByCode(code) { return this.CALLING_CODES.find(c => c.code === code) || null; }
+
+  // The searchable country-code box. Mirrors the 國籍 combobox, minus free
+  // text — see the note at its call site.
+  countryCodeCombo(key) {
+    const code = this.state.selectedCountryCode;
+    const open = this.state.comboOpenId === key;
+    const q = (open ? this.state.comboQuery : '').trim().toLowerCase();
+    // A bare "886" or "+886" should find Taiwan, and so should "tai" or "台".
+    const matches = this.CALLING_CODES
+      .filter(c => !q
+        || c.code.replace('+', '').startsWith(q.replace('+', ''))
+        || c.en.toLowerCase().includes(q)
+        || (c.zh && c.zh.includes(q))
+        || c.iso.toLowerCase() === q)
+      .slice(0, 60)
+      .map(c => ({
+        label: this.ccLabel(c),
+        onPick: () => {
+          clearTimeout(this._ccBlurTimer);
+          this.setState({ selectedCountryCode: c.code, comboOpenId: null, comboQuery: '' });
+        },
+      }));
+    const hit = this.ccByCode(code);
+    return {
+      ccOpen: open,
+      ccMatches: matches,
+      ccNoMatch: open && matches.length === 0,
+      ccValue: open ? this.state.comboQuery : (hit ? this.ccLabel(hit) : code),
+      onCcFocus: () => this.setState({ comboOpenId: key, comboQuery: '' }),
+      onCcInput: (e) => this.setState({ comboOpenId: key, comboQuery: e.target.value }),
+      // Deferred so the option's click lands before the list unmounts — the
+      // same race, and the same reason, as the 國籍 combobox.
+      onCcBlur: (e) => {
+        const typed = e.target.value.trim();
+        clearTimeout(this._ccBlurTimer);
+        this._ccBlurTimer = setTimeout(() => {
+          const norm = typed.toLowerCase();
+          const found = this.CALLING_CODES.find(c =>
+            this.ccLabel(c).toLowerCase() === norm
+            || c.code === typed || c.code === '+' + typed.replace('+', '')
+            || c.en.toLowerCase() === norm || c.zh === typed
+            || c.iso.toLowerCase() === norm);
+          // No match keeps the previous code rather than storing the typed
+          // text: this value is prefixed onto the phone number.
+          this.setState({ comboOpenId: null, comboQuery: '',
+            selectedCountryCode: found ? found.code : code });
+        }, 150);
+      },
+    };
+  }
+
   mapFormField(f, store, errStore, palette) {
     const values = this.state[store];
     const errors = errStore ? this.state[errStore] : {};
@@ -5949,6 +6269,18 @@ class Component extends DCLogic {
       onClick: () => setValue(n === ratingValue ? '' : n),
     })) : [];
 
+    // ===== phone country code =====
+    // Same combobox as 國籍 (issue #15: "國碼可以比照辦理"), and for the same
+    // reason — a full E.164 list is 241 entries, which is a scroll, not a menu.
+    // It reuses the shared comboOpenId/comboQuery state under its own key, so
+    // opening this one closes any other.
+    //
+    // One deliberate difference: this box does *not* accept free text. The
+    // nationality field stores whatever a visitor calls their country, but this
+    // value is prefixed onto the phone number itself — "TW 0912…" is not a
+    // phone number, and nothing downstream could tell it apart from a real one.
+    // An unrecognised entry therefore reverts on blur.
+
     // Combobox plumbing. The input shows the typed query while open and the
     // committed value while closed; whatever is in the box on blur becomes the
     // value, which is what lets an off-list country through.
@@ -6040,8 +6372,7 @@ class Component extends DCLogic {
           this.setState({ comboOpenId: null, comboQuery: '' });
         }, 150);
       } : undefined,
-      countryCode: isTel ? this.state.selectedCountryCode : undefined,
-      onCountryCodeChange: isTel ? (e) => this.setState({ selectedCountryCode: e.target.value }) : undefined,
+      ...(isTel ? this.countryCodeCombo(comboKey + '.cc') : {}),
       error: !!errors[f.id], errorMsg: errors[f.id] || '',
       onInput: (e) => setValue(e.target.value),
     };
@@ -6469,7 +6800,7 @@ class Component extends DCLogic {
       customerFormTitle, customerFormTitleZh, customerBackLabel, customerSubmitLabel, customerStepLabel, showStepChip,
       showAddContact, showContactChip, contactChipLabel,
       onAddContact: () => this.addContact(),
-      customerFormFields, countryCodes: this.getCountryCodes(),
+      customerFormFields,
       showEditVisitDate: editing,
       editVisitDate: this.state.editVisitDate,
       onEditVisitDate: (e) => this.setState({ editVisitDate: e.target.value }),
