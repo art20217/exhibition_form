@@ -55,9 +55,13 @@ function createStore(dir) {
   fs.mkdirSync(dir, { recursive: true });
   fs.mkdirSync(photoDir, { recursive: true });
 
-  let state = { seq: 0, records: {} };
+  // Records and events keep separate sequence spaces. One shared counter would
+  // make a burst of records advance the event cursor past events a tablet had
+  // not fetched yet, and a cursor that skips never comes back for what it
+  // skipped.
+  let state = { seq: 0, records: {}, eventSeq: 0, events: {} };
   if (fs.existsSync(file)) {
-    try { state = JSON.parse(fs.readFileSync(file, 'utf8')); }
+    try { state = { eventSeq: 0, events: {}, ...JSON.parse(fs.readFileSync(file, 'utf8')) }; }
     catch (e) { throw new Error(`資料檔毀損，請先處理：${file}\n${e.message}`); }
   }
 
@@ -115,6 +119,59 @@ function createStore(dir) {
     },
 
     all() { return Object.values(state.records).map(strip); },
+
+    get eventSeq() { return state.eventSeq; },
+
+    allEvents() { return Object.values(state.events).map(strip); },
+
+    // Field definitions may only be changed by the event's owner. Everything
+    // else about an event (its status, a takeover) is accepted from anybody.
+    //
+    // This is the same kind of guard as the admin PIN: it prevents the accident
+    // — a colleague edits fields on their own tablet and silently replaces
+    // everyone's setup — not an attacker. With one shared token the server
+    // cannot tell a deliberate takeover from an impersonation.
+    upsertEvent(incoming) {
+      const existing = state.events[incoming.id];
+      if (!this.isNewer(incoming, existing)) {
+        return { status: 'superseded', event: strip(existing) };
+      }
+      let next = { ...incoming };
+      const owner = existing ? existing.ownerDeviceId : incoming.ownerDeviceId;
+      const ownerChanged = existing && incoming.ownerDeviceId !== existing.ownerDeviceId;
+      if (incoming.fieldDefs && !ownerChanged && owner && incoming.deviceId !== owner) {
+        // Keep the event, drop the definitions, and say so rather than failing
+        // the whole row — the status change it also carried is still valid.
+        next = { ...next, fieldDefs: existing ? existing.fieldDefs : undefined };
+        state.eventSeq += 1;
+        state.events[incoming.id] = { ...next, _seq: state.eventSeq };
+        flush();
+        return { status: 'accepted', fieldDefsRejected: true };
+      }
+      state.eventSeq += 1;
+      state.events[incoming.id] = { ...next, _seq: state.eventSeq };
+      flush();
+      // A deleted event takes its records' photos with it, for the same reason
+      // a deleted record does.
+      if (incoming.deletedAt) {
+        for (const r of Object.values(state.records)) {
+          if (r.eventId === incoming.id) this.deletePhoto(r.id);
+        }
+      }
+      return { status: 'accepted' };
+    },
+
+    eventsSince(seq, limit) {
+      const rows = Object.values(state.events)
+        .filter(e => e._seq > seq)
+        .sort((a, b) => a._seq - b._seq);
+      const page = rows.slice(0, limit);
+      return {
+        events: page.map(strip),
+        seq: page.length ? page[page.length - 1]._seq : seq,
+        hasMore: rows.length > page.length,
+      };
+    },
 
     putPhoto(id, buf) { fs.writeFileSync(path.join(photoDir, id + '.jpg'), buf); },
   };
@@ -197,6 +254,30 @@ function createServer(opts) {
         return;
       }
 
+      if (req.method === 'POST' && url.pathname === '/v1/events') {
+        const body = JSON.parse((await readBody(req)).toString('utf8') || '{}');
+        const rows = Array.isArray(body.events) ? body.events : [];
+        if (rows.length > MAX_BATCH) {
+          json(res, 400, { error: `batch too large (max ${MAX_BATCH})` });
+          return;
+        }
+        const results = rows.map((e) => {
+          if (!e || !e.id || !e.updatedAt) {
+            return { id: e && e.id, status: 'rejected', error: 'id and updatedAt are required' };
+          }
+          return { id: e.id, ...store.upsertEvent({ ...e, deviceId: body.deviceId }) };
+        });
+        json(res, 200, { results, seq: store.eventSeq });
+        return;
+      }
+
+      if (req.method === 'GET' && url.pathname === '/v1/events') {
+        const since = Number(url.searchParams.get('since') || 0);
+        const limit = Math.min(Number(url.searchParams.get('limit') || 200), 500);
+        json(res, 200, store.eventsSince(since, limit));
+        return;
+      }
+
       if (req.method === 'GET' && url.pathname === '/v1/records') {
         const since = Number(url.searchParams.get('since') || 0);
         const limit = Math.min(Number(url.searchParams.get('limit') || 200), 500);
@@ -215,7 +296,8 @@ function createServer(opts) {
 
       // Not part of the contract. Only for looking at what the tests did.
       if (req.method === 'GET' && url.pathname === '/debug/all') {
-        json(res, 200, { seq: store.seq, records: store.all() });
+        json(res, 200, { seq: store.seq, records: store.all(),
+          eventSeq: store.eventSeq, events: store.allEvents() });
         return;
       }
 

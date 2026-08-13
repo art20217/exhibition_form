@@ -2376,6 +2376,9 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   <div style="display: flex; gap: 8px; padding: 0 20px 14px; flex-wrap: wrap">
                     <button onclick="{{ ev.onEdit }}" data-ev-edit="" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F0F6FF">編輯</button>
                     <button onclick="{{ ev.onRecords }}" data-ev-records="" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F0F6FF">查看紀錄</button>
+                    <sc-if value="{{ ev.canTakeOver }}">
+                      <button onclick="{{ ev.onTakeOver }}" data-ev-takeover="" style="height: 36px; padding: 0 14px; background: #FFF; color: #C2410C; border: 1px solid #FED7AA; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #FFF7ED">接管欄位設定</button>
+                    </sc-if>
                     <button onclick="{{ ev.onToggleStatus }}" data-ev-status="" style="height: 36px; padding: 0 14px; background: #FFF; color: #475569; border: 1px solid #D1D5DB; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F8FAFC">{{ ev.statusLabel }}</button>
                     <button onclick="{{ ev.onDelete }}" data-ev-delete="" style="height: 36px; padding: 0 14px; background: #FFF; color: #DC2626; border: 1px solid #FCA5A5; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #FEF2F2">刪除</button>
                   </div>
@@ -2404,6 +2407,9 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   <div style="display: flex; gap: 8px; padding: 0 20px 14px; flex-wrap: wrap">
                     <button onclick="{{ ev.onEdit }}" data-ev-edit="" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F0F6FF">編輯</button>
                     <button onclick="{{ ev.onRecords }}" data-ev-records="" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F0F6FF">查看紀錄</button>
+                    <sc-if value="{{ ev.canTakeOver }}">
+                      <button onclick="{{ ev.onTakeOver }}" data-ev-takeover="" style="height: 36px; padding: 0 14px; background: #FFF; color: #C2410C; border: 1px solid #FED7AA; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #FFF7ED">接管欄位設定</button>
+                    </sc-if>
                     <button onclick="{{ ev.onToggleStatus }}" data-ev-status="" style="height: 36px; padding: 0 14px; background: #FFF; color: #475569; border: 1px solid #D1D5DB; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F8FAFC">{{ ev.statusLabel }}</button>
                     <button onclick="{{ ev.onDelete }}" data-ev-delete="" style="height: 36px; padding: 0 14px; background: #FFF; color: #DC2626; border: 1px solid #FCA5A5; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #FEF2F2">刪除</button>
                   </div>
@@ -2413,7 +2419,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">
-            v3.14.0 — Offline Exhibition Form
+            v3.15.0 — Offline Exhibition Form
             <sc-if value="{{ swDisabled }}">
               <span data-sw-disabled="" style="display: block; margin-top: 4px; color: #B45309">離線快取已停用，網址加上 ?sw=on 可重新啟用</span>
             </sc-if>
@@ -3259,14 +3265,25 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           <div data-admin-panel="" style="max-width: var(--admin-w); margin: 0 auto">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px">
               <div style="font-size: 1.125rem; font-weight: 700; color: #1A1A2E">{{ adminListTitle }}</div>
-              <button onclick="{{ onAddField }}" style="height: 40px; padding: 0 16px; background: #0055B8; color: #FFF; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px" style-hover="background: #004494">＋ 新增欄位</button>
+              <sc-if value="{{ fieldsEditable }}">
+                <button onclick="{{ onAddField }}" data-add-field="" style="height: 40px; padding: 0 16px; background: #0055B8; color: #FFF; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px" style-hover="background: #004494">＋ 新增欄位</button>
+              </sc-if>
             </div>
-            <div style="font-size: 0.8125rem; color: #94A3B8; margin-bottom: 16px">按住左側把手拖曳可調整欄位順序</div>
+            <sc-if value="{{ fieldsEditable }}">
+              <div style="font-size: 0.8125rem; color: #94A3B8; margin-bottom: 16px">按住左側把手拖曳可調整欄位順序</div>
+            </sc-if>
+            <!-- Read-only because another tablet owns this event's definitions.
+                 One owner is what removes the need to merge them at all. -->
+            <sc-if value="{{ fieldsReadOnly }}">
+              <div data-fields-readonly="" style="background: #FFF7ED; border: 1px solid #FED7AA; border-radius: 10px; padding: 12px 20px; margin-bottom: 16px; font-size: 0.875rem; color: #9A3412">此活動的欄位由「{{ ownerLabel }}」管理，這裡只能檢視。要在這台平板修改，請到活動列表點「接管欄位設定」。資料紀錄與匯出不受影響。</div>
+            </sc-if>
             <sc-for list="{{ adminFields }}" as="af">
               <div data-field-row="" style="background: #FFF; border-radius: 10px; padding: 16px; margin-bottom: 8px; border: 1px solid #E2E8F0; display: flex; gap: 12px; align-items: flex-start">
-                <div data-drag-handle="" style="color: #94A3B8; flex-shrink: 0; cursor: grab; touch-action: none; padding: 6px 8px; margin: -6px 0 -6px -8px; border-radius: 6px" style-hover="background: #F1F5F9; color: #475569">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="pointer-events: none"><circle cx="9" cy="6" r="1.5"></circle><circle cx="15" cy="6" r="1.5"></circle><circle cx="9" cy="12" r="1.5"></circle><circle cx="15" cy="12" r="1.5"></circle><circle cx="9" cy="18" r="1.5"></circle><circle cx="15" cy="18" r="1.5"></circle></svg>
-                </div>
+                <sc-if value="{{ fieldsEditable }}">
+                  <div data-drag-handle="" style="color: #94A3B8; flex-shrink: 0; cursor: grab; touch-action: none; padding: 6px 8px; margin: -6px 0 -6px -8px; border-radius: 6px" style-hover="background: #F1F5F9; color: #475569">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="pointer-events: none"><circle cx="9" cy="6" r="1.5"></circle><circle cx="15" cy="6" r="1.5"></circle><circle cx="9" cy="12" r="1.5"></circle><circle cx="15" cy="12" r="1.5"></circle><circle cx="9" cy="18" r="1.5"></circle><circle cx="15" cy="18" r="1.5"></circle></svg>
+                  </div>
+                </sc-if>
                 <div style="flex: 1; min-width: 0">
                   <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
                     <span style="font-size: 0.9375rem; font-weight: 600; color: #1A1A2E">{{ af.nameZh }}</span>
@@ -3599,7 +3616,7 @@ class Component extends DCLogic {
     // Sync (v3.13). An empty syncUrl means sync is off — that is the default,
     // and with it the app behaves exactly as it did before: no requests, no
     // status line, nothing on screen.
-    syncUrl: '', syncToken: '', syncSeq: 0,
+    syncUrl: '', syncToken: '', syncSeq: 0, syncEventSeq: 0,
     syncStatus: 'off',      // 'off' | 'running' | 'idle' | 'error'
     syncError: '', syncLastAt: '', syncTestResult: '', syncPhotoProgress: '',
     gdprEn: 'I consent to the organizer collecting and storing my contact information for the purpose of business follow-up. My data will not be shared with third parties.',
@@ -3820,17 +3837,26 @@ class Component extends DCLogic {
   dbClear(store) { return new Promise((res, rej) => { const tx = this.db.transaction(store, 'readwrite'); const r = tx.objectStore(store).clear(); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
 
   async loadAllData() {
-    const [pinD, devD, devIdD, gdprEnD, gdprZhD, mig35D, mig36D, mig38D, mig310D, mig312D,
-      syncUrlD, syncTokenD, syncSeqD] = await Promise.all([
+    const [pinD, devD, devIdD, gdprEnD, gdprZhD, mig35D, mig36D, mig38D, mig310D, mig312D, mig315D,
+      syncUrlD, syncTokenD, syncSeqD, syncEventSeqD] = await Promise.all([
       this.dbGet('config','pin'), this.dbGet('config','deviceName'), this.dbGet('config','deviceId'),
       this.dbGet('config','gdprEn'), this.dbGet('config','gdprZh'),
       this.dbGet('config','migratedTo35'), this.dbGet('config','migratedTo36'),
       this.dbGet('config','migratedTo38'), this.dbGet('config','migratedTo310'),
-      this.dbGet('config','migratedTo312'),
+      this.dbGet('config','migratedTo312'), this.dbGet('config','migratedTo315'),
       this.dbGet('config','syncUrl'), this.dbGet('config','syncToken'), this.dbGet('config','syncSeq'),
+      this.dbGet('config','syncEventSeq'),
     ]);
     let records = await this.dbGetAll('records');
     let events = await this.dbGetAll('events');
+
+    // The sync identity of this install. Distinct from deviceName, which is a
+    // human label anyone can retype or blank out in 系統設定 — it can even be
+    // identical on two tablets. Generated once and never shown in the UI.
+    // Resolved before the migrations because migrateTo315 stamps it onto every
+    // existing event as its owner.
+    const deviceId = devIdD?.value || this.genUUID();
+    if (!devIdD) await this.dbPut('config', { key: 'deviceId', value: deviceId });
     const defaultDev = 'Device-' + Math.random().toString(36).substr(2,6).toUpperCase();
 
     // --- v3.4: everything now lives under an event. A database with no events
@@ -3851,16 +3877,13 @@ class Component extends DCLogic {
     if (!mig38D?.value) await this.migrateTo38(events);
     if (!mig310D?.value) await this.migrateTo310(events);
     if (!mig312D?.value) records = await this.migrateTo312(records);
+    if (!mig315D?.value) events = await this.migrateTo315(events, deviceId);
 
-    // The sync identity of this install. Distinct from deviceName, which is a
-    // human label anyone can retype or blank out in 系統設定 — it can even be
-    // identical on two tablets. Generated once and never shown in the UI.
-    const deviceId = devIdD?.value || this.genUUID();
-    if (!devIdD) await this.dbPut('config', { key: 'deviceId', value: deviceId });
 
     this.setState({
       pin: pinD?.value ?? '0000', deviceName: devD?.value ?? defaultDev, deviceId,
       syncUrl: syncUrlD?.value ?? '', syncToken: syncTokenD?.value ?? '', syncSeq: syncSeqD?.value ?? 0,
+      syncEventSeq: syncEventSeqD?.value ?? 0,
       gdprEn: gdprEnD?.value ?? this.state.gdprEn, gdprZh: gdprZhD?.value ?? this.state.gdprZh,
       events: this.sortEvents(events),
       records: records.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)),
@@ -3872,6 +3895,27 @@ class Component extends DCLogic {
   // copy of a row is newer. Existing records only know when they were created,
   // and that is the honest answer — a later timestamp would be invented, and
   // inventing one biases every future conflict in this device's favour.
+  // v3.15: events sync now, so they need the same three things records got in
+  // v3.12 — a modification time, a tombstone flag, and an owner.
+  //
+  // `ownerDeviceId` is set to this device for every existing event, and that
+  // cannot collide: event ids are UUIDs minted per tablet, so no two tablets
+  // have ever shared one. Each tablet claims exactly the events it created.
+  async migrateTo315(events, deviceId) {
+    const out = [];
+    for (const e of events) {
+      if (e.updatedAt && e.ownerDeviceId) { out.push(e); continue; }
+      // createdAt is the only defensible lower bound, same reasoning as v3.12:
+      // inventing a later time would bias every future conflict this way.
+      const patched = { ...e, updatedAt: e.updatedAt || e.createdAt,
+        deletedAt: e.deletedAt ?? null, ownerDeviceId: e.ownerDeviceId || deviceId };
+      await this.dbPut('events', patched);
+      out.push(patched);
+    }
+    await this.saveConfig('migratedTo315', true);
+    return out;
+  }
+
   async migrateTo312(records) {
     const out = [];
     for (const r of records) {
@@ -4018,7 +4062,22 @@ class Component extends DCLogic {
   // Writes a field group for the event currently open. The unprefixed
   // saveFieldDefs() below still exists for the legacy migration, which runs
   // before any event is known.
-  saveEventDefs(group, v) { return this.saveFieldDefs(this.defKey(this.state.currentEventId, group), v); }
+  async saveEventDefs(group, v) {
+    await this.saveFieldDefs(this.defKey(this.state.currentEventId, group), v);
+    // Definitions live in their own store, so changing them leaves the event
+    // row untouched — and sync decides what to send by looking at the event.
+    // Without this, a new field is saved locally, the event never becomes
+    // dirty, and the definitions silently never reach the server.
+    await this.touchCurrentEvent();
+  }
+
+  // Bumps the open event's updatedAt so the next push carries the definitions
+  // with it. Only the owner sends them, so only the owner needs to mark it.
+  async touchCurrentEvent() {
+    const ev = this.currentEvent();
+    if (!ev || ev.ownerDeviceId !== this.state.deviceId) return;
+    await this.putEvent(ev);
+  }
 
   async loadEventDefs(eventId) {
     const rows = await Promise.all(this.DEF_GROUPS.map(g => this.dbGet('fieldDefinitions', this.defKey(eventId, g))));
@@ -4409,7 +4468,12 @@ class Component extends DCLogic {
   }
 
   // ===== EVENTS =====
-  currentEvent() { return this.state.events.find(e => e.id === this.state.currentEventId) || null; }
+  // v3.15: events sync, so deleting one had to become a tombstone — a hard
+  // delete is undone by the next pull, exactly as it was for records in v3.12.
+  // Read events through here, never through state.events directly.
+  liveEvents() { return this.state.events.filter(e => !e.deletedAt); }
+
+  currentEvent() { return this.liveEvents().find(e => e.id === this.state.currentEventId) || null; }
 
   // v3.12: deletes became tombstones so sync can tell "removed here" apart from
   // "not received there yet". Nothing user-facing may read `state.records`
@@ -4459,7 +4523,7 @@ class Component extends DCLogic {
 
   async openEvent(id) {
     const defs = await this.loadEventDefs(id);
-    const ev = this.state.events.find(e => e.id === id);
+    const ev = this.liveEvents().find(e => e.id === id);
     const today = this.todayStr();
     // Pre-select today only when the event is actually running — outside the
     // range a silent default would misdate the record, so make the user choose.
@@ -4508,22 +4572,26 @@ class Component extends DCLogic {
     if (!staff.length) { this.setState({ evError: '請至少設定一位接待人員' }); return; }
 
     if (eventEditorMode === 'edit') {
-      const next = events.map(e => e.id === editingEventId
-        ? { ...e, name: evName.trim(), startDate: evStart, endDate: evEnd, staff } : e);
-      const ev = next.find(e => e.id === editingEventId);
-      await this.dbPut('events', ev);
+      const cur = events.find(e => e.id === editingEventId);
+      await this.putEvent({ ...cur, name: evName.trim(), startDate: evStart, endDate: evEnd, staff });
       // Names may have been removed from the roster — drop any that vanished
       // from the live selection so a record can't be stamped with a stale name.
       const valid = new Set(staff.map(s => s.en));
-      this.setState({ events: this.sortEvents(next),
-        sessionGreeters: this.state.sessionGreeters.filter(g => valid.has(g)),
+      this.setState({ sessionGreeters: this.state.sessionGreeters.filter(g => valid.has(g)),
         showEventEditor: false });
       this.showToastMsg('活動已更新');
       return;
     }
 
+    const now = new Date().toISOString();
+    // The device that creates an event owns its field definitions. Ownership is
+    // what removes the need to merge definitions at all — only one tablet can
+    // change them, so there is nothing to reconcile.
     const ev = { id: this.genUUID(), name: evName.trim(), startDate: evStart, endDate: evEnd,
-      staff, status: 'active', createdAt: new Date().toISOString() };
+      staff, status: 'active', createdAt: now, updatedAt: now, deletedAt: null,
+      // The human label travels alongside the id purely so the read-only banner
+      // on other tablets can name a tablet rather than a UUID.
+      ownerDeviceId: this.state.deviceId, ownerDeviceName: this.state.deviceName };
     await this.dbPut('events', ev);
     // Field definitions: either the built-in defaults, or a deep copy of another
     // event's — copied, never shared, so editing one event never touches another.
@@ -4547,22 +4615,53 @@ class Component extends DCLogic {
     this.showToastMsg('活動已建立');
   }
 
+  // Every local change to an event goes through here, so `updatedAt` can never
+  // be forgotten — sync compares it, and an event that does not advance it is
+  // an edit that silently loses to the other tablet's older copy.
+  async putEvent(ev) {
+    const next = { ...ev, updatedAt: this.nextUpdatedAt(ev.updatedAt) };
+    await this.dbPut('events', next);
+    const list = this.state.events.some(e => e.id === next.id)
+      ? this.state.events.map(e => e.id === next.id ? next : e)
+      : [...this.state.events, next];
+    this.setState({ events: this.sortEvents(list) });
+    this.scheduleSyncPush();
+    return next;
+  }
+
   async setEventStatus(id, status) {
-    const next = this.state.events.map(e => e.id === id ? { ...e, status } : e);
-    const ev = next.find(e => e.id === id);
-    await this.dbPut('events', ev);
-    this.setState({ events: this.sortEvents(next) });
+    const ev = this.liveEvents().find(e => e.id === id);
+    if (!ev) return;
+    await this.putEvent({ ...ev, status });
     this.showToastMsg(status === 'ended' ? '活動已結束' : '活動已重新啟用');
   }
 
+  // Claims the right to edit this event's field definitions. Reversible — the
+  // other tablet can claim it back — so one confirmation, matching 結束活動
+  // rather than 刪除.
+  async takeOverEvent(id) {
+    const ev = this.liveEvents().find(e => e.id === id);
+    if (!ev) return;
+    await this.putEvent({ ...ev, ownerDeviceId: this.state.deviceId,
+      ownerDeviceName: this.state.deviceName });
+    this.showToastMsg('已接管此活動的欄位設定');
+  }
+
   async deleteEvent(id) {
-    // The records leave tombstones; the event and its field definitions are
-    // removed outright. Only records sync in the first implementation, so an
-    // event row has nothing to tell a server about (see docs/sync-contract.md).
+    const ev = this.liveEvents().find(e => e.id === id);
+    if (!ev) return;
+    // The event becomes a tombstone for the same reason records did: a hard
+    // delete is undone by the next pull. Field definitions are dropped outright
+    // — they are not something another tablet needs to be told to forget, and
+    // the tombstone carries no fieldDefs so receivers drop theirs too.
     const records = await this.tombstone(this.eventRecords(id));
     for (const g of this.DEF_GROUPS) await this.dbDelete('fieldDefinitions', this.defKey(id, g));
-    await this.dbDelete('events', id);
-    this.setState({ events: this.state.events.filter(e => e.id !== id), records });
+    const now = this.nextUpdatedAt(ev.updatedAt);
+    const stone = { id: ev.id, ownerDeviceId: ev.ownerDeviceId ?? null,
+      createdAt: ev.createdAt, updatedAt: now, deletedAt: now };
+    await this.dbPut('events', stone);
+    this.setState({ events: this.state.events.map(e => e.id === id ? stone : e), records });
+    this.scheduleSyncPush();
     this.showToastMsg('活動已刪除');
   }
 
@@ -5310,6 +5409,11 @@ class Component extends DCLogic {
     this._syncing = true;
     this.setState({ syncStatus: 'running', syncError: '' });
     try {
+      // Events first, in both directions. A record whose event has not arrived
+      // yet belongs to nothing the receiving tablet can show — which was
+      // exactly the situation before v3.15.
+      await this.syncPushEvents();
+      if (this.pullAllowed()) await this.syncPullEvents();
       await this.syncPush();
       if (this.pullAllowed()) await this.syncPull();
       // Photos last, always. They are the slow part, and a record that reached
@@ -5372,6 +5476,99 @@ class Component extends DCLogic {
     const out = new Uint8Array(bin.length);
     for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
     return out;
+  }
+
+  // Events carry their field definitions with them: a record is a set of field
+  // ids and English option values, so without the definitions the server holds
+  // rows nobody can read — no Chinese labels, no field types, no names for
+  // admin-added fields. The export has shipped a Field Definitions sheet for
+  // exactly this reason since long before sync existed.
+  async syncPushEvents() {
+    const dirty = this.state.events.filter(e => this.isDirty(e));
+    for (let i = 0; i < dirty.length; i += this.SYNC_BATCH) {
+      const batch = dirty.slice(i, i + this.SYNC_BATCH);
+      const rows = [];
+      for (const e of batch) rows.push(await this.eventForWire(e));
+      const out = await this.syncFetch('/events', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId: this.state.deviceId, events: rows }),
+      });
+      const now = new Date().toISOString();
+      let events = this.state.events;
+      for (const result of (out.results || [])) {
+        if (result.status === 'accepted') {
+          events = events.map(e => e.id === result.id ? { ...e, syncedAt: now } : e);
+        } else if (result.status === 'superseded' && result.event) {
+          const merged = await this.applyRemoteEvent(result.event, now);
+          if (merged) events = events.map(e => e.id === result.id ? merged : e);
+        }
+      }
+      for (const e of batch) {
+        const updated = events.find(x => x.id === e.id);
+        if (updated && updated.syncedAt === now) await this.dbPut('events', updated);
+      }
+      this.setState({ events });
+    }
+  }
+
+  // Only the owner sends definitions. A non-owner still pushes the event itself
+  // — it may be reporting a status change or a takeover — but never the fields.
+  async eventForWire(e) {
+    const { syncedAt, ...wire } = e;
+    if (e.deletedAt || e.ownerDeviceId !== this.state.deviceId) return wire;
+    // Refreshed on every push rather than stored once: the label exists so the
+    // other tablet's read-only banner can name a device, and it should follow a
+    // rename in 系統設定 instead of freezing at whatever it was called when the
+    // event was created.
+    return { ...wire, ownerDeviceName: this.state.deviceName,
+      fieldDefs: await this.loadEventDefs(e.id) };
+  }
+
+  async syncPullEvents() {
+    for (let guard = 0; guard < 50; guard++) {
+      const since = this.state.syncEventSeq || 0;
+      const out = await this.syncFetch(`/events?since=${since}&limit=200`);
+      const incoming = out.events || [];
+      if (incoming.length) {
+        const now = new Date().toISOString();
+        let events = this.state.events;
+        let touchedCurrent = false;
+        for (const remote of incoming) {
+          const local = events.find(e => e.id === remote.id);
+          if (local && !this.remoteWins(remote, local)) continue;
+          const merged = await this.applyRemoteEvent(remote, now);
+          if (!merged) continue;
+          events = local ? events.map(e => e.id === remote.id ? merged : e) : [...events, merged];
+          if (remote.id === this.state.currentEventId) touchedCurrent = true;
+        }
+        this.setState({ events: this.sortEvents(events) });
+        // The open event's definitions live in state, loaded when it was opened.
+        // If a pull just replaced them on disk, reload or the screen keeps
+        // rendering the previous set.
+        if (touchedCurrent) this.setState(await this.loadEventDefs(this.state.currentEventId));
+      }
+      await this.saveConfig('syncEventSeq', out.seq);
+      this.setState({ syncEventSeq: out.seq });
+      if (!out.hasMore) break;
+    }
+  }
+
+  // Writes a remote event and its definitions to disk, and returns the row to
+  // put in state. `fieldDefs` is unwrapped here — it travels with the event but
+  // is stored separately, keyed per event and group.
+  async applyRemoteEvent(remote, now) {
+    const { fieldDefs, deviceId, ...ev } = remote;
+    const row = { ...ev, syncedAt: now };
+    await this.dbPut('events', row);
+    if (fieldDefs) {
+      for (const g of this.DEF_GROUPS) {
+        if (Array.isArray(fieldDefs[g])) await this.saveFieldDefs(this.defKey(remote.id, g), fieldDefs[g]);
+      }
+    }
+    if (ev.deletedAt) {
+      for (const g of this.DEF_GROUPS) await this.dbDelete('fieldDefinitions', this.defKey(remote.id, g));
+    }
+    return row;
   }
 
   async syncPush() {
@@ -5742,6 +5939,15 @@ class Component extends DCLogic {
 
     // ===== Event list =====
     const curEvent = this.currentEvent();
+
+    // ===== Field-definition ownership (v3.15) =====
+    // Definitions sync, and two tablets editing the same set would need merge
+    // rules for a nested structure — one person's new option silently losing to
+    // the other's. Instead one device owns them, so there is nothing to merge.
+    // Records are unaffected: every tablet collects.
+    const ownerId = curEvent?.ownerDeviceId;
+    const fieldsEditable = !ownerId || ownerId === this.state.deviceId;
+    const ownerLabel = curEvent?.ownerDeviceName || '另一台平板';
     const mkEventCard = (ev) => {
       const n = this.eventRecords(ev.id).length;
       const ended = ev.status === 'ended';
@@ -5752,6 +5958,17 @@ class Component extends DCLogic {
         onOpen: () => this.openEvent(ev.id),
         onEdit: () => this.openEventEditor('edit', ev),
         onRecords: () => this.openEventRecords(ev.id),
+        // Only offered where it would change something.
+        canTakeOver: !!ev.ownerDeviceId && ev.ownerDeviceId !== this.state.deviceId,
+        onTakeOver: () => this.askConfirm({
+          title: '接管這個活動的欄位設定？',
+          message: `「${ev.name}」的欄位目前由「${ev.ownerDeviceName || '另一台平板'}」管理。`
+            + '接管後改為由這台平板管理，對方的表單管理會變成唯讀。'
+            + '資料紀錄與匯出不受影響，對方之後也可以再接管回去。',
+          singleStage: true,
+          actionLabel: '接管',
+          onConfirm: () => this.takeOverEvent(ev.id),
+        }),
         statusLabel: ended ? '重新啟用' : '結束活動',
         onToggleStatus: () => this.askConfirm({
           title: ended ? '重新啟用這個活動？' : '結束這個活動？',
@@ -5770,8 +5987,8 @@ class Component extends DCLogic {
         }),
       };
     };
-    const activeEvents = this.state.events.filter(e => e.status !== 'ended').map(mkEventCard);
-    const endedEvents = this.state.events.filter(e => e.status === 'ended').map(mkEventCard);
+    const activeEvents = this.liveEvents().filter(e => e.status !== 'ended').map(mkEventCard);
+    const endedEvents = this.liveEvents().filter(e => e.status === 'ended').map(mkEventCard);
 
     // ===== Event page (pick who is filling in, and on which day) =====
     const evChip = (label, sub, on) => ({
@@ -5894,8 +6111,8 @@ class Component extends DCLogic {
       required: f.required, isCore: f.isCore||false, allowOther: f.allowOther||false,
       // Reception fields are configured on the event, not here — no edit, no
       // delete, and their options come from the event's staff roster.
-      fromEvent: f.source === 'event', canEdit: f.source !== 'event',
-      canDelete: !f.isCore && f.source !== 'event',
+      fromEvent: f.source === 'event', canEdit: fieldsEditable && f.source !== 'event',
+      canDelete: fieldsEditable && !f.isCore && f.source !== 'event',
       hasOptions: !f.source && (f.type === 'select' || f.type === 'checkbox-group' || f.type === 'radio-group'),
       optionsSummary: (f.options||[]).map(o => o.zh || o.en).join('、') || '（無）',
       onEdit: () => this.openFieldEditor('edit', listTarget, f),
@@ -5999,7 +6216,7 @@ class Component extends DCLogic {
     // customized and the next show should carry it forward.
     const evSourceOptions = [
       { value: 'default', label: '內建預設欄位' },
-      ...this.state.events.map(e => ({ value: e.id, label: '複製自：' + e.name })),
+      ...this.liveEvents().map(e => ({ value: e.id, label: '複製自：' + e.name })),
     ];
 
     const { confirmOpen, confirmStage, confirmTitle, confirmMessage, confirmTypeToConfirm, confirmTypedValue,
@@ -6117,6 +6334,7 @@ class Component extends DCLogic {
       }),
       // Admin
       adminTabs, showAdminFieldList, showAdminRecords, showSettings,
+      fieldsEditable, fieldsReadOnly: !fieldsEditable, ownerLabel,
       onExitSettings: () => this.setState({ screen: 'events', eventsManageMode: true }),
       onOpenSettings: () => this.setState({ screen: 'settings' }),
       adminListTitle, adminFields, adminEventName: curEvent?.name ?? '',

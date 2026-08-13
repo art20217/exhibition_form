@@ -14,6 +14,10 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 
 ## 這一版有什麼新東西
 
+**v3.15.0** — 活動與欄位定義也會同步了（契約 v2），**兩台平板終於看得到彼此的紀錄**；
+欄位由一台裝置擁有，其他平板唯讀、可一層確認接管。系統設定搬出「表單管理」，
+改由活動列表的齒輪進入。
+
 **v3.14.0** — 名片照片也會同步了（獨立端點、以內容摘要避免重傳）。並修掉一個隱私漏洞：
 刪除紀錄時，伺服器上的照片先前不會跟著消失。
 
@@ -64,7 +68,7 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 |---|---|
 | 檔案結構 | 單一 `index.html`，內含所有 CSS / JS / 函式庫，原始碼直接可讀可改 |
 | 前端框架 | React 18.3.1 UMD（內嵌）+ DC 模板引擎（dc-runtime，內嵌） |
-| 資料儲存 | IndexedDB v2（四個 Object Store：`config`、`events`、`records`、`fieldDefinitions`）。`fieldDefinitions` 以 `<活動 id>::<群組>` 為鍵，每場活動各有 customerFields / needsFields / companyFields / staffFields 四組定義；每筆 `records` 帶 `eventId`，並自 v3.12 起帶 `updatedAt` / `deletedAt`（墓碑）/ `deviceId`；`config` 為全域設定（PIN、裝置名稱、`deviceId`、GDPR 條文、遷移旗標，以及 v3.13 起的 `syncUrl` / `syncToken` / `syncSeq`） |
+| 資料儲存 | IndexedDB v2（四個 Object Store：`config`、`events`、`records`、`fieldDefinitions`）。`fieldDefinitions` 以 `<活動 id>::<群組>` 為鍵，每場活動各有 customerFields / needsFields / companyFields / staffFields 四組定義；每筆 `records` 帶 `eventId`，並自 v3.12 起帶 `updatedAt` / `deletedAt`（墓碑）/ `deviceId`；`events` 自 v3.15 起同樣帶 `updatedAt` / `deletedAt`，外加 `ownerDeviceId`（誰能改這場活動的欄位定義）；`config` 為全域設定（PIN、裝置名稱、`deviceId`、GDPR 條文、遷移旗標，以及 v3.13 起的 `syncUrl` / `syncToken` / `syncSeq`、v3.15 起的 `syncEventSeq`） |
 | 照片處理 | Canvas API 壓縮後以 Base64 存入 IndexedDB |
 | 匯出 | 內建 XLSX 生成 + ZIP 打包（ExportLib，inline 於 HTML 中） |
 | 拖曳排序 | Pointer Events 自製實作（相容 iPad Safari 觸控，不依賴 HTML5 Drag & Drop） |
@@ -81,7 +85,7 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 - 選項的 `en` 是**紀錄實際儲存的值**，`zh` 只用於顯示。要改 `en` 就必須同步改寫已蒐集紀錄中的值（見 `loadAllData` 中的 `VALUE_RENAMES`），否則舊答案會對不上選項；只改中文標籤則用 `labelFixes`，以「原值」比對，後台已自訂過的標籤不會被覆蓋。
 - `state` 的 `customerFields` / `needsFields` / `companyFields` / `staffFields` 永遠是**目前開啟活動**的定義，所以表單、後台、匯出等讀取端不需要知道活動的存在；只有存取 IndexedDB 的那一層（`saveEventDefs` / `loadEventDefs` / `defKey`）需要帶活動前綴。
 - **同步（v3.13）在未設定伺服器時完全不動作**，這是預設狀態。拉取只在活動列表或活動內頁進行（`pullAllowed()`）——把遠端資料蓋在使用者正在編輯的那筆上，會靜靜毀掉他的輸入。狀態列與更新橫幅同一個位置、同一條規則：**填單畫面上結構性地不存在**。
-- **`state.records` 含 v3.12 的墓碑（軟刪除），永遠透過 `liveRecords()` 或 `eventRecords()` 讀取，不要直接讀。** 墓碑不保留任何欄位值，所以漏掉過濾時它會渲染成**一列空白**——用姓名比對的斷言看不到它。要抓這件事得驗筆數（`tests/e2e-sync-model.js` 對後台筆數與匯出的列數各有一條）。
+- **`state.records` 含 v3.12 的墓碑（軟刪除），永遠透過 `liveRecords()` 或 `eventRecords()` 讀取，不要直接讀；`state.events` 自 v3.15 起同理，讀取端一律走 `liveEvents()`。** 墓碑不保留任何欄位值，所以漏掉過濾時它會渲染成**一列空白**——用姓名比對的斷言看不到它。要抓這件事得驗筆數（`tests/e2e-sync-model.js` 對後台筆數與匯出的列數各有一條）。
 - 欄位若標記 `source: 'event'`（接待人員、訪談日期、新舊客戶），代表其內容由活動頁供應。v3.5 移除了業務備註頁與該頁籤，這三個欄位在表單管理中不再有編輯介面——但**定義刻意保留**，因為資料紀錄的「接待人員」欄與匯出欄位都靠它們解析。唯一的例外是**訪談日期在紀錄編輯頁可改**（v3.11），因為它先前完全沒有修正途徑；另外兩個維持唯讀。
 
 ### 測試
@@ -89,15 +93,15 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 ```bash
 npm ci
 npx playwright-core install chromium   # 首次執行才需要
-npm test                               # 25 支套件，約 7.5 分鐘
+npm test                               # 27 支套件，約 8 分鐘
 npm test -- pin-mobile events          # 只跑名稱含這些字串的套件
 ```
 
 每次 push 與 PR 由 `.github/workflows/test.yml` 自動執行；失敗時截圖會上傳為 artifact。
 
-套件依序執行，不能平行——每支各自起 HTTP server 並清空同一個 IndexedDB。涵蓋範圍包含完整填單流程、後台各頁籤、版面尺寸、資料紀錄欄位、匯出內容，以及 **v2 → v3.12 的每一段遷移**（各自植入該版本形狀的資料庫再驗證結果）。
+套件依序執行，不能平行——每支各自起 HTTP server 並清空同一個 IndexedDB。涵蓋範圍包含完整填單流程、後台各頁籤、版面尺寸、資料紀錄欄位、匯出內容，以及 **v2 → v3.15 的每一段遷移**（各自植入該版本形狀的資料庫再驗證結果）。
 
-`e2e-sync.js` 用兩個 browser context 當兩台平板，跑真的參考伺服器——單台對伺服器證明不了什麼。
+`e2e-sync.js`、`e2e-photo-sync.js`、`e2e-event-sync.js` 用兩個 browser context 當兩台平板，跑真的參考伺服器——單台對伺服器證明不了什麼。
 
 `e2e-timezone.js` 是唯一明寫 `timezoneId` 的套件，理由見下面的踩雷筆記。
 
@@ -105,8 +109,8 @@ npm test -- pin-mobile events          # 只跑名稱含這些字串的套件
 
 ### 已知限制
 
-- **雲端同步需要自備伺服器。** v3.13 起客戶端可同步紀錄，但**正式伺服器尚不存在**——`server/` 下的是參考實作，用於測試與交付規格。未設定伺服器時 app 完全離線運作（[#8](https://github.com/art20217/exhibition_form/issues/8)、[#9](https://github.com/art20217/exhibition_form/issues/9)）。
-- **同步的範圍是「紀錄送達伺服器」，不是「兩台平板互相看得到」。** 活動不同步，所以從別台拉回來的紀錄帶的是原本那台的 `eventId`，接收端沒有對應活動，該筆紀錄會留在資料庫裡卻不出現在任何畫面或匯出。要跨平板互看需要活動同步（契約 v2）。
+- **雲端同步需要自備伺服器。** v3.13 起客戶端可同步紀錄、v3.15 起連活動與欄位定義一起同步，但**正式伺服器尚不存在**——`server/` 下的是參考實作，用於測試與交付規格。未設定伺服器時 app 完全離線運作（[#8](https://github.com/art20217/exhibition_form/issues/8)、[#9](https://github.com/art20217/exhibition_form/issues/9)）。
+- **欄位定義由一台裝置擁有。** 每場活動記一個 `ownerDeviceId`，只有它能改欄位；其他平板的欄位頁籤唯讀（收單與匯出不受影響），要改須先「接管欄位設定」。這與 PIN 一樣**只防誤觸，不是權限控制**——共用權杖之下，伺服器分不出刻意接管與冒名頂替（[#10](https://github.com/art20217/exhibition_form/issues/10)）。
 - **同步伺服器必須是 https。** App 由 GitHub Pages 以 https 提供，瀏覽器會擋掉對 `http://` 位址的請求，所以「筆電接在展場 Wi-Fi 上」這個做法不通。部署方式見 [`server/README.md`](server/README.md)。
 - **名片照片是單向的。** 平板會把照片上傳到伺服器，但拉取不帶照片，所以另一台平板拉到的紀錄不會有圖。
 - **照片儲存佔用 IndexedDB 空間。** 壓縮後單張約 200～500KB，100 筆含照片約 20～50MB。iPad Safari 的 IndexedDB 配額通常足夠，但建議展後及時匯出並清除。
@@ -114,7 +118,7 @@ npm test -- pin-mobile events          # 只跑名稱含這些字串的套件
 - **不含 OCR 名片辨識。** 名片照片僅作為存檔，不自動擷取文字。
 - **PIN 碼僅防止誤觸，不構成安全機制。** 活動管理、表單管理與客戶資料紀錄**共用同一組 PIN**，因此瀏覽頁「不能刪除、不能匯出」是流程上的區隔而非權限上的——拿到 PIN 的人一樣能自己進表單管理做這兩件事（[#10](https://github.com/art20217/exhibition_form/issues/10)）。
 - **填單人員靠業務自行選擇，系統不驗證身分。** 換人接待時若忘了點「重新選擇」，紀錄會掛在上一位業務名下——活動頁上方的常駐橫幅就是為了讓這件事一眼看得出來。
-- **活動之間的欄位設定不會同步。** 複製活動是一次性的深拷貝；建立之後修改任一方都不影響另一方。
+- **活動之間的欄位設定不會互通。** 複製活動是一次性的深拷貝；建立之後修改任一方都不影響另一方。（跨**裝置**的同一場活動則會同步——v3.15 起。）
 - **v3.11 之前用日期籤填的紀錄，訪談日期可能早一天**（僅限 UTC 以東的時區，例如台灣）。程式已修正，但既有紀錄**不會自動更正**——偏移後的值落在活動期間內時，與手動輸入的正確值無從分辨。請在客戶資料紀錄中逐筆核對，在編輯頁修改。
 
 ---
@@ -156,6 +160,12 @@ UTC+8 往回退 8 小時就跨過日界，得到 `2026-09-22`。活動日期籤�
 本機的每一次修改都要走 `nextUpdatedAt(prev)`：動了這筆紀錄，就有權取代它。
 `tests/e2e-sync.js` 有一條刻意製造時鐘偏差的斷言守著。
 
+**同一件事的極端版本：測試裡不要拿未來的 `updatedAt` 去戳共用的資料。** LWW 之下，
+一個 2099 年的時間戳會贏過此後每一次合法修改，而且不報錯——`e2e-event-sync.js` 早期
+版本用它去試探伺服器的擁有者規則，結果那場活動再也接受不了任何真實的變更，後面四條
+斷言全紅，而失敗的畫面看起來像是接管功能壞了。**探測性的寫入要用自己的一份資料。**
+（正式伺服器應該直接拒收時間遠在未來的資料，已寫進契約的檢查清單。）
+
 ### Service Worker 的兩條規則
 
 寫在 `sw.js` 檔頭，都源自「客戶手上的展場平板」這個環境：
@@ -190,7 +200,7 @@ exhibition_form/
 ├── tests/                  # 端到端測試（Playwright 驅動 headless Chromium）
 │   ├── helpers.js          #   共用導覽、IndexedDB 讀寫、瀏覽器啟動
 │   ├── run-all.js          #   依序執行全部套件的 runner
-│   └── e2e-*.js            #   25 支套件
+│   └── e2e-*.js            #   27 支套件
 ├── .github/workflows/      # CI：每次 push 與 PR 跑完整測試
 ├── docs/
 │   ├── sync-contract.md    #   同步協定規格（寫給日後實作伺服器的人）
