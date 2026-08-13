@@ -14,6 +14,10 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 
 ## 這一版有什麼新東西
 
+**v3.16.1** — 修掉第一次實機驗證撞到的三個問題：名片選不到相簿（`capture` 屬性在 iOS
+上是「只能開相機」）、伺服器少一個端點時整個同步停擺而「測試連線」還說成功、
+以及實機驗證清單頁的進度條。
+
 **v3.16.0** — 名片可以拍多張（正反面，最多 4 張）；客戶資料頁新增「增加聯絡人」，
 同一家公司來好幾位時共同的答案只填一次，送出後仍是各自獨立的紀錄；
 電話國碼改成完整的 E.164 清單並比照國籍做成可搜尋選單（[#15](https://github.com/art20217/exhibition_form/issues/15)）。
@@ -98,7 +102,7 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 ```bash
 npm ci
 npx playwright-core install chromium   # 首次執行才需要
-npm test                               # 31 支套件，約 8.5 分鐘
+npm test                               # 32 支套件，約 9 分鐘
 npm test -- pin-mobile events          # 只跑名稱含這些字串的套件
 ```
 
@@ -184,6 +188,32 @@ UTC+8 往回退 8 小時就跨過日界，得到 `2026-09-22`。活動日期籤�
 
 發布新版時，`index.html` 的版本字串與 `sw.js` 的 `VERSION` **必須一致**。
 
+### `capture` 是「只能」，不是「預設」
+
+`<input type="file" accept="image/*" capture="environment">` 在 iOS 上**不會**變成
+「預設開相機、也能選相簿」——Safari 直接進相機，**照片圖庫那條路整個消失**。事先拍好
+或同事傳來的名片因此完全收不進來（[#24](https://github.com/art20217/exhibition_form/issues/24)）。
+
+**桌面瀏覽器一律忽略這個屬性，`setInputFiles` 更是直接繞過**，所以整套 e2e 不可能抓到。
+`tests/e2e-card-photos.js` 因此改用**靜態斷言**——比照隱藏密碼欄圖示那一則，只有真裝置
+看得出來的東西，靜態檢查是唯一守得住的方式。
+
+### 診斷工具只探一個端點，等於把人指向錯的方向
+
+「測試連線」曾經只打 `GET /v1/records`。伺服器少了 `/v1/events` 時它照樣回「連線成功」，
+而每一次同步都以 404 失敗——**現場唯一能自助判斷的工具，證明了不存在的東西**
+（[#25](https://github.com/art20217/exhibition_form/issues/25)）。
+
+三條由此而來的規則：**診斷要覆蓋所有實際會用到的端點**；**錯誤訊息要帶方法與路徑**
+（「伺服器錯誤（404）」無法定位）；**伺服器每個請求都要記一行 log**——現場終端機就開著，
+不該答不出「哪一個請求失敗」。
+
+### 平板會自動更新，電腦上的 `server/` 不會
+
+平板從 GitHub Pages 拿版本，PR 一合併就是新版；`server/index.js` 只有在有人 `git pull`
+時才更新。**「app 比伺服器新」是常態，不是意外**——客戶端因此把活動端點的 404 當成
+「這台伺服器還沒有這個功能」，降級成只同步紀錄並在狀態列說明，而不是整個停擺。
+
 ### 測試相關
 
 - **不要用 `locator.fill()` 驅動輸入框。** 它直接指派 `.value` 再派發一次 `input` 事件，
@@ -208,7 +238,7 @@ exhibition_form/
 ├── tests/                  # 端到端測試（Playwright 驅動 headless Chromium）
 │   ├── helpers.js          #   共用導覽、IndexedDB 讀寫、瀏覽器啟動
 │   ├── run-all.js          #   依序執行全部套件的 runner
-│   └── e2e-*.js            #   31 支套件
+│   └── e2e-*.js            #   32 支套件
 ├── .github/workflows/      # CI：每次 push 與 PR 跑完整測試
 ├── docs/
 │   ├── sync-contract.md    #   同步協定規格（寫給日後實作伺服器的人）

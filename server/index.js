@@ -218,8 +218,19 @@ function createServer(opts) {
   const store = createStore(opts.data);
   const tokens = new Set(opts.tokens);
 
+  // One line per request, always. The terminal is sitting open next to whoever
+  // is testing, and until v3.16.1 it said nothing after startup — so "the app
+  // reports 404, which request was it?" was unanswerable from the one place
+  // that knew. A real server would use a proper access log; this is the
+  // two-line version of the same idea, and it is not optional.
+  const log = (res, code, req) => {
+    const mark = code >= 400 ? '  ← 失敗' : '';
+    console.log(`${String(code).padEnd(3)} ${req.method} ${req.url}${mark}`);
+  };
+
   const json = (res, code, body) => {
     const payload = JSON.stringify(body);
+    if (res.req) log(res, code, res.req);
     res.writeHead(code, {
       'Content-Type': 'application/json; charset=utf-8',
       'Content-Length': Buffer.byteLength(payload),
