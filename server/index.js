@@ -86,23 +86,32 @@ function createStore(dir) {
       if (!this.isNewer(incoming, existing)) {
         return { status: 'superseded', record: strip(existing) };
       }
+      // What the record no longer lists, the server no longer keeps. Read from
+      // `existing` as well as `incoming` so a tombstone — which carries no
+      // photoIds at all — still takes the photos the previous version listed.
+      const before = (existing && existing.photoIds) || [];
+      const after = incoming.deletedAt ? [] : (incoming.photoIds || []);
       state.seq += 1;
       state.records[incoming.id] = { ...incoming, _seq: state.seq };
       flush();
-      // A tombstone takes the photo with it. The client drops the photo when it
+      // A tombstone takes the photos with it. The client drops them when it
       // tombstones a record locally, for the plain reason that a deleted record
       // has no business still holding a visitor's business card — that reason
       // does not stop applying at the network boundary. No separate endpoint:
       // the delete is implied by the record, and an endpoint nobody remembers
       // to call is how these files end up living forever.
-      if (incoming.deletedAt) this.deletePhoto(incoming.id);
+      for (const id of before) if (!after.includes(id)) this.deletePhoto(id);
       return { status: 'accepted' };
     },
 
+    // Photos are filed under their own id, not the record's: removing the first
+    // of three cards must not renumber the other two.
     deletePhoto(id) {
       const f = path.join(photoDir, id + '.jpg');
       if (fs.existsSync(f)) fs.unlinkSync(f);
     },
+
+    photoIdsOf(record) { return (record && record.photoIds) || []; },
 
     hasPhoto(id) { return fs.existsSync(path.join(photoDir, id + '.jpg')); },
 
@@ -155,7 +164,8 @@ function createStore(dir) {
       // a deleted record does.
       if (incoming.deletedAt) {
         for (const r of Object.values(state.records)) {
-          if (r.eventId === incoming.id) this.deletePhoto(r.id);
+          if (r.eventId !== incoming.id) continue;
+          for (const pid of this.photoIdsOf(r)) this.deletePhoto(pid);
         }
       }
       return { status: 'accepted' };
@@ -285,8 +295,7 @@ function createServer(opts) {
         return;
       }
 
-      // Implemented even though the v3.13 client does not call it yet — this
-      // file is the spec, and a spec with a hole in it is not one.
+      // The path segment is a *photo* id, not a record id (contract v3).
       const photo = url.pathname.match(/^\/v1\/photos\/([^/]+)$/);
       if (req.method === 'PUT' && photo) {
         store.putPhoto(decodeURIComponent(photo[1]), await readBody(req));
