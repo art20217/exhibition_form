@@ -36,13 +36,20 @@ fs.mkdirSync(SHOT, { recursive: true });
     req.onsuccess = () => {
       const db = req.result;
       const tx = db.transaction(['records'], 'readwrite');
+      // r1 carries one card and r3 the maximum four, so the 操作 column is
+      // measured against both ends of its range. The count badge (`📷 ×4`)
+      // arrived in v3.16.0 and widened that button from 32px to 51px, which is
+      // more than the column had spare — every earlier layout assertion here
+      // used records with no photos at all and so never saw it.
+      const card = (n) => Array.from({ length: n }, (_, i) => ({
+        id: 'p' + i, dataUrl: 'data:image/gif;base64,R0lGODlhAQABAAAAACw=' }));
       tx.objectStore('records').put({
         id: 'r1', timestamp: '2026-08-05T09:00:00.000Z', device: 'Tablet-ALPHA',
         customerFields: { name: '王小明', company: '宏昌實業', email: 'a@b.com', nationality: 'Germany', language: 'English' },
         needsFields: { inquiry_type: ['Request Quote'], product_interest: ['EVA Single Color'], potential: 'A', notes: '後續報價' },
         companyFields: { machines_used: ['Tien Kang'], industry: 'Footwear', revenue: 'US$10,000,000 以上' },
         staffFields: { greeter: 'Su Chiu-Chu', visit_date: '2026-08-05' },
-        gdprConsent: true, cardPhoto: null,
+        gdprConsent: true, cardPhotos: card(1),
       });
       tx.objectStore('records').put({
         id: 'r2', timestamp: '2026-08-06T09:00:00.000Z', device: 'Tablet-BETA',
@@ -58,7 +65,7 @@ fs.mkdirSync(SHOT, { recursive: true });
         customerFields: { name: '陳美玲', company: '名冊測試' },
         needsFields: {}, companyFields: {},
         staffFields: { greeter: ['Charlene'], visit_date: '2026-08-07' },
-        gdprConsent: true, cardPhoto: null,
+        gdprConsent: true, cardPhotos: card(4),
       });
       tx.oncomplete = () => { db.close(); res(); };
       tx.onerror = () => rej(tx.error);
@@ -164,6 +171,15 @@ fs.mkdirSync(SHOT, { recursive: true });
       longClipped: longCell ? longCell.scrollWidth > longCell.clientWidth + 1 : null,
       longText: longCell ? longCell.innerText.trim() : null,
       docOverflow: document.body.scrollWidth > window.innerWidth + 1,
+      // The wrapper is overflow-x: auto, so a table wider than it does not push
+      // the document out — it grows a scrollbar of its own and nothing above
+      // notices. tableW stays pinned to the wrapper, which is why the existing
+      // width assertions could not see this either.
+      wrapOverflow: wrap.scrollWidth - wrap.clientWidth,
+      photoBtns: [...table.querySelectorAll('tbody tr')].map(tr => {
+        const b = tr.querySelector('[data-view-photo]');
+        return b ? Math.round(b.getBoundingClientRect().width) : 0;
+      }),
     };
   });
 
@@ -172,12 +188,22 @@ fs.mkdirSync(SHOT, { recursive: true });
     await page.waitForTimeout(350);
     const p = await colProbe();
     assert(p.widths[0] === 56, `${w}px：# 欄固定 56px（實測 ${p.widths[0]}）`);
-    assert(p.widths[p.widths.length - 1] === 132, `${w}px：操作欄固定 132px（實測 ${p.widths[p.widths.length - 1]}）`);
+    assert(p.widths[p.widths.length - 1] === 156, `${w}px：操作欄固定 156px（實測 ${p.widths[p.widths.length - 1]}）`);
     const fieldCols = p.widths.slice(2, -1);
     assert(Math.max(...fieldCols) - Math.min(...fieldCols) <= 1,
       `${w}px：欄位欄彼此等寬（${fieldCols.join(' / ')}）`);
     assert(Math.abs(p.tableW - p.wrapW) <= 1, `${w}px：表格寬度等於容器`);
     assert(!p.docOverflow, `${w}px：無水平捲動`);
+    // The bug reported after the first real-device round: any record with two
+    // or more cards pushed the 操作 cell past its 132px and the whole table
+    // grew a horizontal scrollbar. The column stays governed rather than
+    // content-sized — it is just sized for its known worst case, `📷 ×4`.
+    assert(p.wrapOverflow === 0,
+      `${w}px：有名片照片的紀錄不會把表格撐出水平捲軸（溢出 ${p.wrapOverflow}px）`);
+    assert(p.photoBtns.filter(Boolean).length === 2,
+      `${w}px：確實有兩筆帶照片的紀錄在畫面上（${p.photoBtns.join(' / ')}）`);
+    assert(Math.max(...p.photoBtns) > Math.min(...p.photoBtns.filter(Boolean)),
+      `${w}px：四張那筆的照片鈕確實比一張的寬——張數標籤就是撐開的原因（${p.photoBtns.join(' / ')}）`);
     assert(p.timeNoWrap === true && p.timeClipped === false,
       `${w}px：時間欄不折行且未溢出（nowrap=${p.timeNoWrap}, clipped=${p.timeClipped}）`);
     assert(p.longClipped === false && p.longText.includes('營業處'),
@@ -206,7 +232,7 @@ fs.mkdirSync(SHOT, { recursive: true });
   await openRecords();
   const after = await colProbe();
   assert(!after.labels.includes('公司'), '欄位定義缺少「公司」時該欄消失：' + after.labels.join(' | '));
-  assert(after.widths[0] === 56 && after.widths[after.widths.length - 1] === 132,
+  assert(after.widths[0] === 56 && after.widths[after.widths.length - 1] === 156,
     '欄位減少後 # 與操作仍維持固定寬');
   const rest = after.widths.slice(2, -1);
   assert(rest.length === 2 && Math.max(...rest) - Math.min(...rest) <= 1,

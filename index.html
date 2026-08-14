@@ -2419,7 +2419,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">
-            v3.16.2 — Offline Exhibition Form
+            v3.16.3 — Offline Exhibition Form
             <sc-if value="{{ swDisabled }}">
               <span data-sw-disabled="" style="display: block; margin-top: 4px; color: #B45309">離線快取已停用，網址加上 ?sw=on 可重新啟用</span>
             </sc-if>
@@ -2982,6 +2982,9 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             </sc-if>
           </div>
           <div style="margin-top: 1.75rem; padding-bottom: 2.5rem; display: flex; flex-direction: column; gap: 12px">
+            <sc-if value="{{ showCancelContact }}">
+              <button onclick="{{ onCancelContact }}" data-cancel-contact="" style="width: 100%; height: 44px; background: none; color: #64748B; border: none; border-radius: 12px; font-size: var(--fs-sm); font-weight: 500; cursor: pointer; transition: all 0.15s" style-hover="background: #F1F5F9; color: #334155">取消，返回上一位</button>
+            </sc-if>
             <sc-if value="{{ showAddContact }}">
               <button onclick="{{ onAddContact }}" data-add-contact="" style="width: 100%; height: 56px; background: #FFF; color: #0055B8; border: 2px solid #93B4E0; border-radius: 12px; font-size: var(--fs-body); font-weight: 600; cursor: pointer; transition: all 0.15s" style-hover="background: #F0F6FF; border-color: #0055B8" style-active="transform: scale(0.98)">＋ 增加聯絡人（同一組客戶）</button>
             </sc-if>
@@ -3378,7 +3381,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   <sc-raw-thead>
                     <sc-raw-tr style="background: #F8FAFC">
                       <sc-for list="{{ recordHeaders }}" as="hdr"><sc-raw-th style="padding: 10px 14px; text-align: left; font-weight: 600; color: #475569; border-bottom: 1px solid #E2E8F0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; {{ hdr.style }}">{{ hdr.label }}</sc-raw-th></sc-for>
-                      <sc-raw-th style="padding: 10px 14px; text-align: left; font-weight: 600; color: #475569; border-bottom: 1px solid #E2E8F0; font-size: 0.75rem; width: 132px">操作</sc-raw-th>
+                      <sc-raw-th style="padding: 10px 14px; text-align: left; font-weight: 600; color: #475569; border-bottom: 1px solid #E2E8F0; font-size: 0.75rem; width: 156px">操作</sc-raw-th>
                     </sc-raw-tr>
                   </sc-raw-thead>
                   <sc-raw-tbody>
@@ -5139,6 +5142,27 @@ class Component extends DCLogic {
     this.showToastMsg(`已新增第 ${this.state.flowSiblingIds.length + 1} 位聯絡人，請填下一位`);
   }
 
+  // Takes back the last 增加聯絡人. Until v3.16.3 there was no way out of the
+  // blank form it leaves behind: 下一步 will not move with the required fields
+  // empty, and 返回 walked out of the flow entirely (customer is step 1 when
+  // the flow starts from 客戶資料, so onCustomerBack goes home), leaving the
+  // contact already written but with no needs or company answers on it.
+  //
+  // This puts the page back to the moment before that button was pressed: the
+  // parked contact becomes the record in hand again and its data goes back in
+  // the form. 下一步 then behaves exactly as it did, so there is no second
+  // navigation path to keep in step with submitCustomerForm.
+  undoAddContact() {
+    const siblings = [...this.state.flowSiblingIds];
+    const lastId = siblings.pop();
+    if (!lastId) return;
+    const rec = this.liveRecords().find(r => r.id === lastId);
+    if (!rec) return;
+    this.setState({ flowSiblingIds: siblings, currentRecordId: lastId,
+      ...this.customerFormStateFor(rec) });
+    this.showToastMsg('已取消，回到上一位聯絡人');
+  }
+
   async submitCustomerForm() {
     if (this.state.editingRecordId) { await this.saveEditedRecord(); return; }
     const { customerFields, gdprChecked, firstChoice, quickMode } = this.state;
@@ -5701,21 +5725,33 @@ class Component extends DCLogic {
 
   // `returnTo` is where finishing or cancelling the edit lands: 'admin' for the
   // 表單管理 records tab, 'browse' for reception's record browser.
-  editRecord(id, returnTo = 'admin') {
-    const rec = this.liveRecords().find(x => x.id === id);
-    if (!rec) return;
+  // Loads a saved record back into the customer form. Used when editing a
+  // record and when 取消 pulls the previous contact back out of the loop —
+  // both re-submit through the same path, so both need the same three things
+  // put back:
+  //   * the phone split into country code and number, or the next submit would
+  //     write `+886 +886 912…`;
+  //   * the saved photos, because submitting assigns cardPhotos wholesale from
+  //     state and an unloaded array silently wipes the card (v3.3);
+  //   * consent, which was given when the record was written.
+  customerFormStateFor(rec) {
     const vals = this.editValuesFor(rec, this.state.customerFields, 'customer');
     const phoneF = this.state.customerFields.find(f => f.type === 'tel');
     let cc = '+886';
     if (phoneF && vals[phoneF.id]) { const p = String(vals[phoneF.id]).split(' '); if (p.length > 1) { cc = p[0]; vals[phoneF.id] = p.slice(1).join(' '); } }
+    return { formValues: vals, formErrors: {}, selectedCountryCode: cc,
+      cardPhotos: [...(rec.cardPhotos || [])], gdprChecked: true, gdprError: false };
+  }
+
+  editRecord(id, returnTo = 'admin') {
+    const rec = this.liveRecords().find(x => x.id === id);
+    if (!rec) return;
     const needsVals = this.editValuesFor(rec, this.state.needsFields, 'needs');
     const companyVals = this.editValuesFor(rec, this.state.companyFields, 'company');
-    this.setState({ screen: 'customerForm', formValues: vals, formErrors: {}, needsValues: needsVals, needsErrors: {},
+    this.setState({ screen: 'customerForm', ...this.customerFormStateFor(rec),
+      needsValues: needsVals, needsErrors: {},
       companyValues: companyVals, companyErrors: {},
-      // The business card lives on the customer form as of v3.3, so preload the
-      // saved photos — otherwise re-submitting an edited record would wipe them.
-      cardPhotos: [...(rec.cardPhotos || [])],
-      gdprChecked: true, gdprError: false, selectedCountryCode: cc, editingRecordId: id,
+      editingRecordId: id,
       editVisitDate: rec.staffFields?.visit_date || '',
       recordReturnTo: returnTo });
   }
@@ -6653,7 +6689,10 @@ class Component extends DCLogic {
     // Header titles render English over 中文, so they are supplied separately.
     const customerFormTitle = editing ? 'Edit Record' : 'Customer Info';
     const customerFormTitleZh = editing ? '編輯資料' : '客戶資料';
-    const customerBackLabel = editing ? 'Cancel 取消' : '← Back 返回';
+    // While a contact is parked, 返回 means "back to that contact", not "out of
+    // the flow" — see undoAddContact.
+    const customerBackLabel = editing ? 'Cancel 取消'
+      : (this.state.flowSiblingIds.length ? '← Back 返回上一位' : '← Back 返回');
     // quickMode is two steps and always customer → needs, so its labels do not
     // go through the firstChoice reasoning above.
     const quick = this.state.quickMode;
@@ -6678,6 +6717,18 @@ class Component extends DCLogic {
     const contactsAdded = this.state.flowSiblingIds.length;
     const showContactChip = !editing && contactsAdded > 0;
     const contactChipLabel = `已新增 ${contactsAdded} 位聯絡人`;
+    // The way out of the blank form 增加聯絡人 leaves behind. Two entry points,
+    // one action: this button and the header's 返回, which would otherwise walk
+    // out of the flow and strand the contact just written.
+    //
+    // It sits at the TOP of the button stack, deliberately. 下一步／完成 is the
+    // bottom-most, full-width, filled button on this page and has been on every
+    // screen before it — that slot is reached by habit, not by reading. Putting
+    // a cancel there, or anywhere below 下一步, would also shift 下一步 between
+    // the first contact's page and the second's: same screen, same task, primary
+    // action moved. The invariant e2e-multi-contact.js guards is that 下一步
+    // stays the last button in the stack.
+    const showCancelContact = !editing && contactsAdded > 0;
 
     const bluePalette = { checkedBg: '#F0F6FF', checkedBorder: '#0055B8', checkedText: '#0055B8' };
 
@@ -6920,8 +6971,9 @@ class Component extends DCLogic {
       onExitBrowse: () => this.setState({ screen: 'eventHome', browseQuery: '' }),
       // Customer info form
       customerFormTitle, customerFormTitleZh, customerBackLabel, customerSubmitLabel, customerStepLabel, showStepChip,
-      showAddContact, showContactChip, contactChipLabel,
+      showAddContact, showContactChip, contactChipLabel, showCancelContact,
       onAddContact: () => this.addContact(),
+      onCancelContact: () => this.undoAddContact(),
       customerFormFields,
       showEditVisitDate: editing,
       editVisitDate: this.state.editVisitDate,
@@ -6939,6 +6991,10 @@ class Component extends DCLogic {
       onCustomerSubmit: () => this.submitCustomerForm(),
       onCustomerBack: () => {
         if (editingRecordId) { this.setState({ ...this.flowResetPatch(), ...this.afterRecordEditPatch() }); }
+        // A contact is parked: back means back to that contact. Leaving the
+        // flow here used to strand it half-answered, which is the whole bug.
+        // Pressing 返回 again — now with nothing parked — leaves as before.
+        else if (this.state.flowSiblingIds.length) { this.undoAddContact(); }
         else if (firstChoice === 'data') { this.goHome(); }
         else { this.setState({ screen: this.state.quickMode ? 'needsForm' : 'companyForm' }); }
       },
