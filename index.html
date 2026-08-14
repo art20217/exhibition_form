@@ -2419,7 +2419,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">
-            v3.16.1 — Offline Exhibition Form
+            v3.16.2 — Offline Exhibition Form
             <sc-if value="{{ swDisabled }}">
               <span data-sw-disabled="" style="display: block; margin-top: 4px; color: #B45309">離線快取已停用，網址加上 ?sw=on 可重新啟用</span>
             </sc-if>
@@ -3265,7 +3265,10 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
       <sc-if value="{{ showHandoffCount }}">
         <div data-handoff-count="" style="margin-top: 20px; font-size: 0.875rem; color: #94A3B8; text-align: center">{{ handoffCountLabel }}</div>
       </sc-if>
-      <button onclick="{{ onHandoffDone }}" style="position: absolute; bottom: 28px; right: 28px; height: 44px; padding: 0 20px; background: transparent; color: #94A3B8; border: 1px solid #E2E8F0; border-radius: 10px; font-size: 0.875rem; cursor: pointer; display: flex; align-items: center; gap: 8px" style-hover="background: #F8FAFC; color: #475569">
+      <!-- Was deliberately faded so a visitor would not tap it. That is no longer
+           wanted, so it takes the app's ordinary secondary style — same as 編輯
+           and 查看紀錄 on the event cards. Position and wording unchanged. -->
+      <button onclick="{{ onHandoffDone }}" data-handoff-done="" style="position: absolute; bottom: 28px; right: 28px; height: 44px; padding: 0 20px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 10px; font-size: 0.875rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px" style-hover="background: #F0F6FF">
         Done 完成，返回 →
       </button>
     </div>
@@ -5359,6 +5362,28 @@ class Component extends DCLogic {
   // sentinels with the free text the user actually typed. Handles both the
   // legacy single-Other marker ('__other__') and the per-group markers
   // ('__other__:<group label>') used when a field has `perGroupOther: true`.
+  // Display only — never let this near `resolveFieldValue`.
+  //
+  // Records store the option's `en` value, and that is the value the export
+  // hands to whatever reads it downstream (see 修改指南 in the README). But the
+  // people reading the admin record list are our own staff, and they recognise
+  // these options by their Chinese label. So the two languages are joined here,
+  // at the point of display, and nowhere else.
+  //
+  // Anything with no matching option — a typed 「其他」, a text field, a date —
+  // comes back untouched.
+  optionLabel(f, v) {
+    // 接待人員's roster lives on the event rather than in the field definition
+    // — `source: 'event'` with an empty option list is exactly that
+    // arrangement (see openEvent). Without this fallback the record list would
+    // show a bare "Charlene" while every other option gained its Chinese.
+    const own = f.options || [];
+    const opts = own.length ? own
+      : (f.source === 'event' ? (this.currentEvent()?.staff || []) : own);
+    const o = opts.find(x => x.en === v);
+    return o && o.zh && o.zh !== o.en ? o.en + ' ' + o.zh : v;
+  }
+
   resolveFieldValue(r, f, group) {
     const raw = this.recordValue(r, f, group);
     if (raw == null) return raw;
@@ -6409,14 +6434,11 @@ class Component extends DCLogic {
       const raw = values[f.id];
       if (raw == null || raw === '' || (Array.isArray(raw) && raw.length === 0)) return '';
       const shown = this.expandOtherMarkers(raw, f, (key) => values[key]);
-      // The searchable select (國籍) hides its option list once closed, so the
-      // summary is the only place the Chinese name can appear. Chip-based
-      // fields already show both languages inside their editor.
-      const bi = (v) => {
-        if (!isSearchSelect) return v;
-        const o = (f.options || []).find(x => x.en === v);
-        return o ? biOptLabel(o) : v;
-      };
+      // Both languages, for every option field. This line is what someone reads
+      // when they open a saved record — the chips that would have shown the
+      // Chinese are collapsed behind 「編輯」 at that point, so the summary is
+      // the only place it can appear.
+      const bi = (v) => this.optionLabel(f, v);
       return Array.isArray(shown) ? shown.map(bi).join('、') : String(bi(shown));
     })() : '';
 
@@ -6745,9 +6767,11 @@ class Component extends DCLogic {
     ];
     const displayVal = (e, r) => {
       const v = this.resolveFieldValue(r, e.f, e.group);
-      if (Array.isArray(v)) return v.join(', ');
+      // Ratings render as stars and have no options to look up, so they are
+      // taken first.
       if (e.f.type === 'rating') { const s = this.ratingStars(v); if (s) return s; }
-      return v ?? '';
+      if (Array.isArray(v)) return v.map(x => this.optionLabel(e.f, x)).join(', ');
+      return v == null ? '' : this.optionLabel(e.f, v);
     };
     const recordRows = eventRecords.map((r,i) => {
       const cells = [

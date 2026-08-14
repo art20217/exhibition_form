@@ -110,6 +110,18 @@ fs.mkdirSync(SHOT, { recursive: true });
   assert((await page.locator('[data-handoff-count]').innerText()).includes('2 筆'),
     '完成頁告訴接待人員建立了幾筆：' + await page.locator('[data-handoff-count]').innerText());
 
+  // v3.16.2: the 完成，返回 button used to be deliberately faded so a visitor
+  // would not tap it. That is no longer wanted — same place, same words, but
+  // the app's ordinary secondary colours.
+  const doneBtn = await page.locator('[data-handoff-done]').evaluate(el => {
+    const c = getComputedStyle(el);
+    return { color: c.color, bg: c.backgroundColor };
+  });
+  assert(doneBtn.color === 'rgb(0, 85, 184)',
+    '完成鈕是正常的藍字，不再是淡化的灰：' + doneBtn.color);
+  assert(doneBtn.bg === 'rgb(255, 255, 255)',
+    '底色是白的，不再是透明：' + doneBtn.bg);
+
   // ---- 4. two records, shared answers on both, personal answers separate ----
   rows = (await records()).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
   assert(rows.length === 2, `後台是兩筆獨立紀錄（實際 ${rows.length}）`);
