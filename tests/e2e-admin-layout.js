@@ -145,7 +145,9 @@ const TABS = ['客戶資料欄位', '客戶需求欄位', '公司背景欄位', 
       wrapW: wrap.clientWidth,
       tableW: Math.round(wrap.querySelector('table').getBoundingClientRect().width) };
   });
-  assert(cols.widths[0] === 56 && cols.widths[cols.widths.length - 1] === 132,
+  // 操作 went 132 → 156 in v3.16.3: `📷 ×4` is the widest thing that column can
+  // hold, and at 132 anything past one card pushed the table into a scrollbar.
+  assert(cols.widths[0] === 56 && cols.widths[cols.widths.length - 1] === 156,
     '# 與操作維持固定寬：' + cols.widths.join(' / '));
   const mid = cols.widths.slice(2, -1);
   assert(Math.max(...mid) - Math.min(...mid) <= 1 && mid[0] >= 170 && mid[0] <= 190,

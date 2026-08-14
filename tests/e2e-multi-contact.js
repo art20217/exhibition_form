@@ -16,6 +16,13 @@ const H = require('./helpers');
 const SHOT = path.join(__dirname, 'shots-multi-contact');
 fs.mkdirSync(SHOT, { recursive: true });
 
+// 1×1 JPEG, as in e2e-card-photos. It has to actually decode: the capture path
+// runs through canvas, which cannot draw bytes that do not parse.
+const TINY_JPEG = Buffer.from(
+  '/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0a'
+  + 'HBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAFAABAAAAAAAA'
+  + 'AAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AKp//2Q==', 'base64');
+
 (async () => {
   const app = await H.serve();
   const BASE = app.base;
@@ -191,6 +198,127 @@ fs.mkdirSync(SHOT, { recursive: true });
   assert((await page.locator('[data-add-contact]').count()) === 0,
     '編輯既有紀錄時沒有「增加聯絡人」——編輯是修一筆，不是開一個流程');
   await page.screenshot({ path: path.join(SHOT, '04_edit_no_button.png'), fullPage: true });
+
+  // ---- 8. v3.16.3: taking the 增加聯絡人 back ----
+  //
+  // Reported from the booth. Press 增加聯絡人, change your mind, and there was
+  // no way out: 下一步 will not move with the required fields blank, and 返回
+  // left the flow altogether (客戶資料 is step 1 here, so onCustomerBack went
+  // home and flowResetPatch dropped the siblings). The first contact was
+  // already written but had never reached the needs or company pages, so it sat
+  // in the admin list half-filled and had to be completed by hand afterwards.
+  await page.goto(BASE + '/');
+  await page.waitForTimeout(1500);
+  await H.enterEvent(page);
+  await page.locator('[data-entry-customer]').click();
+  await page.waitForTimeout(600);
+  const before = (await records()).length;
+
+  assert((await page.locator('[data-cancel-contact]').count()) === 0,
+    '第一位聯絡人時沒有取消鈕——沒有東西可以取消');
+
+  await fillCustomer({ name: '取消測試', company: '退路實業', email: 'cancel@example.com' });
+  const phoneBox = page.locator('input[placeholder^="Enter Phone"]');
+  if (await phoneBox.count()) await phoneBox.first().fill('912345678');
+  await page.locator('[data-add-card-photo] input[type="file"]')
+    .setInputFiles({ name: 'front.jpg', mimeType: 'image/jpeg', buffer: TINY_JPEG });
+  await page.waitForTimeout(600);
+  const photosBefore = await page.evaluate(() => window.__app.state.cardPhotos.length);
+  assert(photosBefore === 1, '第一位帶了一張名片（實際 ' + photosBefore + '）');
+
+  await page.locator('[data-add-contact]').click();
+  await page.waitForTimeout(700);
+  assert((await page.locator('[data-cancel-contact]').count()) === 1,
+    '加了第二位之後才出現取消鈕');
+
+  // The placement, asserted as a layout invariant rather than left to review.
+  // 下一步／完成 is the bottom-most, filled, full-width button on this page and
+  // on every page before it; that slot is reached by habit, not by reading. A
+  // cancel placed there — or anywhere below it — would also shift 下一步
+  // between the first contact's page and the second's.
+  const stack = await page.evaluate(() => {
+    const btns = [...document.querySelectorAll('button')]
+      .filter(b => /取消，返回上一位|增加聯絡人|Next 下一步|Finish 完成/.test(b.innerText))
+      .map(b => ({ text: b.innerText.trim(), top: Math.round(b.getBoundingClientRect().top) }));
+    return btns.sort((a, b) => a.top - b.top).map(b => b.text);
+  });
+  assert(/Next 下一步|Finish 完成/.test(stack[stack.length - 1]),
+    '「下一步／完成」仍是按鈕堆最底下那顆：' + stack.join(' → '));
+  assert(stack[0].includes('取消'), '取消鈕在最上面，離拇指預設的位置最遠：' + stack.join(' → '));
+
+  await page.screenshot({ path: path.join(SHOT, '05_cancel_button.png'), fullPage: true });
+  await page.locator('[data-cancel-contact]').click();
+  await page.waitForTimeout(700);
+
+  // Back to the moment before the button was pressed: same page, first
+  // contact's data in the form, counter gone.
+  assert((await nameBox().inputValue()) === '取消測試',
+    '取消後表單回到第一位的資料：' + await nameBox().inputValue());
+  assert((await page.locator('[data-contact-chip]').count()) === 0,
+    '「已新增 N 位」標籤消失了');
+  assert((await page.locator('[data-cancel-contact]').count()) === 0,
+    '沒有東西可以再取消了');
+  const restored = await page.evaluate(() => ({
+    photos: window.__app.state.cardPhotos.length,
+    cc: window.__app.state.selectedCountryCode,
+    siblings: window.__app.state.flowSiblingIds.length,
+  }));
+  // Submitting assigns cardPhotos wholesale from state, so a record pulled back
+  // without its photos loses the card on the next 下一步 — silently, and only
+  // visible days later in the export.
+  assert(restored.photos === 1, '第一位的名片照片跟著回到表單（實際 ' + restored.photos + ' 張）');
+  assert(restored.siblings === 0, 'flowSiblingIds 已經空了');
+  assert(restored.cc === '+886', '國碼欄位回到 +886：' + restored.cc);
+  const phoneVal = await phoneBox.count() ? await phoneBox.first().inputValue() : '';
+  assert(phoneVal === '912345678', '號碼欄位是拆過國碼的號碼，不是整串：' + phoneVal);
+
+  // The point of the whole fix: finish normally and get one complete record.
+  await page.getByRole('button', { name: /Next 下一步/ }).click();   // -> company
+  await page.waitForTimeout(500);
+  await pickCompanyIndustry();
+  await page.getByRole('button', { name: /Next 下一步/ }).click();   // -> needs
+  await page.waitForTimeout(500);
+  if (await notesBox.count()) await notesBox.first().fill('改成只有一位');
+  await page.getByRole('button', { name: /Finish 完成/ }).click();
+  await page.waitForTimeout(800);
+
+  rows = await records();
+  const made = rows.filter(r => r.customerFields.name === '取消測試');
+  assert(rows.length === before + 1 && made.length === 1,
+    `取消之後只留下一筆（總數 ${before} → ${rows.length}，同名 ${made.length} 筆）`);
+  const only = made[0];
+  assert(Object.keys(only.needsFields).length > 0 && Object.keys(only.companyFields).length > 0,
+    '而且那一筆是完整的——需求與公司背景都答在它身上，這正是舊行為做不到的：'
+    + JSON.stringify(only.companyFields));
+  assert((only.cardPhotos || []).length === 1,
+    '名片照片還在（實際 ' + (only.cardPhotos || []).length + ' 張）');
+  const phoneStored = only.customerFields.phone || '';
+  assert(!/\+886.*\+886/.test(phoneStored) && (!phoneStored || phoneStored === '+886 912345678'),
+    '電話沒有被加上第二個國碼：' + phoneStored);
+
+  // ---- 8b. the header 返回 does the same thing while a contact is parked ----
+  // This is the button the person at the booth actually pressed, so fixing only
+  // the new one would leave the trap in place.
+  await page.getByRole('button', { name: /完成，返回|Done/ }).first().click().catch(() => {});
+  await page.waitForTimeout(600);
+  await H.pickCustomerStatus(page);
+  await page.locator('[data-entry-customer]').click();
+  await page.waitForTimeout(600);
+  await fillCustomer({ name: '返回測試', company: '返回實業', email: 'back@example.com' });
+  await page.locator('[data-add-contact]').click();
+  await page.waitForTimeout(700);
+  const backLabel = await page.locator('[data-page-header] button').last().innerText();
+  assert(backLabel.includes('返回上一位'), '有聯絡人停放時頁首按鈕改口說「返回上一位」：' + backLabel);
+  await page.locator('[data-page-header] button').last().click();
+  await page.waitForTimeout(700);
+  assert((await nameBox().inputValue()) === '返回測試',
+    '頁首「返回」也回到上一位，而不是離開流程：' + await nameBox().inputValue());
+  // …and once nothing is parked it leaves the flow exactly as before.
+  await page.locator('[data-page-header] button').last().click();
+  await page.waitForTimeout(700);
+  assert((await page.locator('[data-entry-customer]').count()) === 1
+    || (await page.locator('[data-ev-enter]').count()) > 0,
+    '沒有停放的聯絡人時，「返回」維持原本離開流程的行為');
 
   assert(errors.length === 0, '無 console error：' + errors.join(' | '));
   await browser.close();
