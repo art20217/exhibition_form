@@ -51,6 +51,15 @@ fs.mkdirSync(SHOT, { recursive: true });
         staffFields: { greeter: '__other__', greeter__otherText: '臨時支援小陳' },
         gdprConsent: true, cardPhoto: null,
       });
+      // A greeter who is actually on the roster, so the bilingual display below
+      // has something to resolve. r1's 'Su Chiu-Chu' deliberately is not.
+      tx.objectStore('records').put({
+        id: 'r3', timestamp: '2026-08-07T09:00:00.000Z', device: 'Tablet-BETA',
+        customerFields: { name: '陳美玲', company: '名冊測試' },
+        needsFields: {}, companyFields: {},
+        staffFields: { greeter: ['Charlene'], visit_date: '2026-08-07' },
+        gdprConsent: true, cardPhoto: null,
+      });
       tx.oncomplete = () => { db.close(); res(); };
       tx.onerror = () => rej(tx.error);
     };
@@ -90,6 +99,15 @@ fs.mkdirSync(SHOT, { recursive: true });
   assert(byName['李大華'] && byName['李大華'][4] === 'Other: 臨時支援小陳',
     '接待人員選「其他」時顯示自訂姓名：' + JSON.stringify(byName['李大華']));
 
+  // ---- 2b. v3.16.2: a chosen option shows both languages ----
+  // Records store the option's `en`; the people reading this list recognise
+  // these names in Chinese. 接待人員's roster lives on the event rather than in
+  // the field definition, which is the case most likely to be missed.
+  assert(byName['陳美玲'] && byName['陳美玲'][4] === 'Charlene 蘇秋菊',
+    '名冊上的接待人員中英並陳：' + JSON.stringify(byName['陳美玲']));
+  assert(byName['王小明'][4] === 'Su Chiu-Chu',
+    '名冊上沒有的名字原樣顯示，不硬湊：' + byName['王小明'][4]);
+
   // ---- 3. export still carries every field (ZIP is written STORE/uncompressed) ----
   const dl = page.waitForEvent('download', { timeout: 15000 });
   await page.getByRole('button', { name: '匯出資料' }).click();
@@ -100,6 +118,20 @@ fs.mkdirSync(SHOT, { recursive: true });
     assert(buf.includes(col), `匯出檔仍包含「${col}」欄`);
   }
   assert(buf.includes('Germany'), '匯出檔仍包含列表未顯示的欄位值');
+
+  // The line this version must not cross. `en` is the stored value and the one
+  // downstream reads; the Chinese is a display decision and must never leak
+  // into the file. If it did, nothing would report an error — the strings would
+  // simply be wrong for whoever consumes them next.
+  //
+  // `buf` is the archive decoded as latin1, so a Chinese needle has to be
+  // encoded the same way before it can match. Comparing against a plain JS
+  // string here silently never matches, which is exactly how the first version
+  // of this assertion passed even with the bug deliberately reintroduced.
+  const latin1 = (t) => Buffer.from(t, 'utf8').toString('latin1');
+  assert(buf.includes('Charlene'), '匯出檔含接待人員的英文值');
+  assert(!buf.includes(latin1('Charlene 蘇秋菊')),
+    '匯出的儲存格仍是純英文的選項值，中文只留在畫面上');
 
   // ---- 4. heading follows an admin rename ----
   await page.getByRole('button', { name: '客戶資料欄位' }).click();

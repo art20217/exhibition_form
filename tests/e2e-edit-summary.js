@@ -121,6 +121,14 @@ const UNPICKED = ['Sample Required', 'Become a Distributor'];
   assert(natText.includes('Taiwan') && natText.includes('台灣'),
     '國籍摘要中英並陳：' + natText);
 
+  // v3.16.2: and so does every other option field. The summary is what someone
+  // reads when they open a saved record — the chips that would have carried the
+  // Chinese are collapsed behind 編輯 at that point.
+  const quoteRow = page.locator('[data-summary-row]').filter({ hasText: 'Request Quote' }).first();
+  const quoteText = await quoteRow.locator('[data-summary-value]').innerText();
+  assert(quoteText.includes('Request Quote') && quoteText.includes('索取報價'),
+    '複選欄位的摘要也中英並陳：' + quoteText);
+
   // ---- 3. the modal edits exactly one field ----
   const inquiryRow = page.locator('[data-summary-row]')
     .filter({ hasText: 'Request Quote' }).first();
