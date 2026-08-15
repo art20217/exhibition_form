@@ -2419,7 +2419,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">
-            v3.16.3 — Offline Exhibition Form
+            v3.16.4 — Offline Exhibition Form
             <sc-if value="{{ swDisabled }}">
               <span data-sw-disabled="" style="display: block; margin-top: 4px; color: #B45309">離線快取已停用，網址加上 ?sw=on 可重新啟用</span>
             </sc-if>
@@ -6558,11 +6558,12 @@ class Component extends DCLogic {
     // "is anything still only on this tablet?" Time of last success answers
     // "how stale is the server?" Both, or neither is much use.
     const pendingCount = this.syncConfigured() ? this.dirtyRecords().length : 0;
-    // Photos are counted separately because they behave differently: a record
-    // still waiting means data exists only on this tablet, while a photo still
-    // waiting means the record is already safe and the image is catching up.
-    const pendingPhotoCount = this.syncConfigured() ? this.pendingPhotos().length : 0;
-    const photoNote = pendingPhotoCount ? `　待上傳照片 ${pendingPhotoCount} 張` : '';
+    // v3.14 also reported a pending *photo* count here. v3.16.4 dropped it: by
+    // the time a photo is queued its record has already been written, so the
+    // number never answered the only question this line exists for — is
+    // anything still only on this tablet? It just sat there as a second figure
+    // to interpret. Photos still upload, and the queue (pendingPhotos()) is
+    // unchanged; progress during an active sync is reported below.
     // Degrading is acceptable; degrading silently is not. Records are still
     // reaching the server, so this rides along with the success text rather
     // than turning the bar into a failure.
@@ -6575,8 +6576,8 @@ class Component extends DCLogic {
         // the bar looks frozen and somebody starts pressing things.
         ? (this.state.syncPhotoProgress ? `上傳照片 ${this.state.syncPhotoProgress}…` : '同步中…')
       : this.state.syncStatus === 'error' ? `同步失敗：${this.state.syncError}` + (pendingCount ? `（待同步 ${pendingCount} 筆）` : '')
-      : pendingCount ? `待同步 ${pendingCount} 筆` + (lastAt ? ` · 上次同步 ${lastAt}` : '') + photoNote + eventNote
-      : lastAt ? `已同步 · ${lastAt}` + photoNote + eventNote : '尚未同步';
+      : pendingCount ? `待同步 ${pendingCount} 筆` + (lastAt ? ` · 上次同步 ${lastAt}` : '') + eventNote
+      : lastAt ? `已同步 · ${lastAt}` + eventNote : '尚未同步';
     const syncColor = this.state.syncStatus === 'error' ? '#B45309'
       : pendingCount ? '#475569' : '#64748B';
 

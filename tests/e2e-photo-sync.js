@@ -142,6 +142,33 @@ const TINY_JPEG = Buffer.from(
     return app.dbPut('records', recs.find(r => r.id === id));
   }, recId);
   await new Promise(r => setTimeout(r, 1100));
+
+  // ---- 4b. v3.16.4: the status line does not report a photo count ----
+  // This is the one moment in the suite where a photo is genuinely queued: the
+  // record is already on the server, so its own dirty flag is clear, but the
+  // image just changed and has not gone up yet.
+  //
+  // v3.14 wrote 「待上傳照片 N 張」 here. By the time a photo is queued the
+  // record is already safe, so that number never answered the question the
+  // line exists for — is anything still only on this tablet? — it was just a
+  // second figure to interpret.
+  //
+  // The first assertion is the control. Without it the second passes whenever
+  // the queue happens to be empty, which is nearly always: nothing in this
+  // suite touched the status line before, which is exactly how the count could
+  // have been deleted with all 32 suites green.
+  //
+  // The bar only exists on the event list — structurally, so it can never
+  // appear over a half-filled form — so step out to see it and walk back in.
+  const queued = await page.evaluate(() => window.__app.pendingPhotos().length);
+  assert(queued > 0, `此刻確實有照片排隊等上傳（${queued} 張）——否則下面兩條形同虛設`);
+  await page.getByRole('button', { name: /活動列表/ }).first().click();
+  await page.waitForTimeout(500);
+  const bar = await page.locator('[data-sync-status]').innerText().catch(() => '(無)');
+  assert(/待同步|已同步/.test(bar), '狀態列真的在畫面上，不是取不到元素才「通過」：' + bar);
+  assert(!/待上傳照片|張/.test(bar), '狀態列不再報照片張數：' + bar);
+  await H.enterEvent(page);
+
   await syncAndWait();
   const bytes2 = fs.readFileSync(photoPath(photoId));
   assert(bytes2.length !== bytes.length || !bytes2.equals(bytes),
