@@ -2419,7 +2419,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">
-            v3.16.5 — Offline Exhibition Form
+            v3.16.6 — Offline Exhibition Form
             <sc-if value="{{ swDisabled }}">
               <span data-sw-disabled="" style="display: block; margin-top: 4px; color: #B45309">離線快取已停用，網址加上 ?sw=on 可重新啟用</span>
             </sc-if>
@@ -3896,15 +3896,75 @@ class Component extends DCLogic {
   dbDelete(store, key) { return new Promise((res, rej) => { const tx = this.db.transaction(store, 'readwrite'); const r = tx.objectStore(store).delete(key); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
   dbClear(store) { return new Promise((res, rej) => { const tx = this.db.transaction(store, 'readwrite'); const r = tx.objectStore(store).clear(); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
 
+  // The migration chain, in the order it must run.
+  //
+  // Table-driven since v3.16.6 (#13). It used to be one hand-written
+  // `if (!migXXD?.value) await …` per version, each with a different shape —
+  // some took events, some took records, some returned a replacement, one
+  // needed deviceId — plus a matching dbGet in loadAllData's opening
+  // Promise.all. Four flags when #13 was filed, nine by v3.16, and every
+  // version adds one.
+  //
+  // Each step takes the same bag ({ events, records, deviceId }) and returns
+  // the parts of it that changed, so the differing signatures are absorbed
+  // here instead of spreading through the caller.
+  //
+  // This array is the only thing that defines the order, and the tests do not
+  // check it: dropping a step turns e2e-migration-* red, but swapping two
+  // adjacent ones does not (v3.6 and v3.8 both write getDefaultStaffList(), so
+  // today they happen to commute — measured, not assumed). Reordering is a
+  // judgement call with no safety net; append new steps at the end.
+  //
+  // The flag write is the driver's job (runMigrations) — a step that saved its
+  // own flag could mark itself done while a later one in the same pass throws,
+  // and the migration would be skipped forever on the next boot.
+  //
+  // Not in this table: migrateLegacyFieldDefs (migratedTo33/34). It is a
+  // different chain — it runs only from seedFirstEvent, on a pre-v3.4 or empty
+  // database, and it operates on the four unprefixed fieldDefinitions keys
+  // rather than on this bag. Forcing it in here would invent a shared shape
+  // that does not exist.
+  get MIGRATIONS() {
+    return [
+      { flag: 'migratedTo35', desc: 'v3.5：補上新的選項',
+        run: async (s) => { await this.addV35Options(s.events); } },
+      // v3.6 and v3.8 both replace every roster outright. On a database that
+      // has seen neither, the v3.6 pass is redundant work with the same end
+      // state — harmless, and cheaper than special-casing the order.
+      { flag: 'migratedTo36', desc: 'v3.6：重設接待人員名冊',
+        run: async (s) => { await this.resetStaffRosters(s.events); } },
+      { flag: 'migratedTo38', desc: 'v3.8：國籍改為可搜尋的國家選單',
+        run: async (s) => { await this.migrateTo38(s.events); } },
+      { flag: 'migratedTo310', desc: 'v3.10：補上洽談事由與公司型態選項',
+        run: async (s) => { await this.migrateTo310(s.events); } },
+      { flag: 'migratedTo312', desc: 'v3.12：紀錄補上 updatedAt 等同步欄位',
+        run: async (s) => ({ records: await this.migrateTo312(s.records) }) },
+      { flag: 'migratedTo315', desc: 'v3.15：活動補上擁有者、更新時間與墓碑',
+        run: async (s) => ({ events: await this.migrateTo315(s.events, s.deviceId) }) },
+      { flag: 'migratedTo316', desc: 'v3.16：名片照片改為多張',
+        run: async (s) => ({ records: await this.migrateTo316(s.records) }) },
+    ];
+  }
+
+  // Runs every migration the database has not seen yet, in table order, and
+  // marks each one done only after it has returned.
+  async runMigrations(bag) {
+    const flags = await Promise.all(
+      this.MIGRATIONS.map(m => this.dbGet('config', m.flag)));
+    for (let i = 0; i < this.MIGRATIONS.length; i++) {
+      if (flags[i]?.value) continue;
+      const m = this.MIGRATIONS[i];
+      Object.assign(bag, await m.run(bag) || {});
+      await this.saveConfig(m.flag, true);
+    }
+    return bag;
+  }
+
   async loadAllData() {
-    const [pinD, devD, devIdD, gdprEnD, gdprZhD, mig35D, mig36D, mig38D, mig310D, mig312D, mig315D,
-      mig316D, syncUrlD, syncTokenD, syncSeqD, syncEventSeqD] = await Promise.all([
+    const [pinD, devD, devIdD, gdprEnD, gdprZhD,
+      syncUrlD, syncTokenD, syncSeqD, syncEventSeqD] = await Promise.all([
       this.dbGet('config','pin'), this.dbGet('config','deviceName'), this.dbGet('config','deviceId'),
       this.dbGet('config','gdprEn'), this.dbGet('config','gdprZh'),
-      this.dbGet('config','migratedTo35'), this.dbGet('config','migratedTo36'),
-      this.dbGet('config','migratedTo38'), this.dbGet('config','migratedTo310'),
-      this.dbGet('config','migratedTo312'), this.dbGet('config','migratedTo315'),
-      this.dbGet('config','migratedTo316'),
       this.dbGet('config','syncUrl'), this.dbGet('config','syncToken'), this.dbGet('config','syncSeq'),
       this.dbGet('config','syncEventSeq'),
     ]);
@@ -3930,17 +3990,7 @@ class Component extends DCLogic {
       records = seeded.records;
     }
 
-    if (!mig35D?.value) await this.addV35Options(events);
-    // v3.6 and v3.8 both replace every roster outright. On a database that has
-    // seen neither, the v3.6 pass is redundant work with the same end state —
-    // harmless, and cheaper than special-casing the order.
-    if (!mig36D?.value) await this.resetStaffRosters(events, 'migratedTo36');
-    if (!mig38D?.value) await this.migrateTo38(events);
-    if (!mig310D?.value) await this.migrateTo310(events);
-    if (!mig312D?.value) records = await this.migrateTo312(records);
-    if (!mig315D?.value) events = await this.migrateTo315(events, deviceId);
-    if (!mig316D?.value) records = await this.migrateTo316(records);
-
+    ({ events, records } = await this.runMigrations({ events, records, deviceId }));
 
     this.setState({
       pin: pinD?.value ?? '0000', deviceName: devD?.value ?? defaultDev, deviceId,
@@ -3974,7 +4024,6 @@ class Component extends DCLogic {
       await this.dbPut('events', patched);
       out.push(patched);
     }
-    await this.saveConfig('migratedTo315', true);
     return out;
   }
 
@@ -3998,7 +4047,6 @@ class Component extends DCLogic {
       await this.dbPut('records', patched);
       out.push(patched);
     }
-    await this.saveConfig('migratedTo316', true);
     return out;
   }
 
@@ -4010,7 +4058,6 @@ class Component extends DCLogic {
       await this.dbPut('records', patched);
       out.push(patched);
     }
-    await this.dbPut('config', { key: 'migratedTo312', value: true });
     return out;
   }
 
@@ -4067,7 +4114,6 @@ class Component extends DCLogic {
         if (touched) await this.saveFieldDefs(key, next);
       }
     }
-    await this.saveConfig('migratedTo35', true);
   }
 
   // --- v3.6: the built-in reception roster was replaced outright, so every
@@ -4106,7 +4152,6 @@ class Component extends DCLogic {
       });
       if (touched) await this.saveFieldDefs(key, next);
     }
-    await this.saveConfig('migratedTo38', true);
   }
 
   // --- v3.10: 新舊客戶 is recorded per visit, so every event's staffFields
@@ -4129,18 +4174,18 @@ class Component extends DCLogic {
       next.splice(idx >= 0 ? idx + 1 : next.length, 0, { ...def });
       await this.saveFieldDefs(key, next.map((f, i) => ({ ...f, order: i })));
     }
-    await this.saveConfig('migratedTo310', true);
   }
 
-  // Shared by every roster replacement. `flag` is what makes each one run once:
-  // v3.6 swapped in a two-name list, v3.8 replaced it with the real team, and a
-  // future change gets its own flag rather than re-running an old one.
-  async resetStaffRosters(events, flag) {
+  // v3.6's roster replacement. It used to take the flag name as an argument
+  // because it saved its own flag; MIGRATIONS owns that now, and the parameter
+  // went with it. (v3.8 replaces the roster again, but inlines the loop in
+  // migrateTo38 because it also rewrites the nationality field in the same
+  // pass over the events.)
+  async resetStaffRosters(events) {
     for (const ev of events) {
       ev.staff = this.getDefaultStaffList();
       await this.dbPut('events', ev);
     }
-    await this.saveConfig(flag, true);
   }
 
   defKey(eventId, group) { return eventId + '::' + group; }
