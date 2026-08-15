@@ -2419,7 +2419,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">
-            v3.16.4 — Offline Exhibition Form
+            v3.16.5 — Offline Exhibition Form
             <sc-if value="{{ swDisabled }}">
               <span data-sw-disabled="" style="display: block; margin-top: 4px; color: #B45309">離線快取已停用，網址加上 ?sw=on 可重新啟用</span>
             </sc-if>
@@ -6526,34 +6526,121 @@ class Component extends DCLogic {
     };
   }
 
-  renderVals() {
-    const { screen, adminTab, records, editingRecordId, firstChoice } = this.state;
+  // The one thing every screen's bindings are computed from.
+  //
+  // Split out of renderVals() in v3.16.5 (#12): this is the handful of values
+  // that more than one screen needs, so each renderXxxVals() below takes it
+  // rather than recomputing — eventRecords() and sortedFields() in particular
+  // were about to be walked once per section.
+  renderCtx() {
+    const { screen, adminTab, editingRecordId, firstChoice } = this.state;
     const { currentEventId, sessionGreeters, sessionDate, sessionCustomerStatus,
       eventsManageMode } = this.state;
 
-    const showEvents = screen === 'events';
-    const showEventHome = screen === 'eventHome';
-    const showCustomerForm = screen === 'customerForm';
-    const showNeedsForm = screen === 'needsForm';
-    const showCompanyForm = screen === 'companyForm';
-    const showHandoff = screen === 'handoff';
+    const showAdmin = screen === 'admin';
+    const showAdminFieldList = showAdmin && (adminTab === 'customer' || adminTab === 'needs' || adminTab === 'company');
+
+    // ===== Field-definition ownership (v3.15) =====
+    // Definitions sync, and two tablets editing the same set would need merge
+    // rules for a nested structure — one person's new option silently losing to
+    // the other's. Instead one device owns them, so there is nothing to merge.
+    // Records are unaffected: every tablet collects.
+    const curEvent = this.currentEvent();
+    const ownerId = curEvent?.ownerDeviceId;
+
+    return {
+      screen, adminTab, firstChoice, editingRecordId, currentEventId,
+      sessionGreeters, sessionDate, sessionCustomerStatus, eventsManageMode,
+      curEvent,
+
+      showEvents: screen === 'events',
+      showEventHome: screen === 'eventHome',
+      showCustomerForm: screen === 'customerForm',
+      showNeedsForm: screen === 'needsForm',
+      showCompanyForm: screen === 'companyForm',
+      showHandoff: screen === 'handoff',
+      showBrowse: screen === 'browse',
+      showAdmin, showAdminFieldList,
+      showAdminRecords: showAdmin && adminTab === 'records',
+      // Its own screen since v3.15, reached from the event list — it was never
+      // event-scoped, only event-gated.
+      showSettings: screen === 'settings',
+
+      fieldsEditable: !ownerId || ownerId === this.state.deviceId,
+      ownerLabel: curEvent?.ownerDeviceName || '另一台平板',
+
+      // Editing one saved record from Records/browse, rather than filling a new
+      // one. Changes labels, the back button and which fields the customer form
+      // renders, so three sections read it.
+      editing: !!editingRecordId,
+      // quickMode is two steps and always customer → needs, so its labels do not
+      // go through the firstChoice reasoning in the form sections.
+      quick: this.state.quickMode,
+      lastStep: this.state.quickMode ? '2 / 2' : '3 / 3',
+      firstIs: (which) => firstChoice === which,
+
+      // Records are always scoped to the event that is open. Resolved once:
+      // the records table and the record browser both list them.
+      eventRecords: this.eventRecords(currentEventId),
+      recordCols: this.recordListFields(),
+
+      // Field definitions, sorted once. The customer form needs all three when
+      // editing, and the value editor searches all three.
+      custSorted: this.sortedFields('customerFields'),
+      needsSorted: this.sortedFields('needsFields'),
+      companySorted: this.sortedFields('companyFields'),
+      bluePalette: { checkedBg: '#F0F6FF', checkedBorder: '#0055B8', checkedText: '#0055B8' },
+
+      // Which group the admin field list is editing. Falls back to customer so
+      // 新增欄位 has a target even on the records tab.
+      listTarget: showAdminFieldList ? adminTab : 'customer',
+    };
+  }
+
+  // One record's value for one list column, as text. Shared by the records
+  // table and the browse cards, which must never disagree about what a cell says.
+  recordCellText(e, r) {
+    const v = this.resolveFieldValue(r, e.f, e.group);
+    // Ratings render as stars and have no options to look up, so they are
+    // taken first.
+    if (e.f.type === 'rating') { const s = this.ratingStars(v); if (s) return s; }
+    if (Array.isArray(v)) return v.map(x => this.optionLabel(e.f, x)).join(', ');
+    return v == null ? '' : this.optionLabel(e.f, v);
+  }
+
+  // Shell: which screen is showing, the PIN dialog, the update banner, handoff.
+  shellVals(ctx) {
     // Only when the loop was actually used. On the ordinary one-visitor flow
     // this line would be noise on a screen the visitor is looking at; when two
     // or three contacts went in, it is the one confirmation the receptionist
     // gets that they all landed.
     const handoffCount = this.state.flowSiblingIds.length + 1;
-    const showHandoffCount = showHandoff && handoffCount > 1;
-    const handoffCountLabel = `已建立 ${handoffCount} 筆紀錄`;
-    const showAdmin = screen === 'admin';
-    const showBrowse = screen === 'browse';
+    const { showPinDialog, pinValue, pinError } = this.state;
+    return {
+      showEvents: ctx.showEvents, showEventHome: ctx.showEventHome,
+      showCustomerForm: ctx.showCustomerForm, showNeedsForm: ctx.showNeedsForm,
+      showCompanyForm: ctx.showCompanyForm, showHandoff: ctx.showHandoff, showAdmin: ctx.showAdmin,
+      showHandoffCount: ctx.showHandoff && handoffCount > 1,
+      handoffCountLabel: `已建立 ${handoffCount} 筆紀錄`,
+      onHandoffDone: () => this.goHome(),
+      showPinDialog, pinValue, pinError,
+      onClosePinDialog: () => this.setState({ showPinDialog: false, pinValue: '', pinError: false }),
+      onPinInput: (e) => this.setState({ pinValue: e.target.value.replace(/\D/g,'').slice(0,4), pinError: false }),
+      onPinKeyDown: (e) => { if (e.key === 'Enter') this.submitPin(); },
+      onSubmitPin: () => this.submitPin(),
+      // Update banner. Applying reloads the page (via the worker's
+      // controllerchange), which is why it is offered only on the event list.
+      swUpdateReady: this.state.swUpdateReady,
+      swDisabled: !!window.__swDisabled,
+      onApplySwUpdate: () => { if (window.__swApplyUpdate) window.__swApplyUpdate(); },
+      onDismissSwUpdate: () => this.setState({ swUpdateReady: false }),
+      // Toast
+      showToast: this.state.showToast, toastMessage: this.state.toastMessage,
+    };
+  }
 
-    const showAdminFieldList = showAdmin && (adminTab === 'customer' || adminTab === 'needs' || adminTab === 'company');
-    const showAdminRecords = showAdmin && adminTab === 'records';
-    // Its own screen since v3.15, reached from the event list — it was never
-    // event-scoped, only event-gated.
-    const showSettings = screen === 'settings';
-
-    // ===== Sync status line =====
+  // ===== Sync status line =====
+  syncBarVals() {
     // The pending count is what reception actually needs to know: it answers
     // "is anything still only on this tablet?" Time of last success answers
     // "how stale is the server?" Both, or neither is much use.
@@ -6580,18 +6667,16 @@ class Component extends DCLogic {
       : lastAt ? `已同步 · ${lastAt}` + eventNote : '尚未同步';
     const syncColor = this.state.syncStatus === 'error' ? '#B45309'
       : pendingCount ? '#475569' : '#64748B';
+    return {
+      // Sync bar (event list only)
+      showSyncBar: this.syncConfigured(),
+      syncLabel, syncColor,
+      onSyncNow: () => this.syncNow('manual'),
+    };
+  }
 
-    // ===== Event list =====
-    const curEvent = this.currentEvent();
-
-    // ===== Field-definition ownership (v3.15) =====
-    // Definitions sync, and two tablets editing the same set would need merge
-    // rules for a nested structure — one person's new option silently losing to
-    // the other's. Instead one device owns them, so there is nothing to merge.
-    // Records are unaffected: every tablet collects.
-    const ownerId = curEvent?.ownerDeviceId;
-    const fieldsEditable = !ownerId || ownerId === this.state.deviceId;
-    const ownerLabel = curEvent?.ownerDeviceName || '另一台平板';
+  // ===== Event list =====
+  eventListVals(ctx) {
     const mkEventCard = (ev) => {
       const n = this.eventRecords(ev.id).length;
       const ended = ev.status === 'ended';
@@ -6633,8 +6718,54 @@ class Component extends DCLogic {
     };
     const activeEvents = this.liveEvents().filter(e => e.status !== 'ended').map(mkEventCard);
     const endedEvents = this.liveEvents().filter(e => e.status === 'ended').map(mkEventCard);
+    return {
+      activeEvents, endedEvents,
+      hasActiveEvents: activeEvents.length > 0,
+      // Ended events are management material, not something staff should wade
+      // past on the way to today's event, so the whole section only exists once
+      // 活動管理 is unlocked.
+      hasEndedEvents: endedEvents.length > 0 && this.state.eventsManageMode,
+      manageMode: ctx.eventsManageMode, manageLocked: !ctx.eventsManageMode,
+      onUnlockManage: () => this.setState({ showPinDialog: true, pinPurpose: 'manage', pinValue: '', pinError: false }),
+      onLockManage: () => this.setState({ eventsManageMode: false }),
+      onAddEvent: () => this.openEventEditor('add', null),
+    };
+  }
 
-    // ===== Event page (pick who is filling in, and on which day) =====
+  // ===== Event editor (modal) =====
+  eventEditorVals() {
+    const { showEventEditor, eventEditorMode, evName, evStart, evEnd, evError } = this.state;
+    const evStaffRows = this.state.evStaff.map((s, i) => ({
+      en: s.en, zh: s.zh,
+      onEnChange: (e) => { const a = [...this.state.evStaff]; a[i] = { ...a[i], en: e.target.value }; this.setState({ evStaff: a, evError: '' }); },
+      onZhChange: (e) => { const a = [...this.state.evStaff]; a[i] = { ...a[i], zh: e.target.value }; this.setState({ evStaff: a, evError: '' }); },
+      onRemove: () => { const a = [...this.state.evStaff]; a.splice(i, 1); this.setState({ evStaff: a }); },
+    }));
+    // A new event either starts from the built-in defaults or deep-copies
+    // another event's fields — handy when the machine catalog has been
+    // customized and the next show should carry it forward.
+    const evSourceOptions = [
+      { value: 'default', label: '內建預設欄位' },
+      ...this.liveEvents().map(e => ({ value: e.id, label: '複製自：' + e.name })),
+    ];
+    return {
+      showEventEditor, evName, evStart, evEnd, evStaffRows, evSourceOptions, evError,
+      evSource: this.state.evSource,
+      showEvSource: eventEditorMode === 'add',
+      eventEditorTitle: eventEditorMode === 'add' ? '新增活動' : '編輯活動',
+      onEvNameChange: (e) => this.setState({ evName: e.target.value, evError: '' }),
+      onEvStartChange: (e) => this.setState({ evStart: e.target.value, evError: '' }),
+      onEvEndChange: (e) => this.setState({ evEnd: e.target.value, evError: '' }),
+      onEvSourceChange: (e) => this.setState({ evSource: e.target.value }),
+      onAddStaffRow: () => this.setState({ evStaff: [...this.state.evStaff, { en: '', zh: '' }], evError: '' }),
+      onSaveEvent: () => this.saveEvent(),
+      onCloseEventEditor: () => this.setState({ showEventEditor: false }),
+    };
+  }
+
+  // ===== Event page (pick who is filling in, and on which day) =====
+  eventPageVals(ctx) {
+    const { curEvent, sessionGreeters, sessionDate, sessionCustomerStatus } = ctx;
     const evChip = (label, sub, on) => ({
       labelEn: label, labelZh: sub, checked: on,
       bgColor: on ? '#E8F1FC' : '#FFFFFF',
@@ -6672,21 +6803,32 @@ class Component extends DCLogic {
       : '';
     const entryHint = eventEnded ? '此活動已結束，無法填寫新表單'
       : (canStart ? '' : '請先選擇新舊客戶、填單人員與填單日期');
+    return {
+      eventTitle: curEvent?.name ?? '', eventDateLabel: this.dateRangeLabel(curEvent),
+      eventStaffItems, eventDateItems, eventDateMode, eventDateNoChips: !eventDateMode,
+      eventDateValue: sessionDate,
+      onEventDateInput: (e) => this.setState({ sessionDate: e.target.value }),
+      customerStatusItems,
+      canStart, entryDisabled: !canStart, entryHint, showEntryHint: !!entryHint,
+      entryOpacity: canStart ? '1' : '0.45',
+      entryCursor: canStart ? 'pointer' : 'not-allowed',
+      hasSession, sessionBanner,
+      onResetSession: () => this.setState({ sessionGreeters: [], sessionDate: '', sessionCustomerStatus: '' }),
+      onBackToEvents: () => this.backToEvents(),
+      onOpenPinDialog: () => this.setState({ showPinDialog: true, pinPurpose: 'admin', pinValue: '', pinError: false }),
+      onChooseData: () => this.startFlow('data'),
+      onChooseNeeds: () => this.startFlow('needs'),
+      onOpenBrowse: () => this.setState({ showPinDialog: true, pinPurpose: 'browse', pinValue: '', pinError: false }),
+    };
+  }
 
-    const mkTab = (id, label) => ({
-      label, onClick: () => this.setState({ adminTab: id }),
-      color: adminTab === id ? '#0055B8' : '#64748B',
-      borderColor: adminTab === id ? '#0055B8' : 'transparent',
-    });
-    const adminTabs = [
-      mkTab('customer', '客戶資料欄位'), mkTab('needs', '客戶需求欄位'), mkTab('company', '公司背景欄位'),
-      mkTab('records', '資料紀錄'),
-    ];
-
-    // Form labels. Company Profile always sits at step 2; whichever of
-    // customer/needs is firstChoice is step 1 (shows "Next"), the other is
-    // step 3 (shows "Finish").
-    const editing = !!editingRecordId;
+  // ===== Customer info form =====
+  // Form labels. Company Profile always sits at step 2; whichever of
+  // customer/needs is firstChoice is step 1 (shows "Next"), the other is
+  // step 3 (shows "Finish").
+  customerFormVals(ctx) {
+    const { editing, quick, lastStep, firstIs, editingRecordId, firstChoice,
+      custSorted, needsSorted, companySorted, bluePalette } = ctx;
     // Header titles render English over 中文, so they are supplied separately.
     const customerFormTitle = editing ? 'Edit Record' : 'Customer Info';
     const customerFormTitleZh = editing ? '編輯資料' : '客戶資料';
@@ -6694,23 +6836,13 @@ class Component extends DCLogic {
     // the flow" — see undoAddContact.
     const customerBackLabel = editing ? 'Cancel 取消'
       : (this.state.flowSiblingIds.length ? '← Back 返回上一位' : '← Back 返回');
-    // quickMode is two steps and always customer → needs, so its labels do not
-    // go through the firstChoice reasoning above.
-    const quick = this.state.quickMode;
-    // Both the 2-step and 3-step flows read off firstChoice: whichever form
-    // started the flow is step 1 and shows Next; the other is last and shows
-    // Finish. An earlier version hard-coded customer as quickMode's step 1,
-    // which was true only while 快速填單 was the single way in.
-    const lastStep = quick ? '2 / 2' : '3 / 3';
-    const firstIs = (which) => firstChoice === which;
+    // Both the 2-step and 3-step flows read off firstChoice (see renderCtx):
+    // whichever form started the flow is step 1 and shows Next; the other is
+    // last and shows Finish. An earlier version hard-coded customer as
+    // quickMode's step 1, which was true only while 快速填單 was the single way in.
     const customerSubmitLabel = editing ? 'Save 儲存'
       : (firstIs('data') ? 'Next 下一步 →' : 'Finish 完成');
     const customerStepLabel = firstIs('data') ? (quick ? '1 / 2' : '1 / 3') : lastStep;
-    const needsSubmitLabel = firstIs('needs') ? 'Next 下一步 →' : 'Finish 完成';
-    const needsStepLabel = firstIs('needs') ? (quick ? '1 / 2' : '1 / 3') : lastStep;
-    const needsBackLabel = '← Back 返回';
-    const companySubmitLabel = 'Next 下一步 →';
-    const companyStepLabel = '2 / 3';
     const showStepChip = !editing;
     // 增加聯絡人 is a new-visit action: editing one saved record is not a flow,
     // and looping there would silently create records the user never asked for.
@@ -6730,12 +6862,6 @@ class Component extends DCLogic {
     // action moved. The invariant e2e-multi-contact.js guards is that 下一步
     // stays the last button in the stack.
     const showCancelContact = !editing && contactsAdded > 0;
-
-    const bluePalette = { checkedBg: '#F0F6FF', checkedBorder: '#0055B8', checkedText: '#0055B8' };
-
-    const custSorted = this.sortedFields('customerFields');
-    const needsSorted = this.sortedFields('needsFields');
-    const companySorted = this.sortedFields('companyFields');
 
     let customerFormFields = custSorted.map(f => this.mapFormField(f, 'formValues', 'formErrors', bluePalette));
     // Editing from Records shows customer + needs + company fields as one combined form.
@@ -6757,220 +6883,7 @@ class Component extends DCLogic {
            showSummary: false, showInline: true }]
       : [];
 
-    const needsFormFields = needsSorted.map(f => this.mapFormField(f, 'needsValues', 'needsErrors', bluePalette));
-    const companyFormFields = companySorted.map(f => this.mapFormField(f, 'companyValues', 'companyErrors', bluePalette));
-    // Business card capture (on the customer form since v3.3, multiple since v3.16)
-    const cardPhotoItems = this.state.cardPhotos.map((p, i) => ({
-      num: String(i + 1),
-      img: React.createElement('img', { src: p.dataUrl, style: { width: '100%', maxHeight: '320px', objectFit: 'contain', display: 'block' } }),
-      onRetake: (e) => this.handleCardFileSelected(e, p.id),
-      // Two stages, like every other delete in the app. Losing a card photo is
-      // not recoverable — the original went home in someone's pocket.
-      onRemove: () => this.askConfirm({
-        title: '移除名片照片？',
-        message: `即將移除第 ${i + 1} 張名片照片。若此紀錄先前已存檔，儲存後照片也會一併刪除。`,
-        onConfirm: () => this.removeCardPhoto(p.id),
-      }),
-    }));
-    const canAddCardPhoto = this.state.cardPhotos.length < this.MAX_CARD_PHOTOS;
-    // "拍攝或選擇" rather than "拍攝": the file inputs deliberately carry no
-    // `capture` attribute (see the note on handleCardFileSelected), so the album
-    // is a real option and the label should say so.
-    const addCardPhotoLabel = this.state.cardPhotos.length === 0
-      ? 'Add Card 拍攝或選擇名片' : '＋ 再加一張';
-    const cardPhotoHint = this.state.cardPhotos.length === 0;
-
-    // Admin field lists (shared block across the four group tabs)
-    const listTitles = { customer: '客戶資料欄位', needs: '客戶需求欄位', company: '公司背景資料欄位' };
-    const adminListTitle = listTitles[adminTab] || '';
-    const listTarget = showAdminFieldList ? adminTab : 'customer';
-    const listFields = showAdminFieldList ? this.sortedFields(this.storeKeyFor(listTarget)) : [];
-    const adminFields = listFields.map(f => ({
-      nameZh: f.nameZh || f.nameEn, nameEn: f.nameEn, type: this.typeLabel(f.type),
-      required: f.required, isCore: f.isCore||false, allowOther: f.allowOther||false,
-      // Reception fields are configured on the event, not here — no edit, no
-      // delete, and their options come from the event's staff roster.
-      fromEvent: f.source === 'event', canEdit: fieldsEditable && f.source !== 'event',
-      canDelete: fieldsEditable && !f.isCore && f.source !== 'event',
-      hasOptions: !f.source && (f.type === 'select' || f.type === 'checkbox-group' || f.type === 'radio-group'),
-      optionsSummary: (f.options||[]).map(o => o.zh || o.en).join('、') || '（無）',
-      onEdit: () => this.openFieldEditor('edit', listTarget, f),
-      onDelete: () => this.askConfirm({
-        title: '刪除欄位？',
-        message: `即將刪除欄位「${f.nameZh || f.nameEn}」。已蒐集的紀錄中，此欄位的資料將不再顯示於列表與匯出。`,
-        onConfirm: () => this.deleteField(listTarget, f.id),
-      }),
-    }));
-
-    // Records — always scoped to the event that is open.
-    const eventRecords = this.eventRecords(currentEventId);
-    const recordCount = eventRecords.length;
-    const photoCount = eventRecords.filter(r => (r.cardPhotos || []).length).length;
-    const recordStats = `已蒐集 ${recordCount} 筆紀錄，其中 ${photoCount} 筆含名片照片`;
-    const recordCols = this.recordListFields();
-    // # / 時間 / 操作 get fixed widths; the field columns are left unsized so
-    // table-layout: fixed splits the remaining space equally among them —
-    // adding or removing a RECORD_LIST_FIELDS entry reflows on its own.
-    const TIME_COL = 'width: 168px; white-space: nowrap';
-    const recordHeaders = [
-      { label: '#', style: 'width: 56px' },
-      { label: '時間', style: TIME_COL },
-      ...recordCols.map(e => ({ label: e.f.nameZh || e.f.nameEn, style: '' })),
-    ];
-    const displayVal = (e, r) => {
-      const v = this.resolveFieldValue(r, e.f, e.group);
-      // Ratings render as stars and have no options to look up, so they are
-      // taken first.
-      if (e.f.type === 'rating') { const s = this.ratingStars(v); if (s) return s; }
-      if (Array.isArray(v)) return v.map(x => this.optionLabel(e.f, x)).join(', ');
-      return v == null ? '' : this.optionLabel(e.f, v);
-    };
-    const recordRows = eventRecords.map((r,i) => {
-      const cells = [
-        { text: String(i+1), style: '' },
-        { text: new Date(r.timestamp).toLocaleString(), style: TIME_COL },
-        ...recordCols.map(e => ({ text: displayVal(e, r), style: '' })),
-      ];
-      const summaryParts = recordCols.map(e => {
-        const val = displayVal(e, r);
-        return val !== '' && val != null ? ((e.f.nameZh || e.f.nameEn) + '：' + val) : '';
-      }).filter(Boolean);
-      const who = [r.customerFields?.name, r.customerFields?.company].filter(Boolean).join(' / ');
-      const photos = r.cardPhotos || [];
-      return { cells, hasPhoto: photos.length > 0,
-        photoBadge: photos.length > 1 ? ' ×' + photos.length : '',
-        num: String(i+1), time: new Date(r.timestamp).toLocaleString(),
-        summary: summaryParts.join('\n'),
-        onViewPhoto: () => this.setState({ showPhotoLightbox: true, lightboxPhotos: photos }),
-        onEdit: () => this.editRecord(r.id),
-        onDelete: () => this.askConfirm({
-          title: '刪除這筆紀錄？',
-          message: `即將刪除第 ${i+1} 筆紀錄${who ? '（' + who + '）' : ''}，包含其名片照片。`,
-          onConfirm: () => this.deleteRecord(r.id),
-        }) };
-    });
-
-    // Record browser: the same records, minus every destructive or bulk action.
-    // Reception needs to find a visitor they already logged and fix a typo; the
-    // list is short-lived and searched by name, company or who received them.
-    const browseQuery = this.state.browseQuery.trim().toLowerCase();
-    const browseAll = eventRecords.map((r, i) => {
-      const fields = recordCols.map(e => ({
-        label: e.f.nameZh || e.f.nameEn,
-        value: displayVal(e, r),
-      }));
-      return {
-        num: String(i + 1),
-        time: new Date(r.timestamp).toLocaleString(),
-        title: r.customerFields?.name || '(未填姓名)',
-        subtitle: r.customerFields?.company || '',
-        fields,
-        haystack: fields.map(f => f.value).join(' ').toLowerCase(),
-        onEdit: () => this.editRecord(r.id, 'browse'),
-      };
-    });
-    const browseRows = browseQuery
-      ? browseAll.filter(row => row.haystack.includes(browseQuery))
-      : browseAll;
-
-    // Field editor
-    const { showFieldEditor, fieldEditorMode, feNameEn, feNameZh, feType, feRequired, feAllowOther, fePerGroupOther, feEmptyGroups, feOptions: feOpts } = this.state;
-    const feShowOptions = feType === 'select' || feType === 'checkbox-group' || feType === 'radio-group';
-    const feShowAllowOther = feType === 'checkbox-group' || feType === 'radio-group';
-    const feShowPerGroupOther = feType === 'checkbox-group' && feAllowOther;
-    const feOptions = feOpts.map((o,i) => ({
-      en: o.en, zh: o.zh, group: o.group || '',
-      onEnChange: (e) => { const opts = [...this.state.feOptions]; opts[i] = {...opts[i], en: e.target.value}; this.setState({feOptions: opts}); },
-      onZhChange: (e) => { const opts = [...this.state.feOptions]; opts[i] = {...opts[i], zh: e.target.value}; this.setState({feOptions: opts}); },
-      onGroupChange: (e) => { const opts = [...this.state.feOptions]; opts[i] = {...opts[i], group: e.target.value}; this.setState({feOptions: opts}); },
-      onRemove: () => { const opts = [...this.state.feOptions]; opts.splice(i,1); this.setState({feOptions: opts}); },
-    }));
-
-    // Event editor
-    const { showEventEditor, eventEditorMode, evName, evStart, evEnd, evError } = this.state;
-    const evStaffRows = this.state.evStaff.map((s, i) => ({
-      en: s.en, zh: s.zh,
-      onEnChange: (e) => { const a = [...this.state.evStaff]; a[i] = { ...a[i], en: e.target.value }; this.setState({ evStaff: a, evError: '' }); },
-      onZhChange: (e) => { const a = [...this.state.evStaff]; a[i] = { ...a[i], zh: e.target.value }; this.setState({ evStaff: a, evError: '' }); },
-      onRemove: () => { const a = [...this.state.evStaff]; a.splice(i, 1); this.setState({ evStaff: a }); },
-    }));
-    // A new event either starts from the built-in defaults or deep-copies
-    // another event's fields — handy when the machine catalog has been
-    // customized and the next show should carry it forward.
-    const evSourceOptions = [
-      { value: 'default', label: '內建預設欄位' },
-      ...this.liveEvents().map(e => ({ value: e.id, label: '複製自：' + e.name })),
-    ];
-
-    const { confirmOpen, confirmStage, confirmTitle, confirmMessage, confirmTypeToConfirm, confirmTypedValue,
-      showPinDialog, pinValue, pinError } = this.state;
-
     return {
-      showEvents, showEventHome, showCustomerForm, showNeedsForm, showCompanyForm, showHandoff, showAdmin,
-      showHandoffCount, handoffCountLabel,
-      showPinDialog, pinValue, pinError,
-      onClosePinDialog: () => this.setState({ showPinDialog: false, pinValue: '', pinError: false }),
-      onPinInput: (e) => this.setState({ pinValue: e.target.value.replace(/\D/g,'').slice(0,4), pinError: false }),
-      onPinKeyDown: (e) => { if (e.key === 'Enter') this.submitPin(); },
-      onSubmitPin: () => this.submitPin(),
-      // Update banner. Applying reloads the page (via the worker's
-      // controllerchange), which is why it is offered only on the event list.
-      swUpdateReady: this.state.swUpdateReady,
-      swDisabled: !!window.__swDisabled,
-      onApplySwUpdate: () => { if (window.__swApplyUpdate) window.__swApplyUpdate(); },
-      onDismissSwUpdate: () => this.setState({ swUpdateReady: false }),
-      // Event list
-      activeEvents, endedEvents,
-      hasActiveEvents: activeEvents.length > 0,
-      // Ended events are management material, not something staff should wade
-      // past on the way to today's event, so the whole section only exists once
-      // 活動管理 is unlocked.
-      hasEndedEvents: endedEvents.length > 0 && this.state.eventsManageMode,
-      manageMode: eventsManageMode, manageLocked: !eventsManageMode,
-      onUnlockManage: () => this.setState({ showPinDialog: true, pinPurpose: 'manage', pinValue: '', pinError: false }),
-      onLockManage: () => this.setState({ eventsManageMode: false }),
-      onAddEvent: () => this.openEventEditor('add', null),
-      // Event editor
-      showEventEditor, evName, evStart, evEnd, evStaffRows, evSourceOptions, evError,
-      evSource: this.state.evSource,
-      showEvSource: eventEditorMode === 'add',
-      eventEditorTitle: eventEditorMode === 'add' ? '新增活動' : '編輯活動',
-      onEvNameChange: (e) => this.setState({ evName: e.target.value, evError: '' }),
-      onEvStartChange: (e) => this.setState({ evStart: e.target.value, evError: '' }),
-      onEvEndChange: (e) => this.setState({ evEnd: e.target.value, evError: '' }),
-      onEvSourceChange: (e) => this.setState({ evSource: e.target.value }),
-      onAddStaffRow: () => this.setState({ evStaff: [...this.state.evStaff, { en: '', zh: '' }], evError: '' }),
-      onSaveEvent: () => this.saveEvent(),
-      onCloseEventEditor: () => this.setState({ showEventEditor: false }),
-      // Event page
-      eventTitle: curEvent?.name ?? '', eventDateLabel: this.dateRangeLabel(curEvent),
-      eventStaffItems, eventDateItems, eventDateMode, eventDateNoChips: !eventDateMode,
-      eventDateValue: sessionDate,
-      onEventDateInput: (e) => this.setState({ sessionDate: e.target.value }),
-      customerStatusItems,
-      canStart, entryDisabled: !canStart, entryHint, showEntryHint: !!entryHint,
-      entryOpacity: canStart ? '1' : '0.45',
-      entryCursor: canStart ? 'pointer' : 'not-allowed',
-      hasSession, sessionBanner,
-      onResetSession: () => this.setState({ sessionGreeters: [], sessionDate: '', sessionCustomerStatus: '' }),
-      onBackToEvents: () => this.backToEvents(),
-      onOpenPinDialog: () => this.setState({ showPinDialog: true, pinPurpose: 'admin', pinValue: '', pinError: false }),
-      onChooseData: () => this.startFlow('data'),
-      onChooseNeeds: () => this.startFlow('needs'),
-      onOpenBrowse: () => this.setState({ showPinDialog: true, pinPurpose: 'browse', pinValue: '', pinError: false }),
-      // Record browser
-      showBrowse, browseRows,
-      browseQuery: this.state.browseQuery,
-      browseCountLabel: browseQuery
-        ? `符合 ${browseRows.length} 筆（共 ${browseAll.length} 筆）`
-        : `共 ${browseAll.length} 筆`,
-      browseEmpty: browseRows.length === 0,
-      browseEmptyLabel: browseAll.length === 0 ? '這個活動還沒有任何紀錄' : '沒有符合的紀錄',
-      onBrowseQuery: (e) => this.setState({ browseQuery: e.target.value }),
-      onClearBrowseQuery: () => this.setState({ browseQuery: '' }),
-      hasBrowseQuery: !!browseQuery,
-      onExitBrowse: () => this.setState({ screen: 'eventHome', browseQuery: '' }),
-      // Customer info form
       customerFormTitle, customerFormTitleZh, customerBackLabel, customerSubmitLabel, customerStepLabel, showStepChip,
       showAddContact, showContactChip, contactChipLabel, showCancelContact,
       onAddContact: () => this.addContact(),
@@ -6999,8 +6912,17 @@ class Component extends DCLogic {
         else if (firstChoice === 'data') { this.goHome(); }
         else { this.setState({ screen: this.state.quickMode ? 'needsForm' : 'companyForm' }); }
       },
-      // Needs form
-      needsFormFields, needsSubmitLabel, needsStepLabel, needsBackLabel,
+    };
+  }
+
+  // ===== Needs form =====
+  needsFormVals(ctx) {
+    const { quick, lastStep, firstIs, firstChoice, needsSorted, bluePalette } = ctx;
+    return {
+      needsFormFields: needsSorted.map(f => this.mapFormField(f, 'needsValues', 'needsErrors', bluePalette)),
+      needsSubmitLabel: firstIs('needs') ? 'Next 下一步 →' : 'Finish 完成',
+      needsStepLabel: firstIs('needs') ? (quick ? '1 / 2' : '1 / 3') : lastStep,
+      needsBackLabel: '← Back 返回',
       onNeedsSubmit: () => this.submitNeedsForm(),
       onNeedsBack: () => {
         // Step 1 goes home; step 2 goes back to whatever preceded it, which in
@@ -7008,27 +6930,136 @@ class Component extends DCLogic {
         if (firstChoice === 'needs') { this.goHome(); }
         else { this.setState({ screen: this.state.quickMode ? 'customerForm' : 'companyForm' }); }
       },
-      // Company Profile form (always step 2; back goes to whichever of
-      // customer/needs was completed first)
-      companyFormFields, companySubmitLabel, companyStepLabel,
+    };
+  }
+
+  // ===== Company Profile form =====
+  // Always step 2; back goes to whichever of customer/needs was completed first.
+  companyFormVals(ctx) {
+    const { firstChoice, companySorted, bluePalette } = ctx;
+    return {
+      companyFormFields: companySorted.map(f => this.mapFormField(f, 'companyValues', 'companyErrors', bluePalette)),
+      companySubmitLabel: 'Next 下一步 →',
+      companyStepLabel: '2 / 3',
       onCompanySubmit: () => this.submitCompanyForm(),
       onCompanyBack: () => this.setState({ screen: firstChoice === 'data' ? 'customerForm' : 'needsForm' }),
-      // Handoff
-      onHandoffDone: () => this.goHome(),
-      // Business card capture (customer form)
-      cardPhotoItems, canAddCardPhoto, addCardPhotoLabel, cardPhotoHint,
+    };
+  }
+
+  // ===== Business card capture (customer form) =====
+  // On the customer form since v3.3, multiple since v3.16.
+  cardPhotoVals() {
+    const cardPhotoItems = this.state.cardPhotos.map((p, i) => ({
+      num: String(i + 1),
+      img: React.createElement('img', { src: p.dataUrl, style: { width: '100%', maxHeight: '320px', objectFit: 'contain', display: 'block' } }),
+      onRetake: (e) => this.handleCardFileSelected(e, p.id),
+      // Two stages, like every other delete in the app. Losing a card photo is
+      // not recoverable — the original went home in someone's pocket.
+      onRemove: () => this.askConfirm({
+        title: '移除名片照片？',
+        message: `即將移除第 ${i + 1} 張名片照片。若此紀錄先前已存檔，儲存後照片也會一併刪除。`,
+        onConfirm: () => this.removeCardPhoto(p.id),
+      }),
+    }));
+    const canAddCardPhoto = this.state.cardPhotos.length < this.MAX_CARD_PHOTOS;
+    // "拍攝或選擇" rather than "拍攝": the file inputs deliberately carry no
+    // `capture` attribute (see the note on handleCardFileSelected), so the album
+    // is a real option and the label should say so.
+    const addCardPhotoLabel = this.state.cardPhotos.length === 0
+      ? 'Add Card 拍攝或選擇名片' : '＋ 再加一張';
+    return {
+      cardPhotoItems, addCardPhotoLabel,
+      canAddCardPhoto: this.state.cardPhotos.length < this.MAX_CARD_PHOTOS,
+      cardPhotoHint: this.state.cardPhotos.length === 0,
       maxCardPhotos: String(this.MAX_CARD_PHOTOS),
       onCardFileSelected: (e) => this.handleCardFileSelected(e),
-      // Admin
-      adminTabs, showAdminFieldList, showAdminRecords, showSettings,
-      fieldsEditable, fieldsReadOnly: !fieldsEditable, ownerLabel,
+    };
+  }
+
+  // ===== Admin: tabs and the field list (shared across the group tabs) =====
+  adminVals(ctx) {
+    const { adminTab, curEvent, fieldsEditable, showAdminFieldList, listTarget } = ctx;
+    const mkTab = (id, label) => ({
+      label, onClick: () => this.setState({ adminTab: id }),
+      color: adminTab === id ? '#0055B8' : '#64748B',
+      borderColor: adminTab === id ? '#0055B8' : 'transparent',
+    });
+    const adminTabs = [
+      mkTab('customer', '客戶資料欄位'), mkTab('needs', '客戶需求欄位'), mkTab('company', '公司背景欄位'),
+      mkTab('records', '資料紀錄'),
+    ];
+    const listTitles = { customer: '客戶資料欄位', needs: '客戶需求欄位', company: '公司背景資料欄位' };
+    const listFields = showAdminFieldList ? this.sortedFields(this.storeKeyFor(listTarget)) : [];
+    const adminFields = listFields.map(f => ({
+      nameZh: f.nameZh || f.nameEn, nameEn: f.nameEn, type: this.typeLabel(f.type),
+      required: f.required, isCore: f.isCore||false, allowOther: f.allowOther||false,
+      // Reception fields are configured on the event, not here — no edit, no
+      // delete, and their options come from the event's staff roster.
+      fromEvent: f.source === 'event', canEdit: fieldsEditable && f.source !== 'event',
+      canDelete: fieldsEditable && !f.isCore && f.source !== 'event',
+      hasOptions: !f.source && (f.type === 'select' || f.type === 'checkbox-group' || f.type === 'radio-group'),
+      optionsSummary: (f.options||[]).map(o => o.zh || o.en).join('、') || '（無）',
+      onEdit: () => this.openFieldEditor('edit', listTarget, f),
+      onDelete: () => this.askConfirm({
+        title: '刪除欄位？',
+        message: `即將刪除欄位「${f.nameZh || f.nameEn}」。已蒐集的紀錄中，此欄位的資料將不再顯示於列表與匯出。`,
+        onConfirm: () => this.deleteField(listTarget, f.id),
+      }),
+    }));
+    return {
+      adminTabs,
+      showAdminFieldList, showAdminRecords: ctx.showAdminRecords, showSettings: ctx.showSettings,
+      fieldsEditable, fieldsReadOnly: !fieldsEditable, ownerLabel: ctx.ownerLabel,
       onExitSettings: () => this.setState({ screen: 'events', eventsManageMode: true }),
       onOpenSettings: () => this.setState({ screen: 'settings' }),
-      adminListTitle, adminFields, adminEventName: curEvent?.name ?? '',
+      adminListTitle: listTitles[adminTab] || '',
+      adminFields, adminEventName: curEvent?.name ?? '',
       onExitAdmin: () => this.setState({ ...this.flowResetPatch(), screen: 'eventHome' }),
       onAddField: () => this.openFieldEditor('add', listTarget),
-      // Records
-      recordCount, recordStats, hasRecords: recordCount > 0, noRecords: recordCount === 0,
+    };
+  }
+
+  // ===== Records table (admin) =====
+  recordTableVals(ctx) {
+    const { curEvent, eventRecords, recordCols } = ctx;
+    const recordCount = eventRecords.length;
+    const photoCount = eventRecords.filter(r => (r.cardPhotos || []).length).length;
+    // # / 時間 / 操作 get fixed widths; the field columns are left unsized so
+    // table-layout: fixed splits the remaining space equally among them —
+    // adding or removing a RECORD_LIST_FIELDS entry reflows on its own.
+    const TIME_COL = 'width: 168px; white-space: nowrap';
+    const recordHeaders = [
+      { label: '#', style: 'width: 56px' },
+      { label: '時間', style: TIME_COL },
+      ...recordCols.map(e => ({ label: e.f.nameZh || e.f.nameEn, style: '' })),
+    ];
+    const recordRows = eventRecords.map((r,i) => {
+      const cells = [
+        { text: String(i+1), style: '' },
+        { text: new Date(r.timestamp).toLocaleString(), style: TIME_COL },
+        ...recordCols.map(e => ({ text: this.recordCellText(e, r), style: '' })),
+      ];
+      const summaryParts = recordCols.map(e => {
+        const val = this.recordCellText(e, r);
+        return val !== '' && val != null ? ((e.f.nameZh || e.f.nameEn) + '：' + val) : '';
+      }).filter(Boolean);
+      const who = [r.customerFields?.name, r.customerFields?.company].filter(Boolean).join(' / ');
+      const photos = r.cardPhotos || [];
+      return { cells, hasPhoto: photos.length > 0,
+        photoBadge: photos.length > 1 ? ' ×' + photos.length : '',
+        num: String(i+1), time: new Date(r.timestamp).toLocaleString(),
+        summary: summaryParts.join('\n'),
+        onViewPhoto: () => this.setState({ showPhotoLightbox: true, lightboxPhotos: photos }),
+        onEdit: () => this.editRecord(r.id),
+        onDelete: () => this.askConfirm({
+          title: '刪除這筆紀錄？',
+          message: `即將刪除第 ${i+1} 筆紀錄${who ? '（' + who + '）' : ''}，包含其名片照片。`,
+          onConfirm: () => this.deleteRecord(r.id),
+        }) };
+    });
+    return {
+      recordCount, hasRecords: recordCount > 0, noRecords: recordCount === 0,
+      recordStats: `已蒐集 ${recordCount} 筆紀錄，其中 ${photoCount} 筆含名片照片`,
       recordHeaders, recordRows,
       onExportData: () => this.exportData(),
       exporting: this.state.exporting,
@@ -7040,25 +7071,63 @@ class Component extends DCLogic {
         typeToConfirm: true,
         onConfirm: () => this.clearAllRecords(),
       }),
-      // Settings
-      deviceName: this.state.deviceName, adminPin: this.state.pin, gdprEn: this.state.gdprEn, gdprZh: this.state.gdprZh,
-      onDeviceNameChange: (e) => this.setState({ deviceName: e.target.value }),
-      onPinChange: (e) => this.setState({ pin: e.target.value.replace(/\D/g,'').slice(0,4) }),
-      onGdprEnChange: (e) => this.setState({ gdprEn: e.target.value }),
-      onGdprZhChange: (e) => this.setState({ gdprZh: e.target.value }),
-      onSaveSettings: () => this.saveSettings(),
-      syncUrl: this.state.syncUrl, syncToken: this.state.syncToken,
-      syncTestResult: this.state.syncTestResult,
-      onSyncUrlChange: (e) => this.setState({ syncUrl: e.target.value, syncTestResult: '',
-        syncEventsUnsupported: false }),
-      onSyncTokenChange: (e) => this.setState({ syncToken: e.target.value, syncTestResult: '',
-        syncEventsUnsupported: false }),
-      onTestSync: () => this.testSyncConnection(),
-      // Sync bar (event list only)
-      showSyncBar: this.syncConfigured(),
-      syncLabel, syncColor,
-      onSyncNow: () => this.syncNow('manual'),
-      // Field editor
+    };
+  }
+
+  // ===== Record browser =====
+  // The same records, minus every destructive or bulk action. Reception needs
+  // to find a visitor they already logged and fix a typo; the list is
+  // short-lived and searched by name, company or who received them.
+  browseVals(ctx) {
+    const { eventRecords, recordCols } = ctx;
+    const browseQuery = this.state.browseQuery.trim().toLowerCase();
+    const browseAll = eventRecords.map((r, i) => {
+      const fields = recordCols.map(e => ({
+        label: e.f.nameZh || e.f.nameEn,
+        value: this.recordCellText(e, r),
+      }));
+      return {
+        num: String(i + 1),
+        time: new Date(r.timestamp).toLocaleString(),
+        title: r.customerFields?.name || '(未填姓名)',
+        subtitle: r.customerFields?.company || '',
+        fields,
+        haystack: fields.map(f => f.value).join(' ').toLowerCase(),
+        onEdit: () => this.editRecord(r.id, 'browse'),
+      };
+    });
+    const browseRows = browseQuery
+      ? browseAll.filter(row => row.haystack.includes(browseQuery))
+      : browseAll;
+    return {
+      showBrowse: ctx.showBrowse, browseRows,
+      browseQuery: this.state.browseQuery,
+      browseCountLabel: browseQuery
+        ? `符合 ${browseRows.length} 筆（共 ${browseAll.length} 筆）`
+        : `共 ${browseAll.length} 筆`,
+      browseEmpty: browseRows.length === 0,
+      browseEmptyLabel: browseAll.length === 0 ? '這個活動還沒有任何紀錄' : '沒有符合的紀錄',
+      onBrowseQuery: (e) => this.setState({ browseQuery: e.target.value }),
+      onClearBrowseQuery: () => this.setState({ browseQuery: '' }),
+      hasBrowseQuery: !!browseQuery,
+      onExitBrowse: () => this.setState({ screen: 'eventHome', browseQuery: '' }),
+    };
+  }
+
+  // ===== Field editor (modal) =====
+  fieldEditorVals() {
+    const { showFieldEditor, fieldEditorMode, feNameEn, feNameZh, feType, feRequired, feAllowOther, fePerGroupOther, feEmptyGroups, feOptions: feOpts } = this.state;
+    const feShowOptions = feType === 'select' || feType === 'checkbox-group' || feType === 'radio-group';
+    const feShowAllowOther = feType === 'checkbox-group' || feType === 'radio-group';
+    const feShowPerGroupOther = feType === 'checkbox-group' && feAllowOther;
+    const feOptions = feOpts.map((o,i) => ({
+      en: o.en, zh: o.zh, group: o.group || '',
+      onEnChange: (e) => { const opts = [...this.state.feOptions]; opts[i] = {...opts[i], en: e.target.value}; this.setState({feOptions: opts}); },
+      onZhChange: (e) => { const opts = [...this.state.feOptions]; opts[i] = {...opts[i], zh: e.target.value}; this.setState({feOptions: opts}); },
+      onGroupChange: (e) => { const opts = [...this.state.feOptions]; opts[i] = {...opts[i], group: e.target.value}; this.setState({feOptions: opts}); },
+      onRemove: () => { const opts = [...this.state.feOptions]; opts.splice(i,1); this.setState({feOptions: opts}); },
+    }));
+    return {
       showFieldEditor, fieldEditorTitle: fieldEditorMode === 'add' ? '新增欄位' : '編輯欄位',
       feNameEn, feNameZh, feType, feRequired, feAllowOther, feShowOptions, feShowAllowOther, feOptions,
       fePerGroupOther, feEmptyGroups, feShowPerGroupOther,
@@ -7072,6 +7141,33 @@ class Component extends DCLogic {
       onFeAddOption: () => this.setState({ feOptions: [...this.state.feOptions, { en: '', zh: '', group: '' }] }),
       onCloseFieldEditor: () => this.setState({ showFieldEditor: false }),
       onSaveField: () => this.saveField(),
+    };
+  }
+
+  // ===== System settings (its own screen since v3.15) =====
+  settingsVals() {
+    return {
+      deviceName: this.state.deviceName, adminPin: this.state.pin, gdprEn: this.state.gdprEn, gdprZh: this.state.gdprZh,
+      onDeviceNameChange: (e) => this.setState({ deviceName: e.target.value }),
+      onPinChange: (e) => this.setState({ pin: e.target.value.replace(/\D/g,'').slice(0,4) }),
+      onGdprEnChange: (e) => this.setState({ gdprEn: e.target.value }),
+      onGdprZhChange: (e) => this.setState({ gdprZh: e.target.value }),
+      onSaveSettings: () => this.saveSettings(),
+      syncUrl: this.state.syncUrl, syncToken: this.state.syncToken,
+      syncTestResult: this.state.syncTestResult,
+      onSyncUrlChange: (e) => this.setState({ syncUrl: e.target.value, syncTestResult: '',
+        syncEventsUnsupported: false }),
+      onSyncTokenChange: (e) => this.setState({ syncToken: e.target.value, syncTestResult: '',
+        syncEventsUnsupported: false }),
+      onTestSync: () => this.testSyncConnection(),
+    };
+  }
+
+  // ===== Two-stage delete confirmation, and the photo lightbox =====
+  confirmVals() {
+    const { confirmOpen, confirmStage, confirmTitle, confirmMessage,
+      confirmTypeToConfirm, confirmTypedValue } = this.state;
+    return {
       // Two-stage delete confirmation
       confirmOpen, confirmTitle, confirmActionLabel: this.state.confirmActionLabel,
       confirmMessage: confirmStage === 1 ? confirmMessage : '此動作無法復原。確定要刪除嗎？',
@@ -7101,8 +7197,33 @@ class Component extends DCLogic {
           { key: p.id || i, src: p.dataUrl,
             style: { maxWidth: '90vw', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px' } }))),
       onClosePhotoLightbox: () => this.setState({ showPhotoLightbox: false }),
-      // Toast
-      showToast: this.state.showToast, toastMessage: this.state.toastMessage,
+    };
+  }
+
+  // Every binding the template reads, assembled from the sections above.
+  //
+  // dc-runtime spreads this flat over the template (see the render() call in
+  // the runtime), so the sections must not collide — each key is produced by
+  // exactly one of them. Adding a screen means adding a method and one line
+  // here; before v3.16.5 it meant another 40 lines in a 579-line method.
+  renderVals() {
+    const ctx = this.renderCtx();
+    return {
+      ...this.shellVals(ctx),
+      ...this.syncBarVals(),
+      ...this.eventListVals(ctx),
+      ...this.eventEditorVals(),
+      ...this.eventPageVals(ctx),
+      ...this.customerFormVals(ctx),
+      ...this.needsFormVals(ctx),
+      ...this.companyFormVals(ctx),
+      ...this.cardPhotoVals(),
+      ...this.adminVals(ctx),
+      ...this.recordTableVals(ctx),
+      ...this.browseVals(ctx),
+      ...this.settingsVals(),
+      ...this.fieldEditorVals(),
+      ...this.confirmVals(),
     };
   }
 }

@@ -11,6 +11,35 @@
 
 ---
 
+## v3.16.5 更新重點 — 拆分 `renderVals()`（#12）
+
+**純內部重構，畫面與資料一個字都沒變。** 唯一對使用者可見的差別是版本號。
+
+`renderVals()` 是自有程式碼裡最長的方法。開 [#12](https://github.com/art20217/exhibition_form/issues/12) 時（v3.8）是 367 行，到 v3.16.4 已經 **579 行**——issue 說的「每加一個畫面就再長一截」八個月後應驗了。
+
+拆成 `renderCtx()` 加 **15 個分段方法**，`renderVals()` 收斂成 **20 行的組合器**：
+
+```js
+renderVals() {
+  const ctx = this.renderCtx();
+  return { ...this.shellVals(ctx), ...this.eventListVals(ctx), … };
+}
+```
+
+關鍵在於**回傳物件跟著一起拆**。原本方法尾端那個扁平的 return 佔了 198 行、將近三分之一；只把計算搬出去、return 留一大坨，下一個畫面照樣讓它長回來。現在每個分段自己回傳那一塊繫結，**新增一個畫面＝新增一個方法加一行**。
+
+`renderCtx()` 收的是跨段共用的那一小把值（畫面旗標、`curEvent`、欄位擁有權、`editing`、步驟標籤），順帶把 `eventRecords()` 與三組 `sortedFields()` 各算一次——先前紀錄表格與瀏覽頁會各走一遍。另外把記錄列的取值抽成 `recordCellText()`，這兩個畫面從此不可能對同一格顯示什麼有分歧。
+
+### 新增 `tests/e2e-render-vals.js`
+
+這次重構只有一種失敗方式：**某個分段不再回傳某個鍵**。模板拿到 `undefined`，不會拋錯、不會有 console error，只是某顆按鈕沒有文字。既有的 32 支套件沒有一支擋得住。
+
+所以新增一支：走訪 15 個畫面，把 **213 個繫結的鍵與型別**存成 `tests/render-vals.json` 比對。重構前後的快照**逐字相同**，這是這一版正確性的主要依據。
+
+只比型別不比值——值本來就每次都不一樣（時間戳、生成的 id），而鍵從 `function` 變成 `undefined` 一定是 bug。日後真的新增繫結時以 `UPDATE_RENDER_VALS=1` 重跑並一併提交 fixture，是**刻意的動作**而不是漏網。
+
+> 負面驗證：拿掉 `needsBackLabel` 一行 → 15 個畫面全部報「少了繫結 needsBackLabel」。
+
 ## v3.16.4 更新重點 — 狀態列不再報照片張數
 
 實機驗證全數通過之後的一項收斂。
