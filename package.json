@@ -1,6 +1,6 @@
 {
   "name": "exhibition-form",
-  "version": "3.16.3",
+  "version": "3.16.6",
   "private": true,
   "description": "離線展覽會談紀錄表 — 單一 HTML 檔案，測試以 Playwright 驅動 headless Chromium",
   "scripts": {
