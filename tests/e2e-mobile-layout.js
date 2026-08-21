@@ -161,6 +161,54 @@ const FIT_PROBE = () => {
     await H.openAdmin(page);
     await page.waitForTimeout(400);
     await check('後台欄位');
+
+    // Field editor. Its option rows are three inputs plus a delete button, and
+    // `flex: 1` on an <input> is inert — min-width:auto resolves to the input's
+    // intrinsic ~198px, so before v3.17.1 the row was 538px wide at EVERY
+    // viewport and the modal scrolled sideways even at 1280. Both an option
+    // type that shows 分類 (checkbox-group) and one that does not are checked,
+    // because they take different paths through the row.
+    for (const [group, type] of [['company', 'checkbox-group'], ['needs', 'radio-group']]) {
+      const opened = await page.evaluate(([g, t]) => {
+        const app = window.__app;
+        const store = g === 'needs' ? 'needsFields' : 'companyFields';
+        const f = app.sortedFields(store).find(x => x.type === t && (x.options || []).length > 2);
+        if (!f) return false;
+        app.openFieldEditor('edit', g, f);
+        return true;
+      }, [group, type]);
+      if (!opened) continue;
+      await page.waitForTimeout(500);
+      const row = await page.evaluate(() => {
+        const inp = document.querySelector('input[placeholder="英文"]');
+        if (!inp) return null;
+        const r = inp.parentElement;
+        let overflow = 0;
+        for (let n = r; n && n !== document.body; n = n.parentElement) {
+          if (n.scrollWidth > n.clientWidth + 1) { overflow = n.scrollWidth - n.clientWidth; break; }
+        }
+        return {
+          overflow,
+          en: Math.round(inp.getBoundingClientRect().width),
+          groupShown: !!document.querySelector('input[placeholder="例如 Europe"]'),
+        };
+      });
+      assert(row !== null, `${label} / 欄位編輯器（${type}）：選項列存在`);
+      if (row) {
+        assert(row.overflow === 0,
+          `${label} / 欄位編輯器（${type}）：彈窗不需橫向捲動` + (row.overflow ? ` — 溢出 ${row.overflow}px` : ''));
+        // 分類 is only read by mapFormField inside its isCheckboxGroup branch,
+        // so anywhere else it is dead width on every row.
+        assert(row.groupShown === (type === 'checkbox-group'),
+          `${label} / 欄位編輯器（${type}）：分類欄` + (type === 'checkbox-group' ? '顯示' : '隱藏'));
+        // Guards the fix rather than just the symptom: hiding 分類 alone would
+        // stop the overflow while leaving the inputs unusably narrow.
+        assert(row.en >= 60, `${label} / 欄位編輯器（${type}）：英文輸入框可用寬度 ${row.en}px ≥ 60`);
+      }
+      await page.evaluate(() => window.__app.setState({ showFieldEditor: false }));
+      await page.waitForTimeout(250);
+    }
+
     await page.getByRole('button', { name: '資料紀錄' }).first().click();
     await page.waitForTimeout(700);
     await check('後台紀錄');
