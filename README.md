@@ -14,6 +14,11 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 
 ## 這一版有什麼新東西
 
+**v3.17.0** — 觸控目標補到 44px。頁首返回鈕原本 34px、活動卡片的動作鈕（含刪除）36px，
+**在每個寬度都是**，包括展場平板橫向實際在用的 1280px。規則綁在 `pointer: coarse` 而非
+螢幕寬度，所以是「手指就放大、滑鼠維持原樣」，不會把平板誤判成桌機。新增
+`tests/e2e-mobile-layout.js`，六個寬度以觸控模式走完整流程。
+
 **v3.16.6** — 內部重構，資料沒有變化：遷移鏈改為一張依序執行的表格，每步各自帶旗標與
 說明，旗標統一由驅動器在該步完成後才寫入。五支遷移測試全綠且未修改任何斷言。
 
@@ -100,7 +105,7 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 | 照片處理 | Canvas API 壓縮後以 Base64 存入 IndexedDB |
 | 匯出 | 內建 XLSX 生成 + ZIP 打包（ExportLib，inline 於 HTML 中） |
 | 拖曳排序 | Pointer Events 自製實作（相容 iPad Safari 觸控，不依賴 HTML5 Drag & Drop） |
-| 螢幕適配 | 響應式 CSS，`@media (max-width: 768px)` 斷點，支援 `safe-area-inset` 與 `100dvh` |
+| 螢幕適配 | 響應式 CSS，`@media (max-width: 768px)` 斷點，支援 `safe-area-inset` 與 `100dvh`；觸控目標另以 `@media (pointer: coarse)` 加大到 44px（綁輸入方式而非螢幕寬度，展場平板橫向 1280px 也算觸控） |
 | 離線能力 | 完全離線，所有依賴皆已內嵌，不需任何網路連線。v3.7.0 起另有 Service Worker 快取應用外殼，可安裝為主畫面 App |
 | 瀏覽器相容 | iPad Safari 16+、Chrome Android 100+、主流手機瀏覽器 |
 
@@ -121,7 +126,7 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 ```bash
 npm ci
 npx playwright-core install chromium   # 首次執行才需要
-npm test                               # 32 支套件，約 9 分鐘
+npm test                               # 34 支套件，約 11 分鐘
 npm test -- pin-mobile events          # 只跑名稱含這些字串的套件
 ```
 

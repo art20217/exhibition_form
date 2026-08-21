@@ -101,6 +101,28 @@
          of room — the icon alone still reads, a squeezed event title does not. */
       [data-gear-label] { display: none; }
     }
+    /* Thumb-sized controls wherever the input is a finger. Apple's HIG and
+       Material both put the minimum tap target at 44px; measured across the
+       screens, the header back buttons were 34px, the event-card actions
+       (including 刪除) 36px, and one submit 32px.
+
+       Keyed on `pointer: coarse`, not on width. The venue device is an iPad —
+       touch at 1280 landscape just as much as at 820 portrait — so a width
+       breakpoint would have left the actual hardware with 34px targets while
+       "fixing" phones nobody uses at the show. It also leaves mouse-driven
+       desktop geometry alone, which is what the existing 1280 layout suites
+       measure.
+
+       min-height rather than height: it beats a smaller inline `height` without
+       overriding a larger one, so nothing already comfortable shrinks. Option
+       chips and form buttons set their own larger sizes and are unaffected.
+       File inputs are hidden inside styled labels, so the label is the real
+       target and is the thing sized here. */
+    @media (pointer: coarse) {
+      button, select, [role="button"], input[type="submit"], label:has(> input[type="checkbox"]) {
+        min-height: 44px;
+      }
+    }
     @media (max-width: 768px) {
       select {
         font-size: 16px !important;
@@ -2419,7 +2441,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">
-            v3.16.6 — Offline Exhibition Form
+            v3.17.0 — Offline Exhibition Form
             <sc-if value="{{ swDisabled }}">
               <span data-sw-disabled="" style="display: block; margin-top: 4px; color: #B45309">離線快取已停用，網址加上 ?sw=on 可重新啟用</span>
             </sc-if>
