@@ -14,6 +14,12 @@ GitHub Pages：`https://art20217.github.io/exhibition_form/`
 
 ## 這一版有什麼新東西
 
+**v3.18.0** — 互動質感一輪，依 [emilkowalski/skills](https://github.com/emilkowalski/skills)
+的設計工程準則。最重要的一項是缺陷不是品味：**94 個 hover 狀態沒有指標閘門，展場 iPad
+點過的按鈕會卡在 hover**——修在 dc-runtime 的 `createPseudoSheet()` 一處。另外拿掉 19 處
+`transition: all`、換自訂 easing 曲線、按鈕加按壓回饋、彈窗從 `scale(0.95)` 進場、
+補 `prefers-reduced-motion`；圓角從八種收成五種，卡片與彈窗加上淡陰影。
+
 **v3.17.1** — 欄位編輯器的選項列不再需要橫向捲動。成因是 `flex: 1` 對 `<input>` 無效
 （`min-width: auto` 解析成固有寬度約 198px），所以列寬永遠 538px、**每個寬度都溢出**，
 桌機 1280 也一樣。順帶把「分類」欄改成只在多選欄位顯示——它在其他型別完全沒有作用。

@@ -11,6 +11,60 @@
 
 ---
 
+## v3.18.0 更新重點 — 互動質感（依 emilkowalski/skills 的設計工程準則）
+
+拿 [emilkowalski/skills](https://github.com/emilkowalski/skills) 的 `emil-design-eng`
+與 `apple-design` 兩份檢查表對 `index.html` 稽核，逐項修。**其中一項不是品味問題，是
+展場硬體上的實際缺陷。**
+
+### 展場 iPad 上，按過的按鈕會卡在 hover 狀態
+
+模板有 **94 個 `style-hover` 屬性**，dc-runtime 把它們編成真正的 `.scpN:hover{…}`
+規則。而**觸控裝置點下去會觸發 hover，然後把元素留在那個狀態**，直到點了別處為止。
+平板上的每一顆按鈕用過之後都亮著。
+
+修在 `createPseudoSheet()` 一處——hover 規則包進 `@media (hover: hover) and (pointer: fine)`：
+
+```js
+const rule = pseudo === "hover"
+  ? "@media (hover: hover) and (pointer: fine){" + sel + "{" + css + "}}"
+  : sel + "{" + css + "}";
+```
+
+一次修好 94 個。逐一改屬性也做得到，但下一個 `style-hover` 就會忘記。
+
+### 其餘檢查表項目
+
+| 修正前 | 修正後 | 為什麼 |
+| --- | --- | --- |
+| `transition: all 0.15s`（19 處） | 指定 `background-color` / `border-color` / `color` / `transform` | `all` 會把版面屬性也一起動畫 |
+| 內建 `ease` | `--ease-out: cubic-bezier(0.23, 1, 0.32, 1)` | 內建曲線太弱，讀不出「刻意」 |
+| 按鈕沒有按壓回饋 | `button:active { transform: scale(0.97) }` | 平板沒有游標，沒有回饋就不知道點到了沒 |
+| 彈窗只淡入 | `dcEnter`：`scale(0.95)` ＋ opacity，`ease-out` | 現實中沒有東西是無中生有的 |
+| 沒有 `prefers-reduced-motion` | 保留透明度、拿掉位移 | 減少動態不等於零動態 |
+
+**選項膠囊刻意排除在按壓縮放之外**（`data-status-picker` / `staff` / `date`）——那是
+選擇不是動作，本來就用顏色回應，一整排膠囊縮放看起來像網格在抽動。
+
+**彈窗維持 `transform-origin: center`。** 準則說 popover 要從觸發點展開，但**modal 是例外**：
+它不錨定在任何觸發元件上。
+
+### 視覺：圓角從八種收成五種
+
+累積下來有 4/6/8/10/12/14/16/999 八種圓角，背後沒有規則。合併相近的（4→6、8→10、14→16）
+之後剩五種，每一種有自己的用途。另外給活動卡片與彈窗面板加上很淡的雙層陰影——單一
+1px 邊框讀起來像畫出來的方框，陰影才讓它像浮在頁面上的一個面。
+
+### 新增 `tests/e2e-motion.js`
+
+靜態檢查（無 `transition: all`、有自訂曲線、無 `ease-in`、有 reduced-motion、
+彈窗從 0.95 起）加上兩種指標模式的實測。
+
+其中兩條是防假性通過的：先斷言**找得到 hover 規則**（否則「全部有閘門」在零條規則時
+會是真的），再斷言**閘門在該情境下的成立與否符合預期**——觸控要不成立、桌機要成立。
+
+> **負面驗證**：拿掉閘門 → 兩種模式都報 `0/25`；把一處改回 `transition: all` → 靜態檢查報紅。
+
 ## v3.17.1 更新重點 — 欄位編輯器不再需要橫向捲動
 
 回報是「手機上編輯欄位時彈窗要橫向捲」。量下來**不只手機**——**每一個寬度都溢出，包括

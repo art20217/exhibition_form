@@ -54,6 +54,14 @@
       --fs-body: 1rem;      /* 內文、輸入框、選項英文行 (16px) */
       --fs-sm:   0.875rem;  /* 次要文字 (14px) */
       --fs-xs:   0.75rem;   /* 徽章、步驟膠囊 (12px) */
+      /* Motion. The built-in CSS easings are too weak to read as intentional;
+         these are the stronger variants. ease-out for anything entering or
+         responding to a press — it starts fast, which is the moment the user
+         is watching most closely. ease-in-out only for something moving on
+         screen. ease-in is deliberately absent: it delays the initial
+         movement, which is exactly what makes an interface feel sluggish. */
+      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+      --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
       /* Single content width for every admin tab, so the tab bar and all six
          panels share one left edge instead of each choosing its own. */
       --admin-w: 900px;
@@ -101,6 +109,49 @@
          of room — the icon alone still reads, a squeezed event title does not. */
       [data-gear-label] { display: none; }
     }
+    /* Press feedback. A button that does not react to the press feels like the
+       interface did not hear you — and on a tablet there is no cursor to
+       confirm the tap landed. scale(0.97) is deliberately subtle; the scale
+       also takes the label and icon with it, which is what sells it.
+       100ms, ease-out: feedback must be immediate, so the fast part of the
+       curve has to be at the start.
+
+       Excluded: the option chips ([data-status-picker], [data-staff-picker],
+       [data-date-picker]) and the field-list rows. Those are selections, not
+       actions — they already answer with a colour change, and a scale on a
+       grid of chips reads as the grid twitching. */
+    button:active,
+    label[data-add-card-photo]:active {
+      transform: scale(0.97);
+    }
+    [data-status-picker] button:active,
+    [data-staff-picker] button:active,
+    [data-date-picker] button:active {
+      transform: none;
+    }
+
+    /* Modals. The old rule faded opacity only, from nothing — things in the
+       real world do not appear out of nothing. Starting at 0.95 reads as the
+       dialog arriving rather than materialising. transform-origin stays
+       centred: a modal is not anchored to a trigger the way a popover is. */
+    @keyframes dcEnter {
+      from { opacity: 0; transform: scale(0.95); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* Reduced motion means fewer and gentler animations, not none: the opacity
+       cues still explain what appeared, so they stay. Everything that MOVES
+       goes. */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.12s !important;
+      }
+      button:active, label[data-add-card-photo]:active { transform: none; }
+      [data-modal-panel] { animation: fadeIn 0.12s ease-out !important; }
+    }
+
     /* Thumb-sized controls wherever the input is a finger. Apple's HIG and
        Material both put the minimum tap target at 44px; measured across the
        screens, the header back buttons were 34px, the event-card actions
@@ -137,7 +188,7 @@
       select {
         font-size: 16px !important;
         color: #1A1A2E !important;
-        border-radius: 8px !important;
+        border-radius: 10px !important;
       }
     }
     @media (min-width: 769px) {
@@ -1759,7 +1810,16 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
       }
       const cls = "scp" + (n++).toString(36);
       const sel = pseudo === "before" || pseudo === "after" ? "." + cls + "::" + pseudo : "." + cls + ":" + pseudo;
-      el.sheet.insertRule(sel + "{" + css + "}", el.sheet.cssRules.length);
+      // v3.18.0: hover rules are gated on a fine pointer. A touch device fires
+      // hover on tap and then LEAVES the element in that state until something
+      // else is tapped — on the venue iPad every one of the ~94 style-hover
+      // attributes in the template was a button that stayed lit after use.
+      // Gating here fixes all of them at once; doing it per-attribute would
+      // mean editing every call site and would be forgotten on the next one.
+      const rule = pseudo === "hover"
+        ? "@media (hover: hover) and (pointer: fine){" + sel + "{" + css + "}}"
+        : sel + "{" + css + "}";
+      el.sheet.insertRule(rule, el.sheet.cssRules.length);
       cache.set(k, cls);
       return cls;
     };
@@ -2330,7 +2390,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
   <!-- ===== EVENT LIST (root screen) ===== -->
   <sc-if value="{{ showEvents }}">
-    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.3s ease">
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.24s var(--ease-out)">
       <div data-page-header="" style="background: #0055B8; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0">
         <div style="display: flex; align-items: center; gap: 12px; min-width: 0">
           <svg style="flex-shrink: 0" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
@@ -2340,10 +2400,10 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </span>
         </div>
         <sc-if value="{{ manageMode }}">
-          <button onclick="{{ onLockManage }}" style="color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.15); border: none; padding: 8px 14px; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25); color: #FFF">🔓 管理中（點此鎖定）</button>
+          <button onclick="{{ onLockManage }}" style="color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.15); border: none; padding: 8px 14px; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25); color: #FFF">🔓 管理中（點此鎖定）</button>
         </sc-if>
         <sc-if value="{{ manageLocked }}">
-          <button onclick="{{ onUnlockManage }}" data-gear-events="" style="height: 44px; padding: 0 14px; border: none; background: rgba(255,255,255,0.12); cursor: pointer; display: flex; align-items: center; gap: 8px; border-radius: 8px; flex-shrink: 0; color: #FFF; font-size: var(--fs-sm); white-space: nowrap" style-hover="background: rgba(255,255,255,0.25)">
+          <button onclick="{{ onUnlockManage }}" data-gear-events="" style="height: 44px; padding: 0 14px; border: none; background: rgba(255,255,255,0.12); cursor: pointer; display: flex; align-items: center; gap: 8px; border-radius: 10px; flex-shrink: 0; color: #FFF; font-size: var(--fs-sm); white-space: nowrap" style-hover="background: rgba(255,255,255,0.25)">
             <svg style="flex-shrink: 0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             <span data-gear-label="">活動管理</span>
           </button>
@@ -2357,8 +2417,8 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
         <div data-sw-banner="" style="flex-shrink: 0; background: #EFF6FF; border-bottom: 1px solid #BFDBFE; padding: 12px 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap">
           <span style="font-size: var(--fs-sm); color: #1E3A8A">有新版本已下載完成，更新只需幾秒。</span>
           <div style="display: flex; gap: 8px; flex-shrink: 0">
-            <button onclick="{{ onDismissSwUpdate }}" style="height: 36px; padding: 0 14px; background: transparent; color: #64748B; border: 1px solid #CBD5E1; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F8FAFC">稍後</button>
-            <button onclick="{{ onApplySwUpdate }}" data-sw-apply="" style="height: 36px; padding: 0 16px; background: #0055B8; color: #FFF; border: none; border-radius: 8px; font-size: var(--fs-sm); font-weight: 600; cursor: pointer" style-hover="background: #004494">立即更新</button>
+            <button onclick="{{ onDismissSwUpdate }}" style="height: 36px; padding: 0 14px; background: transparent; color: #64748B; border: 1px solid #CBD5E1; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F8FAFC">稍後</button>
+            <button onclick="{{ onApplySwUpdate }}" data-sw-apply="" style="height: 36px; padding: 0 16px; background: #0055B8; color: #FFF; border: none; border-radius: 10px; font-size: var(--fs-sm); font-weight: 600; cursor: pointer" style-hover="background: #004494">立即更新</button>
           </div>
         </div>
       </sc-if>
@@ -2369,7 +2429,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
       <sc-if value="{{ showSyncBar }}">
         <div data-sync-bar="" style="flex-shrink: 0; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; padding: 10px 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap">
           <span data-sync-status="" style="font-size: var(--fs-sm); color: {{ syncColor }}">{{ syncLabel }}</span>
-          <button onclick="{{ onSyncNow }}" data-sync-now="" style="height: 34px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer; flex-shrink: 0" style-hover="background: #F0F6FF">立即同步</button>
+          <button onclick="{{ onSyncNow }}" data-sync-now="" style="height: 34px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer; flex-shrink: 0" style-hover="background: #F0F6FF">立即同步</button>
         </div>
       </sc-if>
       <div data-mobile-pad="" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 1.5rem">
@@ -2387,7 +2447,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           <sc-if value="{{ hasActiveEvents }}">
             <div style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E; margin: 0 0 10px">使用中</div>
             <sc-for list="{{ activeEvents }}" as="ev">
-              <div data-event-card="" style="background: #FFF; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 12px; overflow: hidden">
+              <div data-event-card="" style="background: #FFF; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 2px rgba(16,24,40,0.04), 0 1px 3px rgba(16,24,40,0.06)">
                 <!-- Only a locked list navigates on tap. In manage mode the same
                      block is inert text: the screen is for editing / ending /
                      deleting events, and a card that silently opened the form
@@ -2406,13 +2466,13 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                     <div style="font-size: var(--fs-sm); color: #94A3B8; margin-top: 2px">{{ ev.meta }}</div>
                   </div>
                   <div style="display: flex; gap: 8px; padding: 0 20px 14px; flex-wrap: wrap">
-                    <button onclick="{{ ev.onEdit }}" data-ev-edit="" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F0F6FF">編輯</button>
-                    <button onclick="{{ ev.onRecords }}" data-ev-records="" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F0F6FF">查看紀錄</button>
+                    <button onclick="{{ ev.onEdit }}" data-ev-edit="" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F0F6FF">編輯</button>
+                    <button onclick="{{ ev.onRecords }}" data-ev-records="" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F0F6FF">查看紀錄</button>
                     <sc-if value="{{ ev.canTakeOver }}">
-                      <button onclick="{{ ev.onTakeOver }}" data-ev-takeover="" style="height: 36px; padding: 0 14px; background: #FFF; color: #C2410C; border: 1px solid #FED7AA; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #FFF7ED">接管欄位設定</button>
+                      <button onclick="{{ ev.onTakeOver }}" data-ev-takeover="" style="height: 36px; padding: 0 14px; background: #FFF; color: #C2410C; border: 1px solid #FED7AA; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #FFF7ED">接管欄位設定</button>
                     </sc-if>
-                    <button onclick="{{ ev.onToggleStatus }}" data-ev-status="" style="height: 36px; padding: 0 14px; background: #FFF; color: #475569; border: 1px solid #D1D5DB; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F8FAFC">{{ ev.statusLabel }}</button>
-                    <button onclick="{{ ev.onDelete }}" data-ev-delete="" style="height: 36px; padding: 0 14px; background: #FFF; color: #DC2626; border: 1px solid #FCA5A5; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #FEF2F2">刪除</button>
+                    <button onclick="{{ ev.onToggleStatus }}" data-ev-status="" style="height: 36px; padding: 0 14px; background: #FFF; color: #475569; border: 1px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F8FAFC">{{ ev.statusLabel }}</button>
+                    <button onclick="{{ ev.onDelete }}" data-ev-delete="" style="height: 36px; padding: 0 14px; background: #FFF; color: #DC2626; border: 1px solid #FCA5A5; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #FEF2F2">刪除</button>
                   </div>
                 </sc-if>
               </div>
@@ -2422,7 +2482,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           <sc-if value="{{ hasEndedEvents }}">
             <div data-ended-heading="" style="font-size: var(--fs-h3); font-weight: 700; color: #64748B; margin: 26px 0 10px">已結束</div>
             <sc-for list="{{ endedEvents }}" as="ev">
-              <div data-event-card="" style="background: #FFF; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 12px; overflow: hidden; opacity: 0.75">
+              <div data-event-card="" style="background: #FFF; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 2px rgba(16,24,40,0.04), 0 1px 3px rgba(16,24,40,0.06); opacity: 0.75">
                 <sc-if value="{{ manageLocked }}">
                   <button onclick="{{ ev.onOpen }}" data-ev-enter="" style="width: 100%; text-align: left; background: transparent; border: none; padding: 18px 20px; cursor: pointer; display: block" style-hover="background: #F8FAFC">
                     <div style="font-size: var(--fs-h3); font-weight: 700; color: #475569; line-height: 1.3">{{ ev.name }}</div>
@@ -2437,13 +2497,13 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                     <div style="font-size: var(--fs-sm); color: #94A3B8; margin-top: 2px">{{ ev.meta }}</div>
                   </div>
                   <div style="display: flex; gap: 8px; padding: 0 20px 14px; flex-wrap: wrap">
-                    <button onclick="{{ ev.onEdit }}" data-ev-edit="" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F0F6FF">編輯</button>
-                    <button onclick="{{ ev.onRecords }}" data-ev-records="" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F0F6FF">查看紀錄</button>
+                    <button onclick="{{ ev.onEdit }}" data-ev-edit="" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F0F6FF">編輯</button>
+                    <button onclick="{{ ev.onRecords }}" data-ev-records="" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F0F6FF">查看紀錄</button>
                     <sc-if value="{{ ev.canTakeOver }}">
-                      <button onclick="{{ ev.onTakeOver }}" data-ev-takeover="" style="height: 36px; padding: 0 14px; background: #FFF; color: #C2410C; border: 1px solid #FED7AA; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #FFF7ED">接管欄位設定</button>
+                      <button onclick="{{ ev.onTakeOver }}" data-ev-takeover="" style="height: 36px; padding: 0 14px; background: #FFF; color: #C2410C; border: 1px solid #FED7AA; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #FFF7ED">接管欄位設定</button>
                     </sc-if>
-                    <button onclick="{{ ev.onToggleStatus }}" data-ev-status="" style="height: 36px; padding: 0 14px; background: #FFF; color: #475569; border: 1px solid #D1D5DB; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F8FAFC">{{ ev.statusLabel }}</button>
-                    <button onclick="{{ ev.onDelete }}" data-ev-delete="" style="height: 36px; padding: 0 14px; background: #FFF; color: #DC2626; border: 1px solid #FCA5A5; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #FEF2F2">刪除</button>
+                    <button onclick="{{ ev.onToggleStatus }}" data-ev-status="" style="height: 36px; padding: 0 14px; background: #FFF; color: #475569; border: 1px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #F8FAFC">{{ ev.statusLabel }}</button>
+                    <button onclick="{{ ev.onDelete }}" data-ev-delete="" style="height: 36px; padding: 0 14px; background: #FFF; color: #DC2626; border: 1px solid #FCA5A5; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer" style-hover="background: #FEF2F2">刪除</button>
                   </div>
                 </sc-if>
               </div>
@@ -2451,7 +2511,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">
-            v3.17.1 — Offline Exhibition Form
+            v3.18.0 — Offline Exhibition Form
             <sc-if value="{{ swDisabled }}">
               <span data-sw-disabled="" style="display: block; margin-top: 4px; color: #B45309">離線快取已停用，網址加上 ?sw=on 可重新啟用</span>
             </sc-if>
@@ -2463,16 +2523,16 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
   <!-- ===== EVENT PAGE (pick who is filling in + on which day, then a form) ===== -->
   <sc-if value="{{ showEventHome }}">
-    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.3s ease">
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.24s var(--ease-out)">
       <div data-page-header="" style="background: #0055B8; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0">
         <div style="display: flex; align-items: center; gap: 12px; min-width: 0">
-          <button onclick="{{ onBackToEvents }}" style="color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.15); border: none; padding: 8px 12px; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25); color: #FFF">← 活動列表</button>
+          <button onclick="{{ onBackToEvents }}" style="color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.15); border: none; padding: 8px 12px; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25); color: #FFF">← 活動列表</button>
           <span data-page-title="" style="display: flex; flex-direction: column; min-width: 0">
             <span style="color: #FFF; font-size: var(--fs-page); font-weight: 600; line-height: 1.25">{{ eventTitle }}</span>
             <span style="color: rgba(255,255,255,0.8); font-size: var(--fs-sm); line-height: 1.3">{{ eventDateLabel }}</span>
           </span>
         </div>
-        <button onclick="{{ onOpenPinDialog }}" data-gear-admin="" style="height: 44px; padding: 0 14px; border: none; background: rgba(255,255,255,0.12); cursor: pointer; display: flex; align-items: center; gap: 8px; border-radius: 8px; flex-shrink: 0; color: #FFF; font-size: var(--fs-sm); white-space: nowrap" style-hover="background: rgba(255,255,255,0.25)">
+        <button onclick="{{ onOpenPinDialog }}" data-gear-admin="" style="height: 44px; padding: 0 14px; border: none; background: rgba(255,255,255,0.12); cursor: pointer; display: flex; align-items: center; gap: 8px; border-radius: 10px; flex-shrink: 0; color: #FFF; font-size: var(--fs-sm); white-space: nowrap" style-hover="background: rgba(255,255,255,0.25)">
           <svg style="flex-shrink: 0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
           <span data-gear-label="">表單管理</span>
         </button>
@@ -2483,7 +2543,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           <sc-if value="{{ hasSession }}">
             <div data-session-banner="" style="background: #F0F6FF; border: 1px solid #BFDBFE; border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap">
               <span style="font-size: var(--fs-body); font-weight: 600; color: #0055B8; overflow-wrap: anywhere">{{ sessionBanner }}</span>
-              <button onclick="{{ onResetSession }}" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap" style-hover="background: #E8F1FC">重新選擇</button>
+              <button onclick="{{ onResetSession }}" style="height: 36px; padding: 0 14px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap" style-hover="background: #E8F1FC">重新選擇</button>
             </div>
           </sc-if>
 
@@ -2492,7 +2552,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             <div style="font-size: var(--fs-body); color: #64748B; line-height: 1.4; margin: 2px 0 10px">填單人員（可複選）</div>
             <div data-staff-picker="" data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px">
               <sc-for list="{{ eventStaffItems }}" as="st">
-                <button onclick="{{ st.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 0; overflow-wrap: anywhere; background: {{ st.bgColor }}; border-color: {{ st.borderColor }}; color: {{ st.textColor }}; {{ st.spanStyle }}" style-hover="border-color: #93B4E0">
+                <button onclick="{{ st.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; user-select: none; transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.1s var(--ease-out); min-height: 48px; text-align: left; min-width: 0; overflow-wrap: anywhere; background: {{ st.bgColor }}; border-color: {{ st.borderColor }}; color: {{ st.textColor }}; {{ st.spanStyle }}" style-hover="border-color: #93B4E0">
                   <span style="font-size: var(--fs-body); line-height: 1.35">{{ st.labelEn }}</span>
                   <sc-if value="{{ st.labelZh }}"><span style="font-size: var(--fs-sm); line-height: 1.35; opacity: 0.72">{{ st.labelZh }}</span></sc-if>
                 </button>
@@ -2506,7 +2566,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             <sc-if value="{{ eventDateMode }}">
               <div data-date-picker="" data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr)); gap: 10px">
                 <sc-for list="{{ eventDateItems }}" as="dt">
-                  <button onclick="{{ dt.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 0; background: {{ dt.bgColor }}; border-color: {{ dt.borderColor }}; color: {{ dt.textColor }}" style-hover="border-color: #93B4E0">
+                  <button onclick="{{ dt.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; user-select: none; transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.1s var(--ease-out); min-height: 48px; text-align: left; min-width: 0; background: {{ dt.bgColor }}; border-color: {{ dt.borderColor }}; color: {{ dt.textColor }}" style-hover="border-color: #93B4E0">
                     <span style="font-size: var(--fs-body); font-weight: 600; line-height: 1.35">{{ dt.labelEn }}</span>
                     <span style="font-size: var(--fs-xs); line-height: 1.35; opacity: 0.72">{{ dt.labelZh }}</span>
                   </button>
@@ -2526,7 +2586,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             <div style="font-size: var(--fs-sm); color: #94A3B8; line-height: 1.4; margin-bottom: 10px">新客戶需填寫公司背景，舊客戶略過</div>
             <div data-status-picker="" data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px">
               <sc-for list="{{ customerStatusItems }}" as="cs">
-                <button onclick="{{ cs.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 0; background: {{ cs.bgColor }}; border-color: {{ cs.borderColor }}; color: {{ cs.textColor }}" style-hover="border-color: #93B4E0">
+                <button onclick="{{ cs.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; user-select: none; transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.1s var(--ease-out); min-height: 48px; text-align: left; min-width: 0; background: {{ cs.bgColor }}; border-color: {{ cs.borderColor }}; color: {{ cs.textColor }}" style-hover="border-color: #93B4E0">
                   <span style="font-size: var(--fs-body); font-weight: 600; line-height: 1.35">{{ cs.labelEn }}</span>
                   <span style="font-size: var(--fs-sm); line-height: 1.35; opacity: 0.72">{{ cs.labelZh }}</span>
                 </button>
@@ -2539,12 +2599,12 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <div data-home-btns="" style="display: flex; gap: 16px; margin-bottom: 16px">
-            <button onclick="{{ onChooseData }}" disabled="{{ entryDisabled }}" data-entry-customer="" style="flex: 1; height: 128px; border: 2px solid #D1D5DB; background: #FFF; border-radius: 14px; cursor: {{ entryCursor }}; opacity: {{ entryOpacity }}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s" style-hover="border-color: #0055B8; background: #F0F6FF" style-active="transform: scale(0.97)">
+            <button onclick="{{ onChooseData }}" disabled="{{ entryDisabled }}" data-entry-customer="" style="flex: 1; height: 128px; border: 2px solid #D1D5DB; background: #FFF; border-radius: 16px; cursor: {{ entryCursor }}; opacity: {{ entryOpacity }}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.1s var(--ease-out)" style-hover="border-color: #0055B8; background: #F0F6FF" style-active="transform: scale(0.97)">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0055B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
               <span style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E">Customer Info First</span>
               <span style="font-size: var(--fs-sm); color: #64748B">從客戶資料開始</span>
             </button>
-            <button onclick="{{ onChooseNeeds }}" disabled="{{ entryDisabled }}" data-entry-needs="" style="flex: 1; height: 128px; border: 2px solid #D1D5DB; background: #FFF; border-radius: 14px; cursor: {{ entryCursor }}; opacity: {{ entryOpacity }}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s" style-hover="border-color: #0055B8; background: #F0F6FF" style-active="transform: scale(0.97)">
+            <button onclick="{{ onChooseNeeds }}" disabled="{{ entryDisabled }}" data-entry-needs="" style="flex: 1; height: 128px; border: 2px solid #D1D5DB; background: #FFF; border-radius: 16px; cursor: {{ entryCursor }}; opacity: {{ entryOpacity }}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.1s var(--ease-out)" style-hover="border-color: #0055B8; background: #F0F6FF" style-active="transform: scale(0.97)">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0055B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
               <span style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E">Customer Needs First</span>
               <span style="font-size: var(--fs-sm); color: #64748B">從客戶需求開始</span>
@@ -2554,7 +2614,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           <!-- Looking things up is a different kind of task from filling a form
                in, so it sits apart from the three entry tiles above. -->
           <div style="padding-bottom: 2.5rem">
-            <button onclick="{{ onOpenBrowse }}" data-open-browse="" style="width: 100%; height: 56px; border: 1px solid #CBD5E1; background: #FFF; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.15s" style-hover="border-color: #0055B8; background: #F8FAFC">
+            <button onclick="{{ onOpenBrowse }}" data-open-browse="" style="width: 100%; height: 56px; border: 1px solid #CBD5E1; background: #FFF; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.1s var(--ease-out)" style-hover="border-color: #0055B8; background: #F8FAFC">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
               <span style="font-size: var(--fs-body); font-weight: 600; color: #475569">客戶資料紀錄</span>
               <span style="font-size: var(--fs-sm); color: #94A3B8">查詢與編輯</span>
@@ -2571,7 +2631,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
        fill-in pages. Inputs write straight to the live store; 取消 restores the
        snapshot taken when the modal opened. -->
   <sc-if value="{{ showValueEditor }}">
-    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s ease; padding: 20px">
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s var(--ease-out); padding: 20px">
       <div data-value-editor="" style="background: #FFF; border-radius: 16px; width: 640px; max-width: 100%; max-height: 90vh; display: flex; flex-direction: column">
         <div style="padding: 20px 24px 12px; border-bottom: 1px solid #F1F5F9; flex-shrink: 0">
           <div style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E">{{ valueEditorTitle }}</div>
@@ -2583,7 +2643,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           <sc-for list="{{ valueEditorFields }}" as="field">
             <div>
           <sc-if value="{{ field.isText }}">
-            <input type="{{ field.inputType }}" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
+            <input type="{{ field.inputType }}" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s var(--ease-out)" style-focus="border-color: #0055B8">
           </sc-if>
           <sc-if value="{{ field.isTel }}">
             <div data-mobile-stack="" style="display: flex; gap: 8px">
@@ -2600,11 +2660,11 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   </div>
                 </sc-if>
               </div>
-              <input type="tel" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="flex: 1; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
+              <input type="tel" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="flex: 1; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s var(--ease-out)" style-focus="border-color: #0055B8">
             </div>
           </sc-if>
           <sc-if value="{{ field.isTextarea }}">
-            <textarea value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" rows="3" style="width: 100%; padding: 12px 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; resize: vertical; transition: border-color 0.15s; line-height: 1.5" style-focus="border-color: #0055B8"></textarea>
+            <textarea value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" rows="3" style="width: 100%; padding: 12px 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; resize: vertical; transition: border-color 0.15s var(--ease-out); line-height: 1.5" style-focus="border-color: #0055B8"></textarea>
           </sc-if>
           <sc-if value="{{ field.isSelect }}">
             <sc-raw-select value="{{ field.value }}" onchange="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
@@ -2628,7 +2688,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             </div>
           </sc-if>
           <sc-if value="{{ field.isDate }}">
-            <input type="date" value="{{ field.value }}" oninput="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
+            <input type="date" value="{{ field.value }}" oninput="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s var(--ease-out)" style-focus="border-color: #0055B8">
           </sc-if>
           <sc-if value="{{ field.isCheckboxGroup }}">
             <sc-for list="{{ field.checkboxGroups }}" as="grp">
@@ -2637,7 +2697,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               </sc-if>
               <div data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 4px">
                 <sc-for list="{{ grp.items }}" as="cb">
-                  <label style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: var(--fs-body); user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.spanStyle }}" style-hover="border-color: #93B4E0">
+                  <label style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: var(--fs-body); user-select: none; transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.1s var(--ease-out); min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.spanStyle }}" style-hover="border-color: #93B4E0">
                     <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #0055B8; flex-shrink: 0">
                     <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0; text-align: left; overflow-wrap: anywhere">
                       <span style="font-size: var(--fs-body); line-height: 1.35">{{ cb.labelEn }}</span>
@@ -2656,7 +2716,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           <sc-if value="{{ field.isRadioGroup }}">
             <div data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 4px">
               <sc-for list="{{ field.radioItems }}" as="rd">
-                <button onclick="{{ rd.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: var(--fs-body); user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 0; overflow-wrap: anywhere; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.spanStyle }}" style-hover="border-color: #93B4E0">
+                <button onclick="{{ rd.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: var(--fs-body); user-select: none; transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.1s var(--ease-out); min-height: 48px; text-align: left; min-width: 0; overflow-wrap: anywhere; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.spanStyle }}" style-hover="border-color: #93B4E0">
                   <span style="font-size: var(--fs-body); line-height: 1.35">{{ rd.labelEn }}</span>
                   <sc-if value="{{ rd.labelZh }}"><span style="font-size: var(--fs-sm); line-height: 1.35; opacity: 0.72">{{ rd.labelZh }}</span></sc-if>
                 </button>
@@ -2679,8 +2739,8 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-for>
         </div>
         <div style="padding: 14px 24px 20px; display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid #F1F5F9; flex-shrink: 0">
-          <button onclick="{{ onCloseValueEditor }}" data-ve-cancel="" style="height: 44px; padding: 0 20px; border: 1px solid #D1D5DB; background: #FFF; border-radius: 8px; font-size: var(--fs-sm); color: #64748B; cursor: pointer" style-hover="background: #F9FAFB">取消</button>
-          <button onclick="{{ onDoneValueEditor }}" data-ve-done="" style="height: 44px; padding: 0 24px; border: none; background: #0055B8; border-radius: 8px; font-size: var(--fs-sm); color: #FFF; cursor: pointer; font-weight: 600" style-hover="background: #004494">完成</button>
+          <button onclick="{{ onCloseValueEditor }}" data-ve-cancel="" style="height: 44px; padding: 0 20px; border: 1px solid #D1D5DB; background: #FFF; border-radius: 10px; font-size: var(--fs-sm); color: #64748B; cursor: pointer" style-hover="background: #F9FAFB">取消</button>
+          <button onclick="{{ onDoneValueEditor }}" data-ve-done="" style="height: 44px; padding: 0 24px; border: none; background: #0055B8; border-radius: 10px; font-size: var(--fs-sm); color: #FFF; cursor: pointer; font-weight: 600" style-hover="background: #004494">完成</button>
         </div>
       </div>
     </div>
@@ -2692,10 +2752,10 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
        separate screen from the admin records tab rather than a link into it,
        so nobody lands one tap away from the destructive controls. -->
   <sc-if value="{{ showBrowse }}">
-    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.3s ease">
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.24s var(--ease-out)">
       <div data-page-header="" style="background: #0055B8; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0">
         <div style="display: flex; align-items: center; gap: 12px; min-width: 0">
-          <button onclick="{{ onExitBrowse }}" style="color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.15); border: none; padding: 8px 12px; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25); color: #FFF">← 返回</button>
+          <button onclick="{{ onExitBrowse }}" style="color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.15); border: none; padding: 8px 12px; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25); color: #FFF">← 返回</button>
           <span data-page-title="" style="display: flex; flex-direction: column; min-width: 0">
             <span style="color: #FFF; font-size: var(--fs-page); font-weight: 600; line-height: 1.25">客戶資料紀錄</span>
             <span style="color: rgba(255,255,255,0.8); font-size: var(--fs-sm); line-height: 1.3">{{ eventTitle }}</span>
@@ -2718,7 +2778,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <sc-for list="{{ browseRows }}" as="row">
-            <div data-browse-row="" style="background: #FFF; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 12px; overflow: hidden">
+            <div data-browse-row="" style="background: #FFF; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 2px rgba(16,24,40,0.04), 0 1px 3px rgba(16,24,40,0.06)">
               <button onclick="{{ row.onEdit }}" style="width: 100%; text-align: left; background: transparent; border: none; padding: 16px 18px; cursor: pointer; display: block" style-hover="background: #F8FAFC">
                 <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap">
                   <span style="font-size: var(--fs-h3); font-weight: 700; color: #1A1A2E; line-height: 1.3">{{ row.title }}</span>
@@ -2743,29 +2803,29 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
   <!-- ===== EVENT EDITOR MODAL (backdrop locked, like every other popup) ===== -->
   <sc-if value="{{ showEventEditor }}">
-    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s ease; padding: 20px">
-      <div style="background: #FFF; border-radius: 16px; width: 520px; max-width: 100%; max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch">
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s var(--ease-out); padding: 20px">
+      <div data-modal-panel style="animation: dcEnter 0.2s var(--ease-out); box-shadow: 0 12px 32px rgba(16,24,40,0.18), 0 2px 6px rgba(16,24,40,0.08); background: #FFF; border-radius: 16px; width: 520px; max-width: 100%; max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch">
         <div style="padding: 24px 24px 0">
           <div style="font-size: 1.125rem; font-weight: 700; color: #1A1A2E; margin-bottom: 20px">{{ eventEditorTitle }}</div>
           <div style="margin-bottom: 14px">
             <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">活動名稱</label>
-            <input type="text" value="{{ evName }}" oninput="{{ onEvNameChange }}" placeholder="例如 2026 美國展" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
+            <input type="text" value="{{ evName }}" oninput="{{ onEvNameChange }}" placeholder="例如 2026 美國展" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
           </div>
           <!-- One field per row. Side by side, a date input's native picker
                button gives it a min-width the 50% column cannot honour, so on a
                tablet the two of them overflowed the modal. -->
           <div style="margin-bottom: 14px">
             <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">開始日期</label>
-            <input type="date" value="{{ evStart }}" oninput="{{ onEvStartChange }}" style="width: 100%; min-width: 0; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
+            <input type="date" value="{{ evStart }}" oninput="{{ onEvStartChange }}" style="width: 100%; min-width: 0; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
           </div>
           <div style="margin-bottom: 14px">
             <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">結束日期</label>
-            <input type="date" value="{{ evEnd }}" oninput="{{ onEvEndChange }}" style="width: 100%; min-width: 0; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
+            <input type="date" value="{{ evEnd }}" oninput="{{ onEvEndChange }}" style="width: 100%; min-width: 0; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
           </div>
           <sc-if value="{{ showEvSource }}">
             <div style="margin-bottom: 14px">
               <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">表單欄位來源</label>
-              <sc-raw-select value="{{ evSource }}" onchange="{{ onEvSourceChange }}" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none; background: #FFF" style-focus="border-color: #0055B8">
+              <sc-raw-select value="{{ evSource }}" onchange="{{ onEvSourceChange }}" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 0.875rem; outline: none; background: #FFF" style-focus="border-color: #0055B8">
                 <sc-for list="{{ evSourceOptions }}" as="so"><option value="{{ so.value }}">{{ so.label }}</option></sc-for>
               </sc-raw-select>
               <div style="font-size: 0.75rem; color: #94A3B8; margin-top: 6px">複製而來的欄位是獨立副本，日後修改不會互相影響。</div>
@@ -2775,20 +2835,20 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 6px">接待人員</label>
             <sc-for list="{{ evStaffRows }}" as="sr">
               <div data-staff-row="" style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center">
-                <input type="text" value="{{ sr.en }}" oninput="{{ sr.onEnChange }}" placeholder="英文（匯出用）" style="flex: 1; min-width: 0; height: 38px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
-                <input type="text" value="{{ sr.zh }}" oninput="{{ sr.onZhChange }}" placeholder="中文（顯示用）" style="flex: 1; min-width: 0; height: 38px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
-                <button onclick="{{ sr.onRemove }}" style="width: 34px; height: 34px; flex-shrink: 0; border: none; background: #FEF2F2; color: #DC2626; border-radius: 8px; cursor: pointer; font-size: 1rem" style-hover="background: #FEE2E2">×</button>
+                <input type="text" value="{{ sr.en }}" oninput="{{ sr.onEnChange }}" placeholder="英文（匯出用）" style="flex: 1; min-width: 0; height: 38px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
+                <input type="text" value="{{ sr.zh }}" oninput="{{ sr.onZhChange }}" placeholder="中文（顯示用）" style="flex: 1; min-width: 0; height: 38px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
+                <button onclick="{{ sr.onRemove }}" style="width: 34px; height: 34px; flex-shrink: 0; border: none; background: #FEF2F2; color: #DC2626; border-radius: 10px; cursor: pointer; font-size: 1rem" style-hover="background: #FEE2E2">×</button>
               </div>
             </sc-for>
-            <button onclick="{{ onAddStaffRow }}" style="height: 36px; padding: 0 14px; background: #F1F5F9; color: #475569; border: none; border-radius: 8px; font-size: 0.8125rem; cursor: pointer" style-hover="background: #E2E8F0">＋ 新增人員</button>
+            <button onclick="{{ onAddStaffRow }}" style="height: 36px; padding: 0 14px; background: #F1F5F9; color: #475569; border: none; border-radius: 10px; font-size: 0.8125rem; cursor: pointer" style-hover="background: #E2E8F0">＋ 新增人員</button>
           </div>
           <sc-if value="{{ evError }}">
             <div style="color: #DC2626; font-size: 0.8125rem; margin-bottom: 10px">{{ evError }}</div>
           </sc-if>
         </div>
         <div style="padding: 16px 24px 24px; display: flex; gap: 12px; justify-content: flex-end; position: sticky; bottom: 0; background: #FFF; border-top: 1px solid #F1F5F9">
-          <button onclick="{{ onCloseEventEditor }}" style="height: 42px; padding: 0 20px; border: 1px solid #D1D5DB; background: #FFF; border-radius: 8px; font-size: 0.875rem; color: #64748B; cursor: pointer" style-hover="background: #F9FAFB">取消</button>
-          <button onclick="{{ onSaveEvent }}" style="height: 42px; padding: 0 24px; border: none; background: #0055B8; border-radius: 8px; font-size: 0.875rem; color: #FFF; cursor: pointer; font-weight: 600" style-hover="background: #004494">儲存活動</button>
+          <button onclick="{{ onCloseEventEditor }}" style="height: 42px; padding: 0 20px; border: 1px solid #D1D5DB; background: #FFF; border-radius: 10px; font-size: 0.875rem; color: #64748B; cursor: pointer" style-hover="background: #F9FAFB">取消</button>
+          <button onclick="{{ onSaveEvent }}" style="height: 42px; padding: 0 24px; border: none; background: #0055B8; border-radius: 10px; font-size: 0.875rem; color: #FFF; cursor: pointer; font-weight: 600" style-hover="background: #004494">儲存活動</button>
         </div>
       </div>
     </div>
@@ -2796,7 +2856,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
   <!-- ===== PIN DIALOG ===== -->
   <sc-if value="{{ showPinDialog }}">
-    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s ease">
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s var(--ease-out)">
       <div style="background: #FFF; border-radius: 16px; padding: 40px; width: 360px; max-width: 90vw; text-align: center">
         <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 8px; color: #1A1A2E">管理者登入</div>
         <div style="font-size: 0.875rem; color: #64748B; margin-bottom: 24px">請輸入 4 位數 PIN 碼</div>
@@ -2810,8 +2870,8 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           <div style="color: #DC2626; font-size: 0.875rem; margin-bottom: 12px">PIN 碼錯誤</div>
         </sc-if>
         <div style="display: flex; gap: 12px; justify-content: center; margin-top: 8px">
-          <button onclick="{{ onClosePinDialog }}" style="height: 44px; padding: 0 24px; border: 1px solid #D1D5DB; background: #FFF; border-radius: 8px; font-size: 0.9375rem; color: #64748B; cursor: pointer" style-hover="background: #F9FAFB">取消</button>
-          <button onclick="{{ onSubmitPin }}" style="height: 44px; padding: 0 24px; border: none; background: #0055B8; border-radius: 8px; font-size: 0.9375rem; color: #FFF; cursor: pointer; font-weight: 500" style-hover="background: #004494">登入</button>
+          <button onclick="{{ onClosePinDialog }}" style="height: 44px; padding: 0 24px; border: 1px solid #D1D5DB; background: #FFF; border-radius: 10px; font-size: 0.9375rem; color: #64748B; cursor: pointer" style-hover="background: #F9FAFB">取消</button>
+          <button onclick="{{ onSubmitPin }}" style="height: 44px; padding: 0 24px; border: none; background: #0055B8; border-radius: 10px; font-size: 0.9375rem; color: #FFF; cursor: pointer; font-weight: 500" style-hover="background: #004494">登入</button>
         </div>
       </div>
     </div>
@@ -2819,7 +2879,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
   <!-- ===== CUSTOMER INFO FORM ===== -->
   <sc-if value="{{ showCustomerForm }}">
-    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.3s ease">
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.24s var(--ease-out)">
       <div data-page-header="" style="background: #0055B8; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0">
         <div style="display: flex; align-items: center; gap: 12px; min-width: 0">
           <svg style="flex-shrink: 0" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -2830,7 +2890,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           <sc-if value="{{ showStepChip }}"><span style="color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.15); font-size: var(--fs-xs); padding: 3px 10px; border-radius: 999px; white-space: nowrap; flex-shrink: 0">{{ customerStepLabel }}</span></sc-if>
           <sc-if value="{{ showContactChip }}"><span data-contact-chip="" style="color: #FFF; background: rgba(255,255,255,0.28); font-size: var(--fs-xs); padding: 3px 10px; border-radius: 999px; white-space: nowrap; flex-shrink: 0">{{ contactChipLabel }}</span></sc-if>
         </div>
-        <button onclick="{{ onCustomerBack }}" style="color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.15); border: none; padding: 8px 14px; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25); color: #FFF">{{ customerBackLabel }}</button>
+        <button onclick="{{ onCustomerBack }}" style="color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.15); border: none; padding: 8px 14px; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25); color: #FFF">{{ customerBackLabel }}</button>
       </div>
       <div data-mobile-pad="" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 1.5rem">
         <div style="max-width: 640px; margin: 0 auto">
@@ -2859,12 +2919,12 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   <sc-if value="{{ field.summaryEmpty }}">
                     <span data-summary-empty="" style="flex: 1; min-width: 0; font-size: var(--fs-body); color: #94A3B8">未填</span>
                   </sc-if>
-                  <button onclick="{{ field.onOpenValueEditor }}" data-edit-field="" style="flex-shrink: 0; height: 40px; padding: 0 16px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: var(--fs-sm); font-weight: 600; cursor: pointer" style-hover="background: #F0F6FF">編輯</button>
+                  <button onclick="{{ field.onOpenValueEditor }}" data-edit-field="" style="flex-shrink: 0; height: 40px; padding: 0 16px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 10px; font-size: var(--fs-sm); font-weight: 600; cursor: pointer" style-hover="background: #F0F6FF">編輯</button>
                 </div>
               </sc-if>
               <sc-if value="{{ field.showInline }}">
               <sc-if value="{{ field.isText }}">
-                <input type="{{ field.inputType }}" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
+                <input type="{{ field.inputType }}" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s var(--ease-out)" style-focus="border-color: #0055B8">
               </sc-if>
               <sc-if value="{{ field.isTel }}">
                 <div data-mobile-stack="" style="display: flex; gap: 8px">
@@ -2881,11 +2941,11 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                       </div>
                     </sc-if>
                   </div>
-                  <input type="tel" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="flex: 1; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
+                  <input type="tel" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="flex: 1; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s var(--ease-out)" style-focus="border-color: #0055B8">
                 </div>
               </sc-if>
               <sc-if value="{{ field.isTextarea }}">
-                <textarea value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" rows="3" style="width: 100%; padding: 12px 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; resize: vertical; transition: border-color 0.15s; line-height: 1.5" style-focus="border-color: #0055B8"></textarea>
+                <textarea value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" rows="3" style="width: 100%; padding: 12px 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; resize: vertical; transition: border-color 0.15s var(--ease-out); line-height: 1.5" style-focus="border-color: #0055B8"></textarea>
               </sc-if>
               <sc-if value="{{ field.isSelect }}">
                 <sc-raw-select value="{{ field.value }}" onchange="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
@@ -2909,7 +2969,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                 </div>
               </sc-if>
               <sc-if value="{{ field.isDate }}">
-                <input type="date" value="{{ field.value }}" oninput="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
+                <input type="date" value="{{ field.value }}" oninput="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s var(--ease-out)" style-focus="border-color: #0055B8">
               </sc-if>
               <sc-if value="{{ field.isCheckboxGroup }}">
                 <sc-for list="{{ field.checkboxGroups }}" as="grp">
@@ -2918,7 +2978,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   </sc-if>
                   <div data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 4px">
                     <sc-for list="{{ grp.items }}" as="cb">
-                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: var(--fs-body); user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.spanStyle }}" style-hover="border-color: #93B4E0">
+                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: var(--fs-body); user-select: none; transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.1s var(--ease-out); min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.spanStyle }}" style-hover="border-color: #93B4E0">
                         <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #0055B8; flex-shrink: 0">
                         <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0; text-align: left; overflow-wrap: anywhere">
                           <span style="font-size: var(--fs-body); line-height: 1.35">{{ cb.labelEn }}</span>
@@ -2937,7 +2997,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               <sc-if value="{{ field.isRadioGroup }}">
                 <div data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 4px">
                   <sc-for list="{{ field.radioItems }}" as="rd">
-                    <button onclick="{{ rd.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: var(--fs-body); user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 0; overflow-wrap: anywhere; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.spanStyle }}" style-hover="border-color: #93B4E0">
+                    <button onclick="{{ rd.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: var(--fs-body); user-select: none; transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.1s var(--ease-out); min-height: 48px; text-align: left; min-width: 0; overflow-wrap: anywhere; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.spanStyle }}" style-hover="border-color: #93B4E0">
                       <span style="font-size: var(--fs-body); line-height: 1.35">{{ rd.labelEn }}</span>
                       <sc-if value="{{ rd.labelZh }}"><span style="font-size: var(--fs-sm); line-height: 1.35; opacity: 0.72">{{ rd.labelZh }}</span></sc-if>
                     </button>
@@ -3015,12 +3075,12 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </div>
           <div style="margin-top: 1.75rem; padding-bottom: 2.5rem; display: flex; flex-direction: column; gap: 12px">
             <sc-if value="{{ showCancelContact }}">
-              <button onclick="{{ onCancelContact }}" data-cancel-contact="" style="width: 100%; height: 44px; background: none; color: #64748B; border: none; border-radius: 12px; font-size: var(--fs-sm); font-weight: 500; cursor: pointer; transition: all 0.15s" style-hover="background: #F1F5F9; color: #334155">取消，返回上一位</button>
+              <button onclick="{{ onCancelContact }}" data-cancel-contact="" style="width: 100%; height: 44px; background: none; color: #64748B; border: none; border-radius: 12px; font-size: var(--fs-sm); font-weight: 500; cursor: pointer; transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.1s var(--ease-out)" style-hover="background: #F1F5F9; color: #334155">取消，返回上一位</button>
             </sc-if>
             <sc-if value="{{ showAddContact }}">
-              <button onclick="{{ onAddContact }}" data-add-contact="" style="width: 100%; height: 56px; background: #FFF; color: #0055B8; border: 2px solid #93B4E0; border-radius: 12px; font-size: var(--fs-body); font-weight: 600; cursor: pointer; transition: all 0.15s" style-hover="background: #F0F6FF; border-color: #0055B8" style-active="transform: scale(0.98)">＋ 增加聯絡人（同一組客戶）</button>
+              <button onclick="{{ onAddContact }}" data-add-contact="" style="width: 100%; height: 56px; background: #FFF; color: #0055B8; border: 2px solid #93B4E0; border-radius: 12px; font-size: var(--fs-body); font-weight: 600; cursor: pointer; transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.1s var(--ease-out)" style-hover="background: #F0F6FF; border-color: #0055B8" style-active="transform: scale(0.98)">＋ 增加聯絡人（同一組客戶）</button>
             </sc-if>
-            <button onclick="{{ onCustomerSubmit }}" style="width: 100%; height: 56px; background: #0055B8; color: #FFF; border: none; border-radius: 12px; font-size: var(--fs-body); font-weight: 600; cursor: pointer; transition: all 0.15s" style-hover="background: #004494" style-active="transform: scale(0.98)">{{ customerSubmitLabel }}</button>
+            <button onclick="{{ onCustomerSubmit }}" style="width: 100%; height: 56px; background: #0055B8; color: #FFF; border: none; border-radius: 12px; font-size: var(--fs-body); font-weight: 600; cursor: pointer; transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.1s var(--ease-out)" style-hover="background: #004494" style-active="transform: scale(0.98)">{{ customerSubmitLabel }}</button>
           </div>
         </div>
       </div>
@@ -3029,7 +3089,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
   <!-- ===== CUSTOMER NEEDS FORM ===== -->
   <sc-if value="{{ showNeedsForm }}">
-    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.3s ease">
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.24s var(--ease-out)">
       <div data-page-header="" style="background: #0055B8; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0">
         <div style="display: flex; align-items: center; gap: 12px; min-width: 0">
           <svg style="flex-shrink: 0" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
@@ -3039,7 +3099,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </span>
           <sc-if value="{{ showStepChip }}"><span style="color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.15); font-size: var(--fs-xs); padding: 3px 10px; border-radius: 999px; white-space: nowrap; flex-shrink: 0">{{ needsStepLabel }}</span></sc-if>
         </div>
-        <button onclick="{{ onNeedsBack }}" style="color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.15); border: none; padding: 8px 14px; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25); color: #FFF">{{ needsBackLabel }}</button>
+        <button onclick="{{ onNeedsBack }}" style="color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.15); border: none; padding: 8px 14px; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25); color: #FFF">{{ needsBackLabel }}</button>
       </div>
       <div data-mobile-pad="" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 1.5rem">
         <div style="max-width: 640px; margin: 0 auto">
@@ -3050,7 +3110,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                 <sc-if value="{{ field.labelZh }}"><span style="display: block; font-size: var(--fs-body); font-weight: 400; color: #64748B; line-height: 1.4; margin-top: 2px">{{ field.labelZh }}</span></sc-if>
               </label>
               <sc-if value="{{ field.isText }}">
-                <input type="{{ field.inputType }}" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
+                <input type="{{ field.inputType }}" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s var(--ease-out)" style-focus="border-color: #0055B8">
               </sc-if>
               <sc-if value="{{ field.isTel }}">
                 <div data-mobile-stack="" style="display: flex; gap: 8px">
@@ -3067,11 +3127,11 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                       </div>
                     </sc-if>
                   </div>
-                  <input type="tel" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="flex: 1; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
+                  <input type="tel" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="flex: 1; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s var(--ease-out)" style-focus="border-color: #0055B8">
                 </div>
               </sc-if>
               <sc-if value="{{ field.isTextarea }}">
-                <textarea value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" rows="3" style="width: 100%; padding: 12px 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; resize: vertical; transition: border-color 0.15s; line-height: 1.5" style-focus="border-color: #0055B8"></textarea>
+                <textarea value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" rows="3" style="width: 100%; padding: 12px 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; resize: vertical; transition: border-color 0.15s var(--ease-out); line-height: 1.5" style-focus="border-color: #0055B8"></textarea>
               </sc-if>
               <sc-if value="{{ field.isSelect }}">
                 <sc-raw-select value="{{ field.value }}" onchange="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
@@ -3095,7 +3155,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                 </div>
               </sc-if>
               <sc-if value="{{ field.isDate }}">
-                <input type="date" value="{{ field.value }}" oninput="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
+                <input type="date" value="{{ field.value }}" oninput="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s var(--ease-out)" style-focus="border-color: #0055B8">
               </sc-if>
               <sc-if value="{{ field.isCheckboxGroup }}">
                 <sc-for list="{{ field.checkboxGroups }}" as="grp">
@@ -3104,7 +3164,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   </sc-if>
                   <div data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 4px">
                     <sc-for list="{{ grp.items }}" as="cb">
-                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: var(--fs-body); user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.spanStyle }}" style-hover="border-color: #93B4E0">
+                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: var(--fs-body); user-select: none; transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.1s var(--ease-out); min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.spanStyle }}" style-hover="border-color: #93B4E0">
                         <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #0055B8; flex-shrink: 0">
                         <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0; text-align: left; overflow-wrap: anywhere">
                           <span style="font-size: var(--fs-body); line-height: 1.35">{{ cb.labelEn }}</span>
@@ -3123,7 +3183,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               <sc-if value="{{ field.isRadioGroup }}">
                 <div data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 4px">
                   <sc-for list="{{ field.radioItems }}" as="rd">
-                    <button onclick="{{ rd.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: var(--fs-body); user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 0; overflow-wrap: anywhere; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.spanStyle }}" style-hover="border-color: #93B4E0">
+                    <button onclick="{{ rd.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: var(--fs-body); user-select: none; transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.1s var(--ease-out); min-height: 48px; text-align: left; min-width: 0; overflow-wrap: anywhere; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.spanStyle }}" style-hover="border-color: #93B4E0">
                       <span style="font-size: var(--fs-body); line-height: 1.35">{{ rd.labelEn }}</span>
                       <sc-if value="{{ rd.labelZh }}"><span style="font-size: var(--fs-sm); line-height: 1.35; opacity: 0.72">{{ rd.labelZh }}</span></sc-if>
                     </button>
@@ -3151,7 +3211,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             </div>
           </sc-for>
           <div style="margin-top: 1.75rem; padding-bottom: 2.5rem">
-            <button onclick="{{ onNeedsSubmit }}" style="width: 100%; height: 56px; background: #0055B8; color: #FFF; border: none; border-radius: 12px; font-size: var(--fs-body); font-weight: 600; cursor: pointer; transition: all 0.15s" style-hover="background: #004494" style-active="transform: scale(0.98)">{{ needsSubmitLabel }}</button>
+            <button onclick="{{ onNeedsSubmit }}" style="width: 100%; height: 56px; background: #0055B8; color: #FFF; border: none; border-radius: 12px; font-size: var(--fs-body); font-weight: 600; cursor: pointer; transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.1s var(--ease-out)" style-hover="background: #004494" style-active="transform: scale(0.98)">{{ needsSubmitLabel }}</button>
           </div>
         </div>
       </div>
@@ -3160,7 +3220,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
   <!-- ===== COMPANY PROFILE FORM ===== -->
   <sc-if value="{{ showCompanyForm }}">
-    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.3s ease">
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.24s var(--ease-out)">
       <div data-page-header="" style="background: #0055B8; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0">
         <div style="display: flex; align-items: center; gap: 12px; min-width: 0">
           <svg style="flex-shrink: 0" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><path d="M9 9v.01"></path><path d="M9 12v.01"></path><path d="M9 15v.01"></path><path d="M9 18v.01"></path></svg>
@@ -3170,7 +3230,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </span>
           <span style="color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.15); font-size: var(--fs-xs); padding: 3px 10px; border-radius: 999px; white-space: nowrap; flex-shrink: 0">{{ companyStepLabel }}</span>
         </div>
-        <button onclick="{{ onCompanyBack }}" style="color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.15); border: none; padding: 8px 14px; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25); color: #FFF">← Back 返回</button>
+        <button onclick="{{ onCompanyBack }}" style="color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.15); border: none; padding: 8px 14px; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25); color: #FFF">← Back 返回</button>
       </div>
       <div data-mobile-pad="" style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 1.5rem">
         <div style="max-width: 640px; margin: 0 auto">
@@ -3181,7 +3241,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                 <sc-if value="{{ field.labelZh }}"><span style="display: block; font-size: var(--fs-body); font-weight: 400; color: #64748B; line-height: 1.4; margin-top: 2px">{{ field.labelZh }}</span></sc-if>
               </label>
               <sc-if value="{{ field.isText }}">
-                <input type="{{ field.inputType }}" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
+                <input type="{{ field.inputType }}" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s var(--ease-out)" style-focus="border-color: #0055B8">
               </sc-if>
               <sc-if value="{{ field.isTel }}">
                 <div data-mobile-stack="" style="display: flex; gap: 8px">
@@ -3198,11 +3258,11 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                       </div>
                     </sc-if>
                   </div>
-                  <input type="tel" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="flex: 1; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
+                  <input type="tel" value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" style="flex: 1; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s var(--ease-out)" style-focus="border-color: #0055B8">
                 </div>
               </sc-if>
               <sc-if value="{{ field.isTextarea }}">
-                <textarea value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" rows="3" style="width: 100%; padding: 12px 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; resize: vertical; transition: border-color 0.15s; line-height: 1.5" style-focus="border-color: #0055B8"></textarea>
+                <textarea value="{{ field.value }}" oninput="{{ field.onInput }}" placeholder="{{ field.placeholder }}" rows="3" style="width: 100%; padding: 12px 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; resize: vertical; transition: border-color 0.15s var(--ease-out); line-height: 1.5" style-focus="border-color: #0055B8"></textarea>
               </sc-if>
               <sc-if value="{{ field.isSelect }}">
                 <sc-raw-select value="{{ field.value }}" onchange="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; background: #FFF" style-focus="border-color: #0055B8">
@@ -3226,7 +3286,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                 </div>
               </sc-if>
               <sc-if value="{{ field.isDate }}">
-                <input type="date" value="{{ field.value }}" oninput="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s" style-focus="border-color: #0055B8">
+                <input type="date" value="{{ field.value }}" oninput="{{ field.onInput }}" style="width: 100%; height: 48px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: var(--fs-body); outline: none; transition: border-color 0.15s var(--ease-out)" style-focus="border-color: #0055B8">
               </sc-if>
               <sc-if value="{{ field.isCheckboxGroup }}">
                 <sc-for list="{{ field.checkboxGroups }}" as="grp">
@@ -3235,7 +3295,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   </sc-if>
                   <div data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 4px">
                     <sc-for list="{{ grp.items }}" as="cb">
-                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: var(--fs-body); user-select: none; transition: all 0.15s; min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.spanStyle }}" style-hover="border-color: #93B4E0">
+                      <label style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: var(--fs-body); user-select: none; transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.1s var(--ease-out); min-height: 48px; background: {{ cb.bgColor }}; border-color: {{ cb.borderColor }}; color: {{ cb.textColor }}; {{ cb.spanStyle }}" style-hover="border-color: #93B4E0">
                         <input type="checkbox" checked="{{ cb.checked }}" onchange="{{ cb.onChange }}" style="width: 20px; height: 20px; accent-color: #0055B8; flex-shrink: 0">
                         <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0; text-align: left; overflow-wrap: anywhere">
                           <span style="font-size: var(--fs-body); line-height: 1.35">{{ cb.labelEn }}</span>
@@ -3254,7 +3314,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
               <sc-if value="{{ field.isRadioGroup }}">
                 <div data-cb-wrap="" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 4px">
                   <sc-for list="{{ field.radioItems }}" as="rd">
-                    <button onclick="{{ rd.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: var(--fs-body); user-select: none; transition: all 0.15s; min-height: 48px; text-align: left; min-width: 0; overflow-wrap: anywhere; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.spanStyle }}" style-hover="border-color: #93B4E0">
+                    <button onclick="{{ rd.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 10px 14px; border: 2px solid #D1D5DB; border-radius: 10px; cursor: pointer; font-size: var(--fs-body); user-select: none; transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.1s var(--ease-out); min-height: 48px; text-align: left; min-width: 0; overflow-wrap: anywhere; background: {{ rd.bgColor }}; border-color: {{ rd.borderColor }}; color: {{ rd.textColor }}; {{ rd.spanStyle }}" style-hover="border-color: #93B4E0">
                       <span style="font-size: var(--fs-body); line-height: 1.35">{{ rd.labelEn }}</span>
                       <sc-if value="{{ rd.labelZh }}"><span style="font-size: var(--fs-sm); line-height: 1.35; opacity: 0.72">{{ rd.labelZh }}</span></sc-if>
                     </button>
@@ -3282,7 +3342,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             </div>
           </sc-for>
           <div style="margin-top: 1.75rem; padding-bottom: 2.5rem">
-            <button onclick="{{ onCompanySubmit }}" style="width: 100%; height: 56px; background: #0055B8; color: #FFF; border: none; border-radius: 12px; font-size: var(--fs-body); font-weight: 600; cursor: pointer; transition: all 0.15s" style-hover="background: #004494" style-active="transform: scale(0.98)">{{ companySubmitLabel }}</button>
+            <button onclick="{{ onCompanySubmit }}" style="width: 100%; height: 56px; background: #0055B8; color: #FFF; border: none; border-radius: 12px; font-size: var(--fs-body); font-weight: 600; cursor: pointer; transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.1s var(--ease-out)" style-hover="background: #004494" style-active="transform: scale(0.98)">{{ companySubmitLabel }}</button>
           </div>
         </div>
       </div>
@@ -3291,7 +3351,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
   <!-- ===== HANDOFF (thank-you, then back to the event page) ===== -->
   <sc-if value="{{ showHandoff }}">
-    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #FFF; animation: fadeIn 0.3s ease; padding: 1.5rem; position: relative">
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #FFF; animation: fadeIn 0.24s var(--ease-out); padding: 1.5rem; position: relative">
       <div style="width: 80px; height: 80px; background: #DEF7EC; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
       </div>
@@ -3311,7 +3371,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
   <!-- ===== ADMIN MODE ===== -->
   <sc-if value="{{ showAdmin }}">
-    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.2s ease">
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.2s var(--ease-out)">
       <div style="background: #1E293B; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0">
         <div style="display: flex; align-items: center; gap: 12px">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -3349,7 +3409,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px">
               <div style="font-size: 1.125rem; font-weight: 700; color: #1A1A2E">{{ adminListTitle }}</div>
               <sc-if value="{{ fieldsEditable }}">
-                <button onclick="{{ onAddField }}" data-add-field="" style="height: 40px; padding: 0 16px; background: #0055B8; color: #FFF; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px" style-hover="background: #004494">＋ 新增欄位</button>
+                <button onclick="{{ onAddField }}" data-add-field="" style="height: 40px; padding: 0 16px; background: #0055B8; color: #FFF; border: none; border-radius: 10px; font-size: 0.875rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px" style-hover="background: #004494">＋ 新增欄位</button>
               </sc-if>
             </div>
             <sc-if value="{{ fieldsEditable }}">
@@ -3371,11 +3431,11 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                   <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
                     <span style="font-size: 0.9375rem; font-weight: 600; color: #1A1A2E">{{ af.nameZh }}</span>
                     <span style="font-size: 0.8125rem; color: #94A3B8">{{ af.nameEn }}</span>
-                    <span style="font-size: 0.75rem; padding: 2px 8px; background: #F1F5F9; border-radius: 4px; color: #64748B">{{ af.type }}</span>
-                    <sc-if value="{{ af.required }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #FEF2F2; border-radius: 4px; color: #DC2626">必填</span></sc-if>
-                    <sc-if value="{{ af.isCore }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #ECFDF5; border-radius: 4px; color: #059669">核心</span></sc-if>
-                    <sc-if value="{{ af.allowOther }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #FFF7ED; border-radius: 4px; color: #C2410C">可填其他</span></sc-if>
-                    <sc-if value="{{ af.fromEvent }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #EFF6FF; border-radius: 4px; color: #1D4ED8">由活動設定</span></sc-if>
+                    <span style="font-size: 0.75rem; padding: 2px 8px; background: #F1F5F9; border-radius: 6px; color: #64748B">{{ af.type }}</span>
+                    <sc-if value="{{ af.required }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #FEF2F2; border-radius: 6px; color: #DC2626">必填</span></sc-if>
+                    <sc-if value="{{ af.isCore }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #ECFDF5; border-radius: 6px; color: #059669">核心</span></sc-if>
+                    <sc-if value="{{ af.allowOther }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #FFF7ED; border-radius: 6px; color: #C2410C">可填其他</span></sc-if>
+                    <sc-if value="{{ af.fromEvent }}"><span style="font-size: 0.75rem; padding: 2px 8px; background: #EFF6FF; border-radius: 6px; color: #1D4ED8">由活動設定</span></sc-if>
                   </div>
                   <sc-if value="{{ af.hasOptions }}"><div style="font-size: 0.8125rem; color: #94A3B8; margin-top: 4px">選項：{{ af.optionsSummary }}</div></sc-if>
                   <sc-if value="{{ af.fromEvent }}"><div style="font-size: 0.8125rem; color: #94A3B8; margin-top: 4px">此欄位的內容由活動頁的填單人員／填單日期帶入，請到活動列表編輯該活動。</div></sc-if>
@@ -3400,11 +3460,11 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px">
               <div style="font-size: 1.125rem; font-weight: 700; color: #1A1A2E">資料紀錄（{{ recordCount }} 筆）</div>
               <div style="display: flex; gap: 8px">
-                <button onclick="{{ onExportData }}" disabled="{{ exporting }}" style="height: 40px; padding: 0 16px; background: #059669; color: #FFF; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; opacity: {{ exportBtnOpacity }}" style-hover="background: #047857">
+                <button onclick="{{ onExportData }}" disabled="{{ exporting }}" style="height: 40px; padding: 0 16px; background: #059669; color: #FFF; border: none; border-radius: 10px; font-size: 0.875rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; opacity: {{ exportBtnOpacity }}" style-hover="background: #047857">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                   {{ exportBtnLabel }}
                 </button>
-                <button onclick="{{ onClearAllData }}" style="height: 40px; padding: 0 16px; background: #FFF; color: #DC2626; border: 1px solid #FCA5A5; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer" style-hover="background: #FEF2F2">清除全部</button>
+                <button onclick="{{ onClearAllData }}" style="height: 40px; padding: 0 16px; background: #FFF; color: #DC2626; border: 1px solid #FCA5A5; border-radius: 10px; font-size: 0.875rem; font-weight: 500; cursor: pointer" style-hover="background: #FEF2F2">清除全部</button>
               </div>
             </div>
             <sc-if value="{{ hasRecords }}">
@@ -3422,10 +3482,10 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
                       <sc-raw-td style="padding: 10px 14px">
                         <div style="display: flex; gap: 8px; align-items: center">
                           <sc-if value="{{ row.hasPhoto }}">
-                            <button onclick="{{ row.onViewPhoto }}" data-view-photo="" style="color: #0055B8; background: none; border: none; cursor: pointer; font-size: 0.8125rem; padding: 4px 8px; border-radius: 4px; white-space: nowrap" style-hover="background: #F0F6FF">📷{{ row.photoBadge }}</button>
+                            <button onclick="{{ row.onViewPhoto }}" data-view-photo="" style="color: #0055B8; background: none; border: none; cursor: pointer; font-size: 0.8125rem; padding: 4px 8px; border-radius: 6px; white-space: nowrap" style-hover="background: #F0F6FF">📷{{ row.photoBadge }}</button>
                           </sc-if>
-                          <button onclick="{{ row.onEdit }}" style="color: #0055B8; background: none; border: none; cursor: pointer; font-size: 0.8125rem; padding: 4px 8px; border-radius: 4px" style-hover="background: #F0F6FF">編輯</button>
-                          <button onclick="{{ row.onDelete }}" style="color: #DC2626; background: none; border: none; cursor: pointer; font-size: 0.8125rem; padding: 4px 8px; border-radius: 4px" style-hover="background: #FEF2F2">刪除</button>
+                          <button onclick="{{ row.onEdit }}" style="color: #0055B8; background: none; border: none; cursor: pointer; font-size: 0.8125rem; padding: 4px 8px; border-radius: 6px" style-hover="background: #F0F6FF">編輯</button>
+                          <button onclick="{{ row.onDelete }}" style="color: #DC2626; background: none; border: none; cursor: pointer; font-size: 0.8125rem; padding: 4px 8px; border-radius: 6px" style-hover="background: #FEF2F2">刪除</button>
                         </div>
                       </sc-raw-td>
                     </sc-raw-tr></sc-for>
@@ -3472,9 +3532,9 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
        live behind 表單管理, so changing a device name meant first walking into
        some arbitrary exhibition. -->
   <sc-if value="{{ showSettings }}">
-    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.3s ease">
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeIn 0.24s var(--ease-out)">
       <div data-page-header="" style="background: #0055B8; padding: 1rem 1.5rem; display: flex; align-items: center; gap: 12px; flex-shrink: 0">
-        <button onclick="{{ onExitSettings }}" data-settings-back="" style="color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.15); border: none; padding: 8px 12px; border-radius: 8px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25); color: #FFF">← 活動列表</button>
+        <button onclick="{{ onExitSettings }}" data-settings-back="" style="color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.15); border: none; padding: 8px 12px; border-radius: 10px; font-size: var(--fs-sm); cursor: pointer; white-space: nowrap; flex-shrink: 0" style-hover="background: rgba(255,255,255,0.25); color: #FFF">← 活動列表</button>
         <span data-page-title="" style="display: flex; flex-direction: column; min-width: 0">
           <span style="color: #FFF; font-size: var(--fs-page); font-weight: 600; line-height: 1.25">Settings</span>
           <span style="color: rgba(255,255,255,0.8); font-size: var(--fs-sm); line-height: 1.3">系統設定</span>
@@ -3485,30 +3545,30 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             <div style="background: #F0F6FF; border: 1px solid #BFDBFE; border-radius: 10px; padding: 12px 20px; font-size: 0.875rem; color: #1E40AF">此頁設定適用於所有活動。表單欄位與資料紀錄則各活動獨立。</div>
             <div style="background: #FFF; border-radius: 10px; padding: 20px; border: 1px solid #E2E8F0">
               <div style="font-size: 1rem; font-weight: 700; color: #1A1A2E; margin-bottom: 12px">裝置名稱</div>
-              <input type="text" value="{{ deviceName }}" oninput="{{ onDeviceNameChange }}" placeholder="例如 Tablet-A" style="width: 100%; height: 44px; padding: 0 14px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.9375rem; outline: none" style-focus="border-color: #0055B8">
+              <input type="text" value="{{ deviceName }}" oninput="{{ onDeviceNameChange }}" placeholder="例如 Tablet-A" style="width: 100%; height: 44px; padding: 0 14px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 0.9375rem; outline: none" style-focus="border-color: #0055B8">
               <div style="font-size: 0.8125rem; color: #94A3B8; margin-top: 6px">附加在每筆紀錄上，多台平板時用於辨識資料來源</div>
             </div>
             <div style="background: #FFF; border-radius: 10px; padding: 20px; border: 1px solid #E2E8F0">
               <div style="font-size: 1rem; font-weight: 700; color: #1A1A2E; margin-bottom: 12px">管理者 PIN 碼</div>
-              <input type="text" value="{{ adminPin }}" oninput="{{ onPinChange }}" maxlength="4" inputmode="numeric" pattern="[0-9]*" style="width: 120px; height: 44px; padding: 0 14px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 1.25rem; letter-spacing: 8px; text-align: center; outline: none" style-focus="border-color: #0055B8">
+              <input type="text" value="{{ adminPin }}" oninput="{{ onPinChange }}" maxlength="4" inputmode="numeric" pattern="[0-9]*" style="width: 120px; height: 44px; padding: 0 14px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 1.25rem; letter-spacing: 8px; text-align: center; outline: none" style-focus="border-color: #0055B8">
               <div style="font-size: 0.8125rem; color: #94A3B8; margin-top: 6px">進入後台所需的 4 位數 PIN 碼</div>
             </div>
             <div style="background: #FFF; border-radius: 10px; padding: 20px; border: 1px solid #E2E8F0">
               <div style="font-size: 1rem; font-weight: 700; color: #1A1A2E; margin-bottom: 12px">GDPR 同意聲明（英文）</div>
-              <textarea value="{{ gdprEn }}" oninput="{{ onGdprEnChange }}" rows="3" style="width: 100%; padding: 10px 14px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none; resize: vertical; line-height: 1.5" style-focus="border-color: #0055B8"></textarea>
+              <textarea value="{{ gdprEn }}" oninput="{{ onGdprEnChange }}" rows="3" style="width: 100%; padding: 10px 14px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 0.875rem; outline: none; resize: vertical; line-height: 1.5" style-focus="border-color: #0055B8"></textarea>
             </div>
             <div style="background: #FFF; border-radius: 10px; padding: 20px; border: 1px solid #E2E8F0">
               <div style="font-size: 1rem; font-weight: 700; color: #1A1A2E; margin-bottom: 12px">GDPR 同意聲明（中文）</div>
-              <textarea value="{{ gdprZh }}" oninput="{{ onGdprZhChange }}" rows="3" style="width: 100%; padding: 10px 14px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none; resize: vertical; line-height: 1.5" style-focus="border-color: #0055B8"></textarea>
+              <textarea value="{{ gdprZh }}" oninput="{{ onGdprZhChange }}" rows="3" style="width: 100%; padding: 10px 14px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 0.875rem; outline: none; resize: vertical; line-height: 1.5" style-focus="border-color: #0055B8"></textarea>
             </div>
             <div style="background: #FFF; border-radius: 10px; padding: 20px; border: 1px solid #E2E8F0">
               <div style="font-size: 1rem; font-weight: 700; color: #1A1A2E; margin-bottom: 12px">同步伺服器</div>
-              <input type="url" data-sync-url="" value="{{ syncUrl }}" oninput="{{ onSyncUrlChange }}" placeholder="https://sync.example.com/v1" style="width: 100%; height: 44px; padding: 0 14px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.9375rem; outline: none" style-focus="border-color: #0055B8">
+              <input type="url" data-sync-url="" value="{{ syncUrl }}" oninput="{{ onSyncUrlChange }}" placeholder="https://sync.example.com/v1" style="width: 100%; height: 44px; padding: 0 14px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 0.9375rem; outline: none" style-focus="border-color: #0055B8">
               <div style="font-size: 0.8125rem; color: #94A3B8; margin-top: 6px">留空即停用同步。必須是 https——app 由 https 提供，瀏覽器會擋掉對 http 位址的請求</div>
-              <input type="text" data-sync-token="" value="{{ syncToken }}" oninput="{{ onSyncTokenChange }}" placeholder="存取權杖" style="width: 100%; height: 44px; margin-top: 12px; padding: 0 14px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.9375rem; outline: none" style-focus="border-color: #0055B8">
+              <input type="text" data-sync-token="" value="{{ syncToken }}" oninput="{{ onSyncTokenChange }}" placeholder="存取權杖" style="width: 100%; height: 44px; margin-top: 12px; padding: 0 14px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 0.9375rem; outline: none" style-focus="border-color: #0055B8">
               <div style="font-size: 0.8125rem; color: #94A3B8; margin-top: 6px">每台平板一組，遺失時由伺服器端撤銷該組即可</div>
               <div style="display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap">
-                <button onclick="{{ onTestSync }}" data-sync-test="" style="height: 40px; padding: 0 16px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 8px; font-size: 0.875rem; cursor: pointer" style-hover="background: #F0F6FF">測試連線</button>
+                <button onclick="{{ onTestSync }}" data-sync-test="" style="height: 40px; padding: 0 16px; background: #FFF; color: #0055B8; border: 1px solid #BFDBFE; border-radius: 10px; font-size: 0.875rem; cursor: pointer" style-hover="background: #F0F6FF">測試連線</button>
                 <sc-if value="{{ syncTestResult }}">
                   <span data-sync-test-result="" style="font-size: 0.8125rem; color: #475569">{{ syncTestResult }}</span>
                 </sc-if>
@@ -3524,21 +3584,21 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
   <!-- ===== FIELD EDITOR MODAL ===== -->
   <sc-if value="{{ showFieldEditor }}">
-    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s ease; padding: 20px">
-      <div style="background: #FFF; border-radius: 16px; width: 520px; max-width: 100%; max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch">
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s var(--ease-out); padding: 20px">
+      <div data-modal-panel style="animation: dcEnter 0.2s var(--ease-out); box-shadow: 0 12px 32px rgba(16,24,40,0.18), 0 2px 6px rgba(16,24,40,0.08); background: #FFF; border-radius: 16px; width: 520px; max-width: 100%; max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch">
         <div style="padding: 24px 24px 0">
           <div style="font-size: 1.125rem; font-weight: 700; color: #1A1A2E; margin-bottom: 20px">{{ fieldEditorTitle }}</div>
           <div style="margin-bottom: 14px">
             <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">欄位名稱（英文，供匯出使用）</label>
-            <input type="text" value="{{ feNameEn }}" oninput="{{ onFeNameEnChange }}" placeholder="例如 Country" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
+            <input type="text" value="{{ feNameEn }}" oninput="{{ onFeNameEnChange }}" placeholder="例如 Country" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
           </div>
           <div style="margin-bottom: 14px">
             <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">欄位名稱（中文）</label>
-            <input type="text" value="{{ feNameZh }}" oninput="{{ onFeNameZhChange }}" placeholder="例如 國家" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
+            <input type="text" value="{{ feNameZh }}" oninput="{{ onFeNameZhChange }}" placeholder="例如 國家" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
           </div>
           <div style="margin-bottom: 14px">
             <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">欄位類型</label>
-            <sc-raw-select value="{{ feType }}" onchange="{{ onFeTypeChange }}" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none; background: #FFF" style-focus="border-color: #0055B8">
+            <sc-raw-select value="{{ feType }}" onchange="{{ onFeTypeChange }}" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 0.875rem; outline: none; background: #FFF" style-focus="border-color: #0055B8">
               <option value="text">單行文字</option><option value="email">電子信箱</option><option value="tel">電話（含國碼）</option><option value="select">下拉選單</option><option value="radio-group">單選按鈕組</option><option value="checkbox-group">多選核取組</option><option value="textarea">多行文字</option><option value="rating">星級評分（1–5）</option><option value="date">日期</option>
             </sc-raw-select>
           </div>
@@ -3565,7 +3625,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
             </div>
             <div style="margin-bottom: 14px">
               <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 4px">額外空白分類（逗號分隔）</label>
-              <input type="text" value="{{ feEmptyGroups }}" oninput="{{ onFeEmptyGroupsChange }}" placeholder="例如 Local 本土" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
+              <input type="text" value="{{ feEmptyGroups }}" oninput="{{ onFeEmptyGroupsChange }}" placeholder="例如 Local 本土" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 0.875rem; outline: none" style-focus="border-color: #0055B8">
             </div>
           </sc-if>
           <sc-if value="{{ feShowOptions }}">
@@ -3590,8 +3650,8 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
         </div>
         <div style="padding: 16px 24px 24px; display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid #F1F5F9; margin-top: 8px">
-          <button onclick="{{ onCloseFieldEditor }}" style="height: 40px; padding: 0 20px; border: 1px solid #D1D5DB; background: #FFF; border-radius: 8px; font-size: 0.875rem; color: #64748B; cursor: pointer" style-hover="background: #F9FAFB">取消</button>
-          <button onclick="{{ onSaveField }}" style="height: 40px; padding: 0 20px; border: none; background: #0055B8; border-radius: 8px; font-size: 0.875rem; color: #FFF; cursor: pointer; font-weight: 500" style-hover="background: #004494">儲存欄位</button>
+          <button onclick="{{ onCloseFieldEditor }}" style="height: 40px; padding: 0 20px; border: 1px solid #D1D5DB; background: #FFF; border-radius: 10px; font-size: 0.875rem; color: #64748B; cursor: pointer" style-hover="background: #F9FAFB">取消</button>
+          <button onclick="{{ onSaveField }}" style="height: 40px; padding: 0 20px; border: none; background: #0055B8; border-radius: 10px; font-size: 0.875rem; color: #FFF; cursor: pointer; font-weight: 500" style-hover="background: #004494">儲存欄位</button>
         </div>
       </div>
     </div>
@@ -3599,26 +3659,26 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
   <!-- ===== DELETE CONFIRM (two stages, shared by every destructive action) ===== -->
   <sc-if value="{{ confirmOpen }}">
-    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s ease; padding: 20px">
-      <div style="background: #FFF; border-radius: 16px; padding: 32px; width: 420px; max-width: 100%; text-align: center">
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s var(--ease-out); padding: 20px">
+      <div data-modal-panel style="animation: dcEnter 0.2s var(--ease-out); box-shadow: 0 12px 32px rgba(16,24,40,0.18), 0 2px 6px rgba(16,24,40,0.08); background: #FFF; border-radius: 16px; padding: 32px; width: 420px; max-width: 100%; text-align: center">
         <div style="width: 56px; height: 56px; background: #FEF2F2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
         </div>
         <div style="font-size: 1.125rem; font-weight: 700; color: #1A1A2E; margin-bottom: 8px">{{ confirmTitle }}</div>
         <div style="font-size: 0.875rem; color: #64748B; margin-bottom: 20px; line-height: 1.6">{{ confirmMessage }}</div>
         <sc-if value="{{ confirmShowTypeBox }}">
-          <input type="text" value="{{ confirmTypedValue }}" oninput="{{ onConfirmTypedInput }}" placeholder="請輸入 DELETE" style="width: 100%; height: 44px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 8px; font-size: 1rem; text-align: center; outline: none; margin-bottom: 16px" style-focus="border-color: #DC2626">
+          <input type="text" value="{{ confirmTypedValue }}" oninput="{{ onConfirmTypedInput }}" placeholder="請輸入 DELETE" style="width: 100%; height: 44px; padding: 0 14px; border: 2px solid #D1D5DB; border-radius: 10px; font-size: 1rem; text-align: center; outline: none; margin-bottom: 16px" style-focus="border-color: #DC2626">
         </sc-if>
         <sc-if value="{{ confirmStage2 }}">
-          <div style="font-size: 0.8125rem; color: #B91C1C; background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 8px; padding: 10px 12px; margin-bottom: 16px">第 2 次確認</div>
+          <div style="font-size: 0.8125rem; color: #B91C1C; background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 10px; padding: 10px 12px; margin-bottom: 16px">第 2 次確認</div>
         </sc-if>
         <div style="display: flex; gap: 12px">
-          <button onclick="{{ onConfirmCancel }}" style="flex: 1; height: 44px; border: 1px solid #D1D5DB; background: #FFF; border-radius: 8px; font-size: 0.9375rem; color: #64748B; cursor: pointer" style-hover="background: #F9FAFB">取消</button>
+          <button onclick="{{ onConfirmCancel }}" style="flex: 1; height: 44px; border: 1px solid #D1D5DB; background: #FFF; border-radius: 10px; font-size: 0.9375rem; color: #64748B; cursor: pointer" style-hover="background: #F9FAFB">取消</button>
           <sc-if value="{{ confirmStage1 }}">
-            <button onclick="{{ onConfirmAdvance }}" disabled="{{ confirmNextDisabled }}" style="flex: 1; height: 44px; border: none; background: #DC2626; border-radius: 8px; font-size: 0.9375rem; color: #FFF; cursor: pointer; font-weight: 500; opacity: {{ confirmNextOpacity }}" style-hover="background: #B91C1C">繼續</button>
+            <button onclick="{{ onConfirmAdvance }}" disabled="{{ confirmNextDisabled }}" style="flex: 1; height: 44px; border: none; background: #DC2626; border-radius: 10px; font-size: 0.9375rem; color: #FFF; cursor: pointer; font-weight: 500; opacity: {{ confirmNextOpacity }}" style-hover="background: #B91C1C">繼續</button>
           </sc-if>
           <sc-if value="{{ confirmShowAction }}">
-            <button onclick="{{ onConfirmRun }}" style="flex: 1; height: 44px; border: none; background: #DC2626; border-radius: 8px; font-size: 0.9375rem; color: #FFF; cursor: pointer; font-weight: 700" style-hover="background: #B91C1C">{{ confirmActionLabel }}</button>
+            <button onclick="{{ onConfirmRun }}" style="flex: 1; height: 44px; border: none; background: #DC2626; border-radius: 10px; font-size: 0.9375rem; color: #FFF; cursor: pointer; font-weight: 700" style-hover="background: #B91C1C">{{ confirmActionLabel }}</button>
           </sc-if>
         </div>
       </div>
@@ -3627,7 +3687,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
   <!-- ===== PHOTO LIGHTBOX ===== -->
   <sc-if value="{{ showPhotoLightbox }}">
-    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s ease; padding: 20px">
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.15s var(--ease-out); padding: 20px">
       {{ lightboxPhotoImg }}
       <button onclick="{{ onClosePhotoLightbox }}" style="position: absolute; top: 20px; right: 20px; width: 44px; height: 44px; background: rgba(255,255,255,0.2); border: none; border-radius: 50%; color: #FFF; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center" style-hover="background: rgba(255,255,255,0.3)">×</button>
     </div>
@@ -3635,7 +3695,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
   <!-- ===== TOAST ===== -->
   <sc-if value="{{ showToast }}">
-    <div style="position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: #1E293B; color: #FFF; padding: 12px 24px; border-radius: 10px; font-size: 0.9375rem; font-weight: 500; z-index: 2000; animation: fadeIn 0.2s ease; box-shadow: 0 8px 32px rgba(0,0,0,0.2); max-width: 90vw; text-align: center">{{ toastMessage }}</div>
+    <div style="position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: #1E293B; color: #FFF; padding: 12px 24px; border-radius: 10px; font-size: 0.9375rem; font-weight: 500; z-index: 2000; animation: fadeIn 0.2s var(--ease-out); box-shadow: 0 8px 32px rgba(0,0,0,0.2); max-width: 90vw; text-align: center">{{ toastMessage }}</div>
   </sc-if>
 
 </div>
