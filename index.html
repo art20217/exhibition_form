@@ -101,6 +101,38 @@
          of room — the icon alone still reads, a squeezed event title does not. */
       [data-gear-label] { display: none; }
     }
+    /* Thumb-sized controls wherever the input is a finger. Apple's HIG and
+       Material both put the minimum tap target at 44px; measured across the
+       screens, the header back buttons were 34px, the event-card actions
+       (including 刪除) 36px, and one submit 32px.
+
+       Keyed on `pointer: coarse`, not on width. The venue device is an iPad —
+       touch at 1280 landscape just as much as at 820 portrait — so a width
+       breakpoint would have left the actual hardware with 34px targets while
+       "fixing" phones nobody uses at the show. It also leaves mouse-driven
+       desktop geometry alone, which is what the existing 1280 layout suites
+       measure.
+
+       min-height rather than height: it beats a smaller inline `height` without
+       overriding a larger one, so nothing already comfortable shrinks. Option
+       chips and form buttons set their own larger sizes and are unaffected.
+       File inputs are hidden inside styled labels, so the label is the real
+       target and is the thing sized here. */
+    /* Field editor, option rows. Three inputs plus a delete button do not fit a
+       phone: with 分類 shown (checkbox-group only) 英文/中文 were down to 65px
+       at 360. Below 480px 分類 takes its own line instead, which buys the other
+       two ~129px each. The column headers go with it — every input carries a
+       placeholder saying the same thing. */
+    @media (max-width: 480px) {
+      [data-fe-opt-head] { display: none !important; }
+      [data-fe-opt-row] { flex-wrap: wrap; }
+      [data-fe-opt-row] > [data-fe-opt-group] { width: 100% !important; flex: 1 0 100% !important; }
+    }
+    @media (pointer: coarse) {
+      button, select, [role="button"], input[type="submit"], label:has(> input[type="checkbox"]) {
+        min-height: 44px;
+      }
+    }
     @media (max-width: 768px) {
       select {
         font-size: 16px !important;
@@ -2419,7 +2451,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           </sc-if>
 
           <div data-version-line="" style="text-align: center; font-size: var(--fs-xs); color: #94A3B8; margin-top: auto; padding: 28px 0 8px">
-            v3.16.6 — Offline Exhibition Form
+            v3.17.1 — Offline Exhibition Form
             <sc-if value="{{ swDisabled }}">
               <span data-sw-disabled="" style="display: block; margin-top: 4px; color: #B45309">離線快取已停用，網址加上 ?sw=on 可重新啟用</span>
             </sc-if>
@@ -3539,17 +3571,17 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
           <sc-if value="{{ feShowOptions }}">
             <div style="margin-bottom: 14px">
               <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #64748B; margin-bottom: 8px">選項</label>
-              <div style="display: flex; gap: 8px; margin-bottom: 4px; padding: 0 2px">
-                <span style="width: 90px; font-size: 0.6875rem; font-weight: 600; color: #94A3B8; text-transform: uppercase; flex-shrink: 0">分類</span>
-                <span style="flex: 1; font-size: 0.6875rem; font-weight: 600; color: #94A3B8; text-transform: uppercase">英文</span>
-                <span style="flex: 1; font-size: 0.6875rem; font-weight: 600; color: #94A3B8; text-transform: uppercase">中文</span>
+              <div data-fe-opt-head style="display: flex; gap: 8px; margin-bottom: 4px; padding: 0 2px">
+                <sc-if value="{{ feShowGroups }}"><span style="width: 90px; font-size: 0.6875rem; font-weight: 600; color: #94A3B8; text-transform: uppercase; flex-shrink: 0">分類</span></sc-if>
+                <span style="flex: 1; min-width: 0; font-size: 0.6875rem; font-weight: 600; color: #94A3B8; text-transform: uppercase">英文</span>
+                <span style="flex: 1; min-width: 0; font-size: 0.6875rem; font-weight: 600; color: #94A3B8; text-transform: uppercase">中文</span>
                 <span style="width: 28px; flex-shrink: 0"></span>
               </div>
               <sc-for list="{{ feOptions }}" as="opt">
-                <div style="display: flex; gap: 8px; margin-bottom: 6px; align-items: center">
-                  <input type="text" value="{{ opt.group }}" oninput="{{ opt.onGroupChange }}" placeholder="例如 Europe" style="width: 90px; flex-shrink: 0; height: 36px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.8125rem; outline: none" style-focus="border-color: #0055B8">
-                  <input type="text" value="{{ opt.en }}" oninput="{{ opt.onEnChange }}" placeholder="英文" style="flex: 1; height: 36px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.8125rem; outline: none" style-focus="border-color: #0055B8">
-                  <input type="text" value="{{ opt.zh }}" oninput="{{ opt.onZhChange }}" placeholder="中文" style="flex: 1; height: 36px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.8125rem; outline: none" style-focus="border-color: #0055B8">
+                <div data-fe-opt-row style="display: flex; gap: 8px; margin-bottom: 6px; align-items: center">
+                  <sc-if value="{{ feShowGroups }}"><input data-fe-opt-group type="text" value="{{ opt.group }}" oninput="{{ opt.onGroupChange }}" placeholder="例如 Europe" style="width: 90px; flex-shrink: 0; height: 36px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.8125rem; outline: none" style-focus="border-color: #0055B8"></sc-if>
+                  <input type="text" value="{{ opt.en }}" oninput="{{ opt.onEnChange }}" placeholder="英文" style="flex: 1; min-width: 0; height: 36px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.8125rem; outline: none" style-focus="border-color: #0055B8">
+                  <input type="text" value="{{ opt.zh }}" oninput="{{ opt.onZhChange }}" placeholder="中文" style="flex: 1; min-width: 0; height: 36px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.8125rem; outline: none" style-focus="border-color: #0055B8">
                   <button onclick="{{ opt.onRemove }}" style="width: 28px; height: 28px; border: none; background: #FEF2F2; color: #DC2626; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0" style-hover="background: #FEE2E2">×</button>
                 </div>
               </sc-for>
@@ -7165,6 +7197,11 @@ class Component extends DCLogic {
     const feShowOptions = feType === 'select' || feType === 'checkbox-group' || feType === 'radio-group';
     const feShowAllowOther = feType === 'checkbox-group' || feType === 'radio-group';
     const feShowPerGroupOther = feType === 'checkbox-group' && feAllowOther;
+    // 分類 only means something for checkbox-group: mapFormField reads o.group
+    // solely inside its `if (isCheckboxGroup)` branch. On a select or a
+    // radio-group the column was 98px of dead width on every option row, which
+    // is most of why the modal needed horizontal scrolling.
+    const feShowGroups = feType === 'checkbox-group';
     const feOptions = feOpts.map((o,i) => ({
       en: o.en, zh: o.zh, group: o.group || '',
       onEnChange: (e) => { const opts = [...this.state.feOptions]; opts[i] = {...opts[i], en: e.target.value}; this.setState({feOptions: opts}); },
@@ -7175,7 +7212,7 @@ class Component extends DCLogic {
     return {
       showFieldEditor, fieldEditorTitle: fieldEditorMode === 'add' ? '新增欄位' : '編輯欄位',
       feNameEn, feNameZh, feType, feRequired, feAllowOther, feShowOptions, feShowAllowOther, feOptions,
-      fePerGroupOther, feEmptyGroups, feShowPerGroupOther,
+      fePerGroupOther, feEmptyGroups, feShowPerGroupOther, feShowGroups,
       onFeNameEnChange: (e) => this.setState({ feNameEn: e.target.value }),
       onFeNameZhChange: (e) => this.setState({ feNameZh: e.target.value }),
       onFeTypeChange: (e) => this.setState({ feType: e.target.value }),
